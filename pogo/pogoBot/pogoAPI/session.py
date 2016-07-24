@@ -285,6 +285,52 @@ class PogoSession():
                 pokemon.append(poke)
         return pokemon
 
+    def cleanPokemon(self, cells=''):
+        r = []
+        if not cells:
+            pokemons = self.session.getAllPokemon()
+        else:
+            pokemons = []
+            for cell in cells.map_cells:
+                pokemons.extend(cell.wild_pokemons)
+
+        for poke in pokemons:
+            r.append({
+                'latitude': poke.latitude,
+                'longitude': poke.longitude,
+                'time_remaining': poke.time_till_hidden_ms
+            })
+        return r
+
+    def getAllForts(self):
+        cells = self.getMapObjects()
+        forts = []
+        for cell in cells.map_cells:
+            for fort in cell.forts:
+                forts.append(fort)
+        return forts
+
+    def getAllStops(self):
+        # Forts with type 1 are Pokestops
+        return filter(lambda f: f.type == 1, self.getAllForts())
+
+    def cleanStops(self, cells=''):
+        r = []
+        if not cells:
+            stops = self.getAllStops()
+        else:
+            stops = []
+            for cell in cells.map_cells:
+                stops.extend(filter(lambda f: f.type == 1, cell.forts))
+
+        for stop in stops:
+            r.append({
+                'latitude': stop.latitude,
+                'longitude': stop.longitude,
+                'enabled': stop.enabled,
+            })
+        return r
+
     # Get Location
     def getFortSearch(self, fort):
 

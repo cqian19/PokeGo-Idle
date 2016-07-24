@@ -14,27 +14,16 @@ class pokemonHandler():
         closest = float("Inf")
         pokemonBest = None
         latitude, longitude, _ = self.session.getCoordinates()
-        pokemons = self.session.getAllPokemon()
-        for pokemon in pokemons:
-                # Log the pokemon found
-                logging.info("%i at %f,%f" % (
-                    pokemon.pokemon_data.pokemon_id,
-                    pokemon.latitude,
-                    pokemon.longitude
-                ))
-
-                # Fins distance to pokemon
-                dist = Location.getDistance(
-                    latitude,
-                    longitude,
-                    pokemon.latitude,
-                    pokemon.longitude
-                )
-
-                # Greedy for closest
-                if dist < closest:
-                    pokemonBest = pokemon
-                    closest = dist
+        pokemon = self.session.getAllPokemon()
+        pokemonBest = min(pokemon,
+                          key=lambda p:
+                            Location.getDistance(
+                                latitude,
+                                longitude,
+                                pokemon.latitude,
+                                pokemon.longitude
+                            )
+                          )
         return pokemonBest
 
 

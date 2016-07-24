@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
 from pogoBot.bot import Bot
 from pogoBot.pogoAPI import api
 
@@ -19,9 +19,23 @@ def setupLogger():
     ch.setFormatter(formatter)
     logger.addHandler(ch)
 
-@app.route('/')
-def fullmap():
-    return render_template('example.html', lat=37.4419,lng=-122.1419)
+class MapHandler():
+
+    def __init__(self, session):
+        self.session = session
+        app.route('/')(self.fullmap)
+        app.route('/data', methods=['GET'])(self.get_map_data)
+
+    def fullmap(self):
+        return render_template('example.html', lat=37.4419,lng=-122.1419)
+
+    def get_map_data(self):
+        data = {}
+        cells = self.session.getMapObjects()
+        data['location'] = self.session.getCoordinates()
+        data['pokemon'] = self.session.cleanPokemon(cells)
+        data['forts'] = self.session.cleanStops(cells)
+        return jsonify(data)
 
 if __name__ == "__main__":
     setupLogger()
@@ -61,4 +75,5 @@ if __name__ == "__main__":
     else:
         logging.critical('Session not created successfully')
     app.config['GOOGLEMAPS_KEY'] = args.geo_key
+    mh = MapHandler(session)
     app.run(debug=True, use_reloader=True)

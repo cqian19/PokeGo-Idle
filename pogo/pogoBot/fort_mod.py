@@ -13,19 +13,17 @@ class fortHandler():
     def sortCloseForts(self):
         # Sort nearest forts (pokestop)
         logging.info("Sorting Nearest Forts:")
-        cells = self.session.getMapObjects()
         latitude, longitude, _ = self.session.getCoordinates()
         ordered_forts = []
-        for cell in cells.map_cells:
-            for fort in cell.forts:
-                dist = Location.getDistance(
-                    latitude,
-                    longitude,
-                    fort.latitude,
-                    fort.longitude
-                )
-                if fort.type == 1:
-                    ordered_forts.append({'distance': dist, 'fort': fort})
+        stops = self.session.getAllStops()
+        for fort in stops:
+            dist = Location.getDistance(
+                latitude,
+                longitude,
+                fort.latitude,
+                fort.longitude
+            )
+            ordered_forts.append({'distance': dist, 'fort': fort})
 
         ordered_forts = sorted(ordered_forts, key=lambda k: k['distance'])
         return [instance['fort'] for instance in ordered_forts]
