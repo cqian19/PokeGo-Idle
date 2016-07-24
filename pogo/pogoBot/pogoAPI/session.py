@@ -277,6 +277,14 @@ class PogoSession():
         # Return everything
         return self.state.mapObjects
 
+    def getAllPokemon(self):
+        cells = self.getMapObjects()
+        pokemon = []
+        for cell in cells.map_cells:
+            for poke in cell.wild_pokemons:
+                pokemon.append(poke)
+        return pokemon
+
     # Get Location
     def getFortSearch(self, fort):
 
