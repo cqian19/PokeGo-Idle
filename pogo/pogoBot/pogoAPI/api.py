@@ -28,7 +28,7 @@ def getRPCId():
     return RPC_ID
 
 
-class PokeAuthSession(object):
+class PokeAuthSession():
     def __init__(self, username, password, provider='google', geo_key=None):
         self.session = self.createRequestsSession()
         self.provider = provider
