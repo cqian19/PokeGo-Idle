@@ -3,7 +3,6 @@ import re
 import json
 import random
 import logging
-
 from session import PogoSession
 from location import Location
 
@@ -19,13 +18,6 @@ SERVICE = 'audience:server:client_id:848232511240-7so421jotr2609rmqakceuu1luuq0p
 APP = 'com.nianticlabs.pokemongo'
 CLIENT_SIG = '321187995bc7cdc2b5fc91b11a96e2baa8602c62'
 
-RPC_ID = int(random.random() * 10 ** 12)
-
-
-def getRPCId():
-    global RPC_ID
-    RPC_ID = RPC_ID + 1
-    return RPC_ID
 
 
 class PokeAuthSession():

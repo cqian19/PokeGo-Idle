@@ -5,6 +5,7 @@ import time
 import sys
 from pogoAPI import api, custom_exceptions, location
 from pogoBot import fort_mod, inventory_mod, pokemon_mod
+
 def setupLogger():
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
@@ -23,12 +24,13 @@ class Bot():
         self.ph = pokemon_mod.pokemonHandler(session)
 
     # Basic bot
-    def simpleBot(self):
+    def run (self):
         # Trying not to flood the servers
         cooldown = 1
-
+        self.ih.getProfile()
+        self.ih.getInventory()
         # Run the bot
-        while True:
+        """while True:
             try:
                 forts = self.fh.sortCloseForts(session)
                 for fort in forts:
@@ -50,7 +52,7 @@ class Bot():
                 session = poko_session.reauthenticate(session)
                 time.sleep(cooldown)
                 cooldown *= 2
-
+        """
 # Entry point
 # Start off authentication and demo
 if __name__ == '__main__':

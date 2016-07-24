@@ -15,7 +15,6 @@ from POGOProtos.Networking.Requests.Messages import UseItemEggIncubatorMessage_p
 from POGOProtos.Networking.Requests.Messages import RecycleInventoryItemMessage_pb2
 
 # Load local
-import api
 from custom_exceptions import GeneralPogoException
 from inventory import Inventory
 from location import Location
@@ -24,15 +23,17 @@ from state import State
 import requests
 import logging
 import time
+import random
 
 # Hide errors (Yes this is terrible, but prettier)
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 API_URL = 'https://pgorelease.nianticlabs.com/plfe/rpc'
+RPC_ID = int(random.random() * 10 ** 12)
 
 
-class PogoSession(object):
+class PogoSession():
 
     def __init__(self, session, authProvider, accessToken, location):
         self.session = session
@@ -97,7 +98,7 @@ class PogoSession(object):
         latitude, longitude, altitude = self.getCoordinates()
         req = RequestEnvelope_pb2.RequestEnvelope(
             status_code=2,
-            request_id=api.getRPCId(),
+            request_id=self.getRPCId(),
             longitude=longitude,
             latitude=latitude,
             altitude=altitude,
@@ -198,6 +199,11 @@ class PogoSession(object):
 
     # Hooks for those bundled in default
     # Getters
+    def getRPCId(self):
+        global RPC_ID
+        RPC_ID = RPC_ID + 1
+        return RPC_ID
+
     def getEggs(self):
         self.getProfile()
         return self.state.eggs
