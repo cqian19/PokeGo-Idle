@@ -18,14 +18,16 @@ var player = {
     latLng: null,
     posChanged: false,
     initializeMarker: function() {
-        player.marker = new google.maps.Marker({
+        player.marker = new SlidingMarker({
             map: mapObj,
-            position: player.latlng,
+            position: player.latLng,
             icon: createIcon(player.getIconName()),
             optimized: false,
             zIndex: 2,
-            visible: true
+            visible: true,
+            duration: playerUpdateTime
         })
+        console.log(player.marker);
     },
     updateImage: function() {
 
@@ -43,14 +45,8 @@ var player = {
             player.marker.setIcon(icon);
         }
         if (player.posChanged) {
-            setTimeout(function() {
-                animate.ease({
-                    map: mapObj,
-                    marker: player.marker,
-                    start: player.marker.getPosition(),
-                    end: player.latlng
-                })
-            }, 0)
+            player.marker.setPosition(player.latLng);
+            mapObj.panTo(player.latLng);
         }
     },
     update: function () {
@@ -65,7 +61,7 @@ var player = {
                 player.posChanged = false;
             }
             player.lng = lng;
-            player.latlng = new google.maps.LatLng(player.lat, player.lng);
+            player.latLng = new google.maps.LatLng(player.lat, player.lng);
             player.updateMarker();
         })
     }
@@ -115,9 +111,9 @@ function initializeMap() {
           zoom: 16,
           minZoom: 12
     });
-}
-
-$(function() {
+    makeSliding();
+    makeAnimate();
     setInterval(getMapData, 5000);
     setInterval(player.update, 250)
-})
+    console.log("Done")
+}
