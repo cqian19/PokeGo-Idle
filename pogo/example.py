@@ -21,20 +21,28 @@ def setupLogger():
 
 class MapHandler():
 
-    def __init__(self, session):
+    def __init__(self, session, geo_key):
         self.session = session
-        app.route('/')(self.fullmap)
+        self.maps_key = geo_key
+        app.route('/')(self.default_map)
         app.route('/data', methods=['GET'])(self.get_map_data)
+        app.route('/location', methods=['GET'])(self.get_location)
+        app.run(debug=True, use_reloader=True)
 
-    def fullmap(self):
-        return render_template('example.html', lat=37.4419,lng=-122.1419)
+    def default_map(self):
+        return render_template('example.html', lat=37.4419,lng=-122.1419, geo_key=self.maps_key)
 
     def get_map_data(self):
         data = {}
         cells = self.session.getMapObjects()
-        data['location'] = self.session.getCoordinates()
         data['pokemon'] = self.session.cleanPokemon(cells)
         data['forts'] = self.session.cleanStops(cells)
+        return jsonify(data)
+
+    def get_location(self):
+        data = {
+            'location': self.session.getCoordinates()
+        }
         return jsonify(data)
 
 if __name__ == "__main__":
@@ -70,10 +78,8 @@ if __name__ == "__main__":
 
     # Time to show off what we can do
     if session:
+        mh = MapHandler(session, args.geo_key)
         bot = Bot(session)
         bot.run()
     else:
         logging.critical('Session not created successfully')
-    app.config['GOOGLEMAPS_KEY'] = args.geo_key
-    mh = MapHandler(session)
-    app.run(debug=True, use_reloader=True)

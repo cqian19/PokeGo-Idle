@@ -296,6 +296,10 @@ class PogoSession():
 
         for poke in pokemons:
             r.append({
+                'data': {
+                    'poke_id': poke.pokemon_data.pokemon_id,
+                    'cp': poke.pokemon_data.cp
+                },
                 'latitude': poke.latitude,
                 'longitude': poke.longitude,
                 'time_remaining': poke.time_till_hidden_ms
