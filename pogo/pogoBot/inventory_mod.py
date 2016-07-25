@@ -39,10 +39,7 @@ class inventoryHandler():
     # Just incase you didn't want any revives
     def tossRevives(self):
         bag = self.session.checkInventory()["bag"]
-
-        # 201 are revives.
-        # TODO: We should have a reverse lookup here
-        return self.session.recycleItem(201, bag[201])
+        return self.session.recycleItem(items.REVIVE, bag[items.REVIVE])
 
 
     # Set an egg to an incubator
@@ -57,15 +54,22 @@ class inventoryHandler():
         incubator = inventory["incubators"][0]
         return self.session.setEgg(incubator, egg)
 
-    def cleanInventory(session):
+    def cleanInventory(self):
         logging.info("Cleaning out Inventory...")
-        bag = session.checkInventory().bag
-
+        bag = self.session.checkInventory().bag
+        logging.info("Current inventory: ")
+        for key in bag:
+            print("\n\t{0}: {1}".format(items[key], bag[key]))
         # Clear out all of a crtain type
         tossable = [items.POTION, items.SUPER_POTION, items.REVIVE]
+        keep = {
+            items.POTION: 0,
+            items.SUPER_POTION : 20,
+            items.REVIVE: 10
+        }
         for toss in tossable:
-            if toss in bag and bag[toss]:
-                session.recycleItem(toss, bag[toss])
+            if toss in bag and bag[toss] - keep[toss] > 0:
+                self.session.recycleItem(toss, bag[toss] - keep[toss])
 
         # Limit a certain type
         limited = {
@@ -76,4 +80,4 @@ class inventoryHandler():
         }
         for limit in limited:
             if limit in bag and bag[limit] > limited[limit]:
-                session.recycleItem(limit, bag[limit] - limited[limit])
+                self.session.recycleItem(limit, bag[limit] - limited[limit])

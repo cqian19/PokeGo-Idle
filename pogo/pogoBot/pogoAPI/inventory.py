@@ -38,7 +38,7 @@ class Items(dict):
     ITEM_STORAGE_UPGRADE = 1002
 
     def __init__(self):
-        super(dict, self).__init__(self)
+        super(dict, self).__init__()
         attributes = inspect.getmembers(Items, lambda attr :not(inspect.isroutine(attr)))
         for attr in attributes:
             if attr[0].isupper():
@@ -46,7 +46,7 @@ class Items(dict):
 
 items = Items()
 
-class Inventory(object):
+class Inventory():
 
     # Split from inventory since everything is bundled
     def __init__(self, items):
