@@ -3,7 +3,28 @@
  */
 
 var focused = true;
-var map = null;
+var mapObj = null;
+var imgWidth = 32;
+var imgHeight = 32;
+
+player = {
+    img_root: '',
+    marker: '',
+    lat: 0,
+    lng: 0,
+    initializeMarker: function() {
+        player.marker = new google.maps.Marker({
+            map: mapObj,
+            position: {lat: player.lat, lng: player.lng},
+            icon: createIcon(player.img_root),
+            zIndex: 2
+        })
+    },
+    updateMarker: function() {
+        if (map == null || marker == null) { return; }
+
+    }
+}
 
 function requester(r, fn, cb) {
     if (r == null) {
@@ -18,7 +39,7 @@ function getMapData(cb) {
         url: 'data',
         type: 'GET',
         dataType: 'json',
-        success: cb
+        success: function(r) { requester(r, arguments.callee.name, cb); }
     });
 }
 
@@ -28,19 +49,33 @@ function getPlayerLocation(cb) {
         url: 'location',
         type: 'GET',
         dataType: 'json',
-        success: function(r) { requester(r["location"], this.name, cb); }
+        success: function(r) { requester(r["location"], arguments.callee.name, cb); }
     });
 }
 
 function initializeMap() {
     console.log("initialize");
     console.log("Initializing map");
-    map = new google.maps.Map(document.getElementById('map'), {
+    mapObj = new google.maps.Map(document.getElementById('map'), {
           center: {lat: 37.4419, lng: -122.1419},
           zoom: 17,
           minZoom: 12
     });
     followPlayer();
+}
+
+function createIcon(url) {
+    return new google.maps.Icon({
+        url: url,
+        scaledSize: new google.maps.Size({
+            width: imgWidth,
+            height: imgHeight
+        })
+    })
+}
+
+function initializePlayer() {
+
 }
 
 function followPlayer() {
@@ -52,6 +87,8 @@ function followPlayer() {
     });
 }
 
+
+function updateMarker() { }
 $(function() {
     setInterval(getMapData, 5000);
     setInterval(followPlayer, 250)
