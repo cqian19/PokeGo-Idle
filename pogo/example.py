@@ -74,9 +74,11 @@ if __name__ == "__main__":
     # Authenticate with a given location
     # Location is not inherent in authentication
     # But is important to session
-    session = poko_session.authenticate(args.location)
+    try:
+        session = poko_session.authenticate(args.location)
+    except Exception as e:
+        logging.error('Could not log in. Double check your login credentials. The servers may also be down.')
 
-    # Time to show off what we can do
     if session:
         mh = MapHandler(session, args.geo_key)
         bot = Bot(session)
