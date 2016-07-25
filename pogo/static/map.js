@@ -4,32 +4,55 @@
 
 var focused = true;
 var mapObj = null;
-var imgWidth = 32;
-var imgHeight = 32;
+var iconPath = "static/icons/"
+var playerUpdateTime = 250;
+var imgWidth = 45;
+var imgHeight = 45;
 
-player = {
-    img_root: '',
+var player = {
+    img_name: 'player1R.gif',
     marker: '',
     lat: 0,
     lng: 0,
+    latLng: null,
     initializeMarker: function() {
         player.marker = new google.maps.Marker({
             map: mapObj,
-            position: {lat: player.lat, lng: player.lng},
-            icon: createIcon(player.img_root),
-            zIndex: 2
+            position: player.latlng,
+            icon: createIcon(iconPath + player.img_name),
+            optimized: false,
+            zIndex: 2,
+            visible: true
         })
     },
-    updateMarker: function() {
-        if (map == null || marker == null) { return; }
+    updateImage: function() {
 
+    },
+    updateMarker: function() {
+        if (mapObj == null) { return; }
+        if (player.marker == '') { player.initializeMarker(); }
+        animate.ease({
+            marker: player.marker,
+            start: player.marker.getPosition(),
+            end: player.latlng
+        })
+    },
+    update: function () {
+        if (mapObj == null || !focused) { return; }
+        getPlayerLocation(function(location) {
+            player.lat = parseFloat(location[0]);
+            player.lng = parseFloat(location[1]);
+            player.latlng = new google.maps.LatLng(player.lat, player.lng);
+            mapObj.panTo(player.latlng);
+            player.updateMarker();
+        })
     }
 }
 
 function requester(r, fn, cb) {
     if (r == null) {
         alert("No response from " + fn + ". Server may be down.");
-    } else {
+    } else if (typeof cb == 'function') {
         cb(r);
     }
 }
@@ -45,12 +68,22 @@ function getMapData(cb) {
 
 function getPlayerLocation(cb) {
     var location;
+    var fn = arguments.callee.name;
+
     $.ajax({
         url: 'location',
         type: 'GET',
         dataType: 'json',
-        success: function(r) { requester(r["location"], arguments.callee.name, cb); }
+        success: function(r) { requester(r["location"], fn, cb); }
     });
+}
+
+function createIcon(path) {
+    var image = {
+        url: path,
+        scaledSize: new google.maps.Size(imgWidth, imgHeight)
+    }
+    return image;
 }
 
 function initializeMap() {
@@ -58,38 +91,12 @@ function initializeMap() {
     console.log("Initializing map");
     mapObj = new google.maps.Map(document.getElementById('map'), {
           center: {lat: 37.4419, lng: -122.1419},
-          zoom: 17,
+          zoom: 16,
           minZoom: 12
     });
-    followPlayer();
 }
 
-function createIcon(url) {
-    return new google.maps.Icon({
-        url: url,
-        scaledSize: new google.maps.Size({
-            width: imgWidth,
-            height: imgHeight
-        })
-    })
-}
-
-function initializePlayer() {
-
-}
-
-function followPlayer() {
-    if (map == null || !focused) { return; }
-    getPlayerLocation(function(location) {
-        console.log(location[0], location[1]);
-        var latlng = new google.maps.LatLng(parseFloat(location[0]), parseFloat(location[1]));
-        map.panTo(latlng);
-    });
-}
-
-
-function updateMarker() { }
 $(function() {
     setInterval(getMapData, 5000);
-    setInterval(followPlayer, 250)
+    setInterval(player.update, 250)
 })
