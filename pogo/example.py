@@ -78,10 +78,10 @@ if __name__ == "__main__":
         session = poko_session.authenticate(args.location)
     except Exception as e:
         logging.error('Could not log in. Double check your login credentials. The servers may also be down.')
-
+        raise e
     if session:
-        mh = MapHandler(session, args.geo_key)
-        bot = Bot(session)
+        bot = Bot(session, poko_session)
         bot.run()
+        mh = MapHandler(session, args.geo_key)
     else:
         logging.critical('Session not created successfully')

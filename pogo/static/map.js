@@ -5,21 +5,23 @@
 var focused = true;
 var mapObj = null;
 var iconPath = "static/icons/"
-var playerUpdateTime = 250;
+var playerUpdateTime = 350;
 var imgWidth = 45;
 var imgHeight = 45;
 
 var player = {
-    img_name: 'player1R.gif',
+    img_name: 'player1',
     marker: '',
+    dir : 'R', // Direction 'R' or 'L'
     lat: 0,
     lng: 0,
     latLng: null,
+    posChanged: false,
     initializeMarker: function() {
         player.marker = new google.maps.Marker({
             map: mapObj,
             position: player.latlng,
-            icon: createIcon(iconPath + player.img_name),
+            icon: createIcon(player.getIconName()),
             optimized: false,
             zIndex: 2,
             visible: true
@@ -28,22 +30,42 @@ var player = {
     updateImage: function() {
 
     },
+    getIconName: function() {
+        return iconPath + player.img_name + player.dir + ".gif";
+    },
     updateMarker: function() {
         if (mapObj == null) { return; }
         if (player.marker == '') { player.initializeMarker(); }
-        animate.ease({
-            marker: player.marker,
-            start: player.marker.getPosition(),
-            end: player.latlng
-        })
+        var icon = player.marker.getIcon();
+        var iconName = player.getIconName();
+        if(icon.url != iconName) {
+            icon.url = iconName;
+            player.marker.setIcon(icon);
+        }
+        if (player.posChanged) {
+            setTimeout(function() {
+                animate.ease({
+                    map: mapObj,
+                    marker: player.marker,
+                    start: player.marker.getPosition(),
+                    end: player.latlng
+                })
+            }, 0)
+        }
     },
     update: function () {
         if (mapObj == null || !focused) { return; }
         getPlayerLocation(function(location) {
             player.lat = parseFloat(location[0]);
-            player.lng = parseFloat(location[1]);
+            var lng = parseFloat(location[1]);
+            if (player.lng.toFixed(5) != lng.toFixed(5)) {
+                player.posChanged = true;
+                player.dir = player.lng > lng ? 'L' : 'R';
+            } else {
+                player.posChanged = false;
+            }
+            player.lng = lng;
             player.latlng = new google.maps.LatLng(player.lat, player.lng);
-            mapObj.panTo(player.latlng);
             player.updateMarker();
         })
     }
@@ -87,7 +109,6 @@ function createIcon(path) {
 }
 
 function initializeMap() {
-    console.log("initialize");
     console.log("Initializing map");
     mapObj = new google.maps.Map(document.getElementById('map'), {
           center: {lat: 37.4419, lng: -122.1419},

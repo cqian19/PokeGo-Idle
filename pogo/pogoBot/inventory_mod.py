@@ -1,3 +1,4 @@
+from pogoAPI.inventory import items
 import logging
 import time
 
@@ -55,3 +56,24 @@ class inventoryHandler():
         egg = inventory["eggs"][0]
         incubator = inventory["incubators"][0]
         return self.session.setEgg(incubator, egg)
+
+    def cleanInventory(session):
+        logging.info("Cleaning out Inventory...")
+        bag = session.checkInventory().bag
+
+        # Clear out all of a crtain type
+        tossable = [items.POTION, items.SUPER_POTION, items.REVIVE]
+        for toss in tossable:
+            if toss in bag and bag[toss]:
+                session.recycleItem(toss, bag[toss])
+
+        # Limit a certain type
+        limited = {
+            items.POKE_BALL: 50,
+            items.GREAT_BALL: 100,
+            items.ULTRA_BALL: 150,
+            items.RAZZ_BERRY: 25
+        }
+        for limit in limited:
+            if limit in bag and bag[limit] > limited[limit]:
+                session.recycleItem(limit, bag[limit] - limited[limit])

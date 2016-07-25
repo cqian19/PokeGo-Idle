@@ -5,12 +5,12 @@ $(
     animate = {
         ease: function(options) {
             defaultOptions = {
+                map: null,
                 marker: null,
                 start: new google.maps.LatLng(0, 0),
                 end: new google.maps.LatLng(0, 0),
-                step: 17,
                 duration: playerUpdateTime,
-                easing: 'easeInOutQuint',
+                easing: 'linear',
                 complete: null
             }
             options = options || {};
@@ -20,28 +20,31 @@ $(
             if (!jQuery.easing[options.easing]) {
                 options.easing = defaultOptions.easing;
             }
-            animate.doAnimate(options);
+            animate.doAnimate(options)
         },
         doAnimate: function(options) {
-            console.log(options);
-            var time = 0;
-            var done_ratio = 0;
+            var startTime = (new Date()).getTime();
+            var curTime = startTime;
+            var doneRatio = 0;
+            var elapsed = 0;
             var diffLat = options.end.lat() - options.start.lat();
             var diffLng = options.end.lng() - options.start.lng();
-            while (time < options.duration) {
-                setTimeout(function() { animate.doStep (options, done_ratio, time, diffLat, diffLng) }, time == 0 ? 0 : options.step);
-                time += options.step;
-                done_ratio = time / options.duration;
+            while (doneRatio < 1) {
+                animate.doStep (options, elapsed, doneRatio, diffLat, diffLng);
+                curTime = (new Date()).getTime();
+                elapsed = curTime - startTime;
+                doneRatio = elapsed / options.duration;
             }
         },
-        doStep: function(options, doneRatio, time, diffLat, diffLng) {
+        doStep: function(options, elapsed, doneRatio, diffLat, diffLng) {
             var marker = options.marker;
             var method = options.easing;
+            var map = options.map;
             var duration = options.duration;
-            newLat = jQuery.easing[method](null, doneRatio, options.start.lat(), diffLat, duration);
-            newLng = jQuery.easing[method](null, doneRatio, options.start.lng(), diffLng, duration);
-            console.log(time, options.duration, newLat, newLng);
-            marker.setPosition(new google.maps.LatLng(newLat, newLng));
+            var doneRatioEased = jQuery.easing[method](null, elapsed, 0, 1, duration);
+            var newLoc = new google.maps.LatLng(options.start.lat() + diffLat * doneRatioEased, options.start.lng() + diffLng * doneRatioEased);
+            marker.setPosition(newLoc);
+            map.panTo(newLoc);
         }
     }
 )
