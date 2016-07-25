@@ -251,7 +251,7 @@ class PogoSession():
         return self.state.profile
 
     # Get Location
-    def getMapObjects(self, radius=10):
+    def getMapObjects(self, radius=45):
         # Work out location details
         cells = self.location.getCells(radius)
         latitude, longitude, _ = self.getCoordinates()
@@ -279,6 +279,7 @@ class PogoSession():
 
     def getAllPokemon(self):
         cells = self.getMapObjects()
+        print(len(cells.map_cells))
         pokemon = []
         for cell in cells.map_cells:
             for poke in cell.wild_pokemons:
