@@ -1,65 +1,68 @@
 from pogoAPI.location import Location
 from pokedex import pokedex
 from pogoAPI.inventory import items
-from pogoApi.custom_exceptions import GeneralPogoException
+from pogoAPI.custom_exceptions import GeneralPogoException
+from mod import Handler
 import logging
 import time
 
 
-class pokemonHandler():
-    def __init__(self, session):
-        self.session = session
+class pokemonHandler(Handler):
 
     # Grab the nearest pokemon details
-    def findBestPokemon(session):
+    def findBestPokemon(self):
         # Get Map details and print pokemon
         logging.info("Finding Nearby Pokemon:")
-        cells = session.getMapObjects()
+        cellsList = self.session.getMapObjects()
         closest = float("Inf")
         best = -1
         pokemonBest = None
-        latitude, longitude, _ = session.getCoordinates()
+        latitude, longitude, _ = self.session.getCoordinates()
         logging.info("Current pos: %f, %f" % (latitude, longitude))
-        for cell in cells.map_cells:
-            # Heap in pokemon protos where we have long + lat
-            pokemons = [p for p in cell.wild_pokemons] + [p for p in cell.catchable_pokemons]
-            for pokemon in pokemons:
-                # Normalize the ID from different protos
-                pokemonId = getattr(pokemon, "pokemon_id", None)
-                if not pokemonId:
-                    pokemonId = pokemon.pokemon_data.pokemon_id
+        seenIds = {}
+        for cells in cellsList:
+            for cell in cells.map_cells:
+                # Heap in pokemon protos where we have long + lat
+                pokemons = [p for p in cell.wild_pokemons] + [p for p in cell.catchable_pokemons]
+                for pokemon in pokemons:
+                    if pokemon.encounter_id in seenIds: continue
+                    seenIds[pokemon.encounter_id] = True
+                    # Normalize the ID from different protos
+                    pokemonId = getattr(pokemon, "pokemon_id", None)
+                    if not pokemonId:
+                        pokemonId = pokemon.pokemon_data.pokemon_id
 
-                # Find distance to pokemon
-                dist = Location.getDistance(
-                    latitude,
-                    longitude,
-                    pokemon.latitude,
-                    pokemon.longitude
-                )
+                    # Find distance to pokemon
+                    dist = Location.getDistance(
+                        latitude,
+                        longitude,
+                        pokemon.latitude,
+                        pokemon.longitude
+                    )
 
-                # Log the pokemon found
-                logging.info("%s, %f meters away" % (
-                    pokedex[pokemonId],
-                    dist
-                ))
+                    # Log the pokemon found
+                    logging.info("%s, %f meters away" % (
+                        pokedex[pokemonId],
+                        dist
+                    ))
 
-                rarity = pokedex.getRarityById(pokemonId)
-                # Greedy for rarest
-                if rarity > best:
-                    pokemonBest = pokemon
-                    best = rarity
-                    closest = dist
-                # Greedy for closest of same rarity
-                elif rarity == best and dist < closest:
-                    pokemonBest = pokemon
-                    closest = dist
+                    rarity = pokedex.getRarityById(pokemonId)
+                    # Greedy for rarest
+                    if rarity > best:
+                        pokemonBest = pokemon
+                        best = rarity
+                        closest = dist
+                    # Greedy for closest of same rarity
+                    elif rarity == best and dist < closest:
+                        pokemonBest = pokemon
+                        closest = dist
         return pokemonBest
 
     # Catch a pokemon at a given point
     def walkAndCatch(self, pokemon):
         if pokemon:
             logging.info("Catching %s:" % pokedex[pokemon.pokemon_data.pokemon_id])
-            self.session.walkTo(pokemon.latitude, pokemon.longitude, step=3.2)
+            self.session.walkTo(pokemon.latitude, pokemon.longitude)
             logging.info(self.encounterAndCatch(pokemon))
 
     # Wrap both for ease
@@ -128,7 +131,7 @@ class pokemonHandler():
                 logging.info("Over catch limit")
                 return None
 
-    def cleanPokemon(self, thresholdCP=50):
+    def cleanPokemon(self, thresholdCP=250):
         logging.info("Cleaning out Pokemon...")
         party = self.session.checkInventory().party
         evolables = [pokedex.PIDGEY, pokedex.RATTATA, pokedex.ZUBAT]

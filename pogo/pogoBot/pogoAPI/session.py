@@ -21,11 +21,14 @@ from custom_exceptions import GeneralPogoException
 from inventory import Inventory, items
 from location import Location
 from state import State
+from pokedex import pokedex
+from util import drange
 
 import requests
 import logging
 import time
 import random
+import threading
 
 # Hide errors (Yes this is terrible, but prettier)
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -34,14 +37,21 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 API_URL = 'https://pgorelease.nianticlabs.com/plfe/rpc'
 RPC_ID = int(random.random() * 10 ** 12)
 
+degToM = 1/(111.32*1000)
+searchLength = 1200 # m
+step = 300 * degToM
 
 class PogoSession():
+
+    lock = threading.Lock()
 
     def __init__(self, session, authProvider, accessToken, location):
         self.session = session
         self.authProvider = authProvider
         self.accessToken = accessToken
         self.location = location
+        self.lastCells = []
+        self.lastMapObjectTime = time.time()
         self._state = State()
 
         self.authTicket = None
@@ -253,56 +263,64 @@ class PogoSession():
         return self._state.profile
 
     # Get Location
-    def getMapObjects(self, radius=45):
-        # Work out location details
-        cells = self.location.getCells(radius)
-        latitude, longitude, _ = self.getCoordinates()
-        timestamps = [0, ] * len(cells)
+    def getMapObjects(self, radius=10):
+        if (self.lock.locked() or time.time() - self.lastMapObjectTime < 5) and self.lastCells: return self.lastCells
+        with self.lock:
+            latitude, longitude, _ = self.getCoordinates()
+            distDeg = (searchLength/2) * degToM
+            startLat, startLon = latitude + distDeg, longitude - distDeg
+            endLat, endLon = latitude - distDeg, longitude + distDeg
 
-        # Create request
-        payload = [Request_pb2.Request(
-            request_type=RequestType_pb2.GET_MAP_OBJECTS,
-            request_message=GetMapObjectsMessage_pb2.GetMapObjectsMessage(
-                cell_id=cells,
-                since_timestamp_ms=timestamps,
-                latitude=latitude,
-                longitude=longitude
-            ).SerializeToString()
-        )]
-
-        # Send
-        res = self.wrapAndRequest(payload)
-
-        # Parse
-        self._state.mapObjects.ParseFromString(res.returns[0])
-
-        # Return everything
-        return self._state.mapObjects
+            objectCells = []
+            y, x = startLat, startLon
+            print(startLat, endLat, startLon, endLon)
+            for y in drange(startLat, endLat, -step):
+                for x in drange(startLon, endLon, step):
+                    cells = self.location.getCells(radius, y, x)
+                    timestamps = [0, ] * len(cells)
+                    # Create request
+                    payload = [Request_pb2.Request(
+                        request_type=RequestType_pb2.GET_MAP_OBJECTS,
+                        request_message=GetMapObjectsMessage_pb2.GetMapObjectsMessage(
+                            cell_id=cells,
+                            since_timestamp_ms=timestamps,
+                            latitude=y,
+                            longitude=x
+                        ).SerializeToString()
+                    )]
+                    # Send
+                    res = self.wrapAndRequest(payload)
+                    # Parse
+                    self._state.mapObjects.ParseFromString(res.returns[0])
+                    objectCells.append(self._state.mapObjects)
+            self.lastCells = objectCells
+            self.lastMapObjectTime = time.time()
+            return objectCells
 
     def getAllPokemon(self):
-        cells = self.getMapObjects()
-        print(len(cells.map_cells))
-        pokemon = []
-        for cell in cells.map_cells:
-            for poke in cell.wild_pokemons:
-                pokemon.append(poke)
-        return pokemon
-
-    def cleanPokemon(self, cells=''):
-        r = []
-        if not cells:
-            pokemons = self.session.getAllPokemon()
-        else:
-            pokemons = []
+        cellsList = self.getMapObjects()
+        allPokemon = []
+        seenIds = {}
+        for cells in cellsList:
+            pokemon = []
             for cell in cells.map_cells:
-                pokemons.extend(cell.wild_pokemons)
+                for poke in cell.wild_pokemons:
+                    if poke.encounter_id not in seenIds:
+                        pokemon.append(poke)
+                        seenIds[poke.encounter_id] = True
+            allPokemon.extend(pokemon)
+        return allPokemon
+
+    def cleanPokemon(self):
+        r = []
+        pokemons = self.getAllPokemon()
 
         for poke in pokemons:
             r.append({
-                'data': {
-                    'poke_id': poke.pokemon_data.pokemon_id,
-                    'cp': poke.pokemon_data.cp
-                },
+                'encounter_id': poke.encounter_id,
+                'pokemon_id': poke.pokemon_data.pokemon_id,
+                'cp': poke.pokemon_data.cp,
+                'name': pokedex[poke.pokemon_data.pokemon_id],
                 'latitude': poke.latitude,
                 'longitude': poke.longitude,
                 'time_remaining': poke.time_till_hidden_ms
@@ -310,32 +328,39 @@ class PogoSession():
         return r
 
     def getAllForts(self):
-        cells = self.getMapObjects()
-        forts = []
-        for cell in cells.map_cells:
-            for fort in cell.forts:
-                forts.append(fort)
-        return forts
+        cellsList = self.getMapObjects()
+        allForts = []
+        seenIds = {}
+        for cells in cellsList:
+            forts = []
+            for cell in cells.map_cells:
+                for fort in cell.forts:
+                    if fort.id not in seenIds:
+                        forts.append(fort)
+                        seenIds[fort.id] = True
+            allForts.extend(forts)
+        return allForts
 
     def getAllStops(self):
         # Forts with type 1 are Pokestops
         return filter(lambda f: f.type == 1, self.getAllForts())
 
-    def cleanStops(self, cells=''):
+    def cleanStops(self):
         r = []
-        if not cells:
-            stops = self.getAllStops()
-        else:
-            stops = []
-            for cell in cells.map_cells:
-                stops.extend(filter(lambda f: f.type == 1, cell.forts))
-
+        stops = self.getAllStops()
+        plat, plon, alt = self.location.getCoordinates()
+        seenIds = {}
         for stop in stops:
-            r.append({
-                'latitude': stop.latitude,
-                'longitude': stop.longitude,
-                'enabled': stop.enabled,
-            })
+            if self.location.getDistance(plat, plon, stop.latitude, stop.longitude) < 200:
+                if stop.id not in seenIds:
+                    seenIds[stop.id] = True
+                    r.append({
+                        'id': stop.id,
+                        'latitude': stop.latitude,
+                        'longitude': stop.longitude,
+                        'enabled': stop.enabled,
+                        'lure': bool(stop.lure_info.encounter_id)
+                    })
         return r
 
     # Get Location
@@ -423,10 +448,8 @@ class PogoSession():
                 normalized_hit_position=1.0
             ).SerializeToString()
         )]
-
         # Send
-        res = self.wrapAndRequest(payload)
-
+        res = self.wrapAndRequest(payload, False)
         # Parse
         self._state.catch.ParseFromString(res.returns[0])
 
@@ -539,10 +562,7 @@ class PogoSession():
     # These act as more logical functions.
     # Might be better to break out seperately
     # Walk over to position in meters
-    def walkTo(self, olatitude, olongitude, epsilon=10, step=7.5):
-        if step >= epsilon:
-            raise GeneralPogoException("Walk may never converge")
-
+    def walkTo(self, olatitude, olongitude, epsilon=10, step=20):
         # Calculate distance to position
         latitude, longitude, _ = self.getCoordinates()
         dist = closest = Location.getDistance(
@@ -554,6 +574,9 @@ class PogoSession():
 
         # Run walk
         divisions = closest / step
+        print(closest, step)
+        if (abs(divisions) < 1):
+            divisions = 1
         dLat = (latitude - olatitude) / divisions
         dLon = (longitude - olongitude) / divisions
 
