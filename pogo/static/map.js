@@ -6,8 +6,6 @@ var focused = true;
 var mapObj = null;
 var iconPath = "static/icons/"
 var playerUpdateTime = 350;
-var imgWidth = 45;
-var imgHeight = 45;
 
 var player = {
     img_name: 'player1',
@@ -18,19 +16,20 @@ var player = {
     latLng: null,
     posChanged: false,
     initializeMarker: function() {
+        if (player.marker) { return; }
         player.marker = new SlidingMarker({
             map: mapObj,
             position: player.latLng,
-            icon: createIcon(player.getIconName()),
+            icon: createIcon(player.getIconName(), 45, 45),
             optimized: false,
+            duration: playerUpdateTime,
+            easing: 'linear',
             zIndex: 2,
-            visible: true,
-            duration: playerUpdateTime
+            visible: true
         })
-        console.log(player.marker);
     },
     updateImage: function() {
-
+        // Different player gifs?
     },
     getIconName: function() {
         return iconPath + player.img_name + player.dir + ".gif";
@@ -46,7 +45,7 @@ var player = {
         }
         if (player.posChanged) {
             player.marker.setPosition(player.latLng);
-            mapObj.panTo(player.latLng);
+            setTimeout(function() { mapObj.panTo(player.latLng); }, playerUpdateTime/2.35);
         }
     },
     update: function () {
@@ -67,6 +66,41 @@ var player = {
     }
 }
 
+var mapObjects = {
+    displayedPokemon: {},
+    displayedForts: {},
+    _createPokemonMarker: function(poke) {
+        console.log(poke);
+        var marker = new google.maps.Marker({
+            map: mapObj,
+            position: new google.maps.LatLng(poke.latitude, poke.longitude),
+            icon: createIcon(iconPath + poke.pokemon_id + '.png', 32, 32)
+        })
+        return marker;
+    },
+    updatePokemon: function(pokemonData) {
+        for (var key in pokemonData) {
+            var poke = pokemonData[key];
+            if (!mapObjects.displayedPokemon[poke.encounter_id]) {
+                mapObjects.displayedPokemon[poke.encounter_id] = mapObjects._createPokemonMarker(poke);
+            }
+        }
+    },
+    updateForts: function(fortData) {
+
+    },
+    update: function() {
+        if (mapObj == null) { return; }
+        getMapData(function(data) {
+            if (data["pokemon"] == undefined || data["forts"] == undefined) {
+                alert("Error getting map data");
+                return;
+            }
+            mapObjects.updatePokemon(data["pokemon"]);
+            mapObjects.updateForts(data["forts"]);
+        })
+    }
+}
 function requester(r, fn, cb) {
     if (r == null) {
         alert("No response from " + fn + ". Server may be down.");
@@ -96,10 +130,10 @@ function getPlayerLocation(cb) {
     });
 }
 
-function createIcon(path) {
+function createIcon(path, width, height) {
     var image = {
         url: path,
-        scaledSize: new google.maps.Size(imgWidth, imgHeight)
+        scaledSize: new google.maps.Size(width, height)
     }
     return image;
 }
@@ -114,6 +148,7 @@ function initializeMap() {
     makeSliding();
     makeAnimate();
     setInterval(getMapData, 5000);
-    setInterval(player.update, 250)
-    console.log("Done")
+    setInterval(player.update, 250);
+    setInterval(mapObjects.update, 2000);
+    console.log("Done");
 }
