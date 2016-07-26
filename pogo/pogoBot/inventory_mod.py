@@ -1,12 +1,10 @@
 from pogoAPI.inventory import items
+from mod import Handler
 import logging
 import time
 
 
-class inventoryHandler():
-
-    def __init__(self,session):
-        self.session = session
+class inventoryHandler(Handler):
 
     # Get profile
     def getProfile(self):
@@ -58,8 +56,6 @@ class inventoryHandler():
         logging.info("Cleaning out Inventory...")
         bag = self.session.checkInventory().bag
         logging.info("Current inventory: ")
-        for key in bag:
-            print("\n\t{0}: {1}".format(items[key], bag[key]))
         # Clear out all of a crtain type
         tossable = [items.POTION, items.SUPER_POTION, items.REVIVE]
         keep = {

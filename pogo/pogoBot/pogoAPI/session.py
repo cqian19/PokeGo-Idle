@@ -23,6 +23,7 @@ from location import Location
 from state import State
 from pokedex import pokedex
 from util import drange
+from datetime import datetime
 
 import requests
 import logging
@@ -319,7 +320,6 @@ class PogoSession():
             r.append({
                 'encounter_id': poke.encounter_id,
                 'pokemon_id': poke.pokemon_data.pokemon_id,
-                'cp': poke.pokemon_data.cp,
                 'name': pokedex[poke.pokemon_data.pokemon_id],
                 'latitude': poke.latitude,
                 'longitude': poke.longitude,
@@ -351,7 +351,7 @@ class PogoSession():
         plat, plon, alt = self.location.getCoordinates()
         seenIds = {}
         for stop in stops:
-            if self.location.getDistance(plat, plon, stop.latitude, stop.longitude) < 200:
+            if self.location.getDistance(plat, plon, stop.latitude, stop.longitude) < 300:
                 if stop.id not in seenIds:
                     seenIds[stop.id] = True
                     r.append({

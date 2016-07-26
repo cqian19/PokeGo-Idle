@@ -15,6 +15,7 @@ class Bot():
         self.fh = fort_mod.fortHandler(session)
         self.ih = inventory_mod.inventoryHandler(session)
         self.ph = pokemon_mod.pokemonHandler(session)
+        self.mods = [self.fh, self.ih, self.ph]
 
     # Basic bot
     def main(self):
@@ -23,32 +24,37 @@ class Bot():
 
         # Run the bot
         while True:
+            time.sleep(1)
             forts = self.fh.sortCloseForts()
             self.ph.cleanPokemon(thresholdCP=300)
-            self.ph.cleanInventory()
+            self.ih.cleanInventory()
             try:
                 for fort in forts:
                     pokemon = self.ph.findBestPokemon()
-                    self.walkAndCatch(pokemon)
-                    self.walkAndSpin(fort)
+                    self.ph.walkAndCatch(pokemon)
+                    self.fh.walkAndSpin(fort)
                     cooldown = 1
-                    time.sleep(1)
 
             # Catch problems and reauthenticate
             except GeneralPogoException as e:
                 logging.critical('GeneralPogoException raised: %s', e)
-                session = self.poko_session.reauthenticate(session)
+                self.session = self.poko_session.reauthenticate(self.session)
+                for mod in self.mods:
+                    mod.setSession(self.session)
                 time.sleep(cooldown)
                 cooldown *= 2
 
             except Exception as e:
                 logging.critical('Exception raised: %s', e)
-                session = self.poko_session.reauthenticate(session)
+                self.session = self.poko_session.reauthenticate(self.session)
+                for mod in self.mods:
+                    mod.setSession(self.session)
                 time.sleep(cooldown)
                 cooldown *= 2
 
     def run (self):
-        self.mainThread = threading.Thread(target=self.main)
+        if not hasattr(self, 'mainThread'):
+            self.mainThread = threading.Thread(target=self.main)
         self.mainThread.start()
 
     def stop(self):

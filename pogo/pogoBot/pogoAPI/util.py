@@ -1,6 +1,17 @@
 import struct
 import time
 
+def drange(start, end, step):
+    assert step != 0
+    if step < 0:
+        while start > end:
+            yield start
+            start += step
+    else:
+        while start < end:
+            yield start
+            start += step
+
 
 def f2i(float):
     return struct.unpack('<Q', struct.pack('<d', float))[0]

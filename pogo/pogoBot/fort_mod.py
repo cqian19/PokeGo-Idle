@@ -1,10 +1,9 @@
 import logging
 from pogoAPI.location import Location
+from mod import Handler
 
-class fortHandler():
 
-    def __init__(self, session):
-        self.session = session
+class fortHandler(Handler):
 
     # Basic solution to spinning all forts.
     # Since traveling salesman problem, not
@@ -38,6 +37,7 @@ class fortHandler():
     def walkAndSpin(self, fort):
         # No fort, demo == over
         if fort:
+            print(fort)
             logging.info("Spinning a Fort:")
             # Walk over
             self.session.walkTo(fort.latitude, fort.longitude)
