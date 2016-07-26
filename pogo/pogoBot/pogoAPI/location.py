@@ -1,7 +1,11 @@
 from geopy.geocoders import GoogleV3
 from s2sphere import CellId, LatLng
 from custom_exceptions import GeneralPogoException
+from geopy import Point, distance
 import gpxpy.geo
+import time
+import math
+
 
 # Wrapper for location
 class Location(object):
@@ -62,7 +66,22 @@ class Location(object):
 
         return neighbors
 
-    def getCells(self, radius=10, lat=0, lon=0):
+    def getCells(self, lat=0, lon=0):
         if not lat: lat = self.latitude
         if not lon: lon = self.longitude
         return self.getNeighbors(lat, lon)
+
+    def getAllSteps(self, radius=200):
+        distPerStep = 200
+        steps = math.ceil(radius/distPerStep)
+        start = list(self.getCoordinates()[:2])
+        lat, lon = start
+        origin = Point(lat, lon)
+        allSteps = [start]
+        angleBetween = 60
+        for s in range(1, steps + 1):
+            for d in range(0, 360, int(angleBetween/s)):
+                destination = distance.VincentyDistance(meters=s*distPerStep).destination(origin, d)
+                allSteps.append([destination.latitude, destination.longitude])
+        print(allSteps)
+        return allSteps

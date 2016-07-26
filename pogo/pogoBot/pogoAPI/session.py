@@ -22,8 +22,6 @@ from inventory import Inventory, items
 from location import Location
 from state import State
 from pokedex import pokedex
-from util import drange
-from datetime import datetime
 
 import requests
 import logging
@@ -37,10 +35,6 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 API_URL = 'https://pgorelease.nianticlabs.com/plfe/rpc'
 RPC_ID = int(random.random() * 10 ** 12)
-
-degToM = 1/(111.32*1000)
-searchLength = 1200 # m
-step = 300 * degToM
 
 class PogoSession():
 
@@ -264,38 +258,31 @@ class PogoSession():
         return self._state.profile
 
     # Get Location
-    def getMapObjects(self, radius=10):
-        if (self.lock.locked() or time.time() - self.lastMapObjectTime < 5) and self.lastCells: return self.lastCells
+    def getMapObjects(self, radius=600):
+        if (self.lock.locked() or time.time() - self.lastMapObjectTime < 10) and self.lastCells: return self.lastCells
         with self.lock:
-            latitude, longitude, _ = self.getCoordinates()
-            distDeg = (searchLength/2) * degToM
-            startLat, startLon = latitude + distDeg, longitude - distDeg
-            endLat, endLon = latitude - distDeg, longitude + distDeg
-
             objectCells = []
-            y, x = startLat, startLon
-            print(startLat, endLat, startLon, endLon)
-            for y in drange(startLat, endLat, -step):
-                for x in drange(startLon, endLon, step):
-                    cells = self.location.getCells(radius, y, x)
-                    timestamps = [0, ] * len(cells)
-                    # Create request
-                    payload = [Request_pb2.Request(
-                        request_type=RequestType_pb2.GET_MAP_OBJECTS,
-                        request_message=GetMapObjectsMessage_pb2.GetMapObjectsMessage(
-                            cell_id=cells,
-                            since_timestamp_ms=timestamps,
-                            latitude=y,
-                            longitude=x
-                        ).SerializeToString()
-                    )]
-                    # Send
-                    res = self.wrapAndRequest(payload)
-                    # Parse
-                    self._state.mapObjects.ParseFromString(res.returns[0])
-                    objectCells.append(self._state.mapObjects)
-            self.lastCells = objectCells
-            self.lastMapObjectTime = time.time()
+            allSteps = self.location.getAllSteps(radius)
+            for (lat, lon) in allSteps:
+                cells = self.location.getCells(lat, lon)
+                timestamps = [0, ] * len(cells)
+                # Create request
+                payload = [Request_pb2.Request(
+                    request_type=RequestType_pb2.GET_MAP_OBJECTS,
+                    request_message=GetMapObjectsMessage_pb2.GetMapObjectsMessage(
+                        cell_id=cells,
+                        since_timestamp_ms=timestamps,
+                        latitude=lat,
+                        longitude=lon
+                    ).SerializeToString()
+                )]
+                # Send
+                res = self.wrapAndRequest(payload)
+                # Parse
+                self._state.mapObjects.ParseFromString(res.returns[0])
+                objectCells.append(self._state.mapObjects)
+                self.lastCells = objectCells
+                self.lastMapObjectTime = time.time()
             return objectCells
 
     def getAllPokemon(self):
@@ -305,7 +292,9 @@ class PogoSession():
         for cells in cellsList:
             pokemon = []
             for cell in cells.map_cells:
+                print("New Cell")
                 for poke in cell.wild_pokemons:
+                    print(poke)
                     if poke.encounter_id not in seenIds:
                         pokemon.append(poke)
                         seenIds[poke.encounter_id] = True
