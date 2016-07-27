@@ -71,8 +71,9 @@ class Location(object):
         if not lon: lon = self.longitude
         return self.getNeighbors(lat, lon)
 
-    def getAllSteps(self, radius=200):
+    """def getAllSteps(self, radius=200):
         distPerStep = 200
+        radius = max(radius, distPerStep)
         steps = math.ceil(radius/distPerStep)
         start = list(self.getCoordinates()[:2])
         lat, lon = start
@@ -83,5 +84,4 @@ class Location(object):
             for d in range(0, 360, int(angleBetween/s)):
                 destination = distance.VincentyDistance(meters=s*distPerStep).destination(origin, d)
                 allSteps.append([destination.latitude, destination.longitude])
-        print(allSteps)
-        return allSteps
+        return allSteps"""

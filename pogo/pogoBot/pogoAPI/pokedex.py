@@ -251,7 +251,7 @@ class Pokedex(dict):
         }
 
     def getRarityByName(self, name):
-        return self.RarityById(self[name])
+        return self.getRarityById(self[name])
 
     def getRarityById(self, pokemonId):
         for rarity in self.rarity:

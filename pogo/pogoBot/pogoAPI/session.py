@@ -180,7 +180,6 @@ class PogoSession():
                         'id': stop.id,
                         'latitude': stop.latitude,
                         'longitude': stop.longitude,
-                        'enabled': stop.enabled,
                         'lure': bool(stop.lure_info.encounter_id)
                     })
         return r
@@ -349,7 +348,6 @@ class PogoSession():
 
         # Run walk
         divisions = closest / step
-        print(closest, step)
         if (abs(divisions) < 1):
             divisions = 1
         dLat = (latitude - olatitude) / divisions

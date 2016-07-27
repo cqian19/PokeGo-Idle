@@ -143,28 +143,28 @@ class Getter():
         return self._state.fortDetails
 
     # Hooks for those bundled in default
-    def getMapObjects(self, radius=600):
+    def getMapObjects(self, radius=1000):
         with self.lock:
             objectCells = []
-            allSteps = self.location.getAllSteps(radius)
-            for (lat, lon) in allSteps:
-                cells = self.location.getCells(lat, lon)
-                timestamps = [0, ] * len(cells)
-                # Create request
-                payload = [Request_pb2.Request(
-                    request_type=RequestType_pb2.GET_MAP_OBJECTS,
-                    request_message=GetMapObjectsMessage_pb2.GetMapObjectsMessage(
-                        cell_id=cells,
-                        since_timestamp_ms=timestamps,
-                        latitude=lat,
-                        longitude=lon
-                    ).SerializeToString()
-                )]
-                # Send
-                res = self.session.wrapAndRequest(payload)
-                # Parse
-                self._state.mapObjects.ParseFromString(res.returns[0])
-                objectCells.append(self._state.mapObjects)
+            lat, lon, alt = self.getCoordinates()
+            # allSteps = self.location.getAllSteps(radius)
+            cells = self.location.getCells(lat, lon)
+            timestamps = [0, ] * len(cells)
+            # Create request
+            payload = [Request_pb2.Request(
+                request_type=RequestType_pb2.GET_MAP_OBJECTS,
+                request_message=GetMapObjectsMessage_pb2.GetMapObjectsMessage(
+                    cell_id=cells,
+                    since_timestamp_ms=timestamps,
+                    latitude=lat,
+                    longitude=lon
+                ).SerializeToString()
+            )]
+            # Send
+            res = self.session.wrapAndRequest(payload)
+            # Parse
+            self._state.mapObjects.ParseFromString(res.returns[0])
+            objectCells.append(self._state.mapObjects)
             self.lastCells = objectCells
             self._execThread(self.getAllStops)
             self._execThread(self.getAllPokemon)
@@ -230,7 +230,8 @@ class Getter():
         t.start()
 
     def _createThreads(self):
-        mapObjThread = set_interval(self.getMapObjects, 15)
+        self.getMapObjects(200)
+        mapObjThread = set_interval(self.getMapObjects, 3)
         getProfThread = set_interval(self.getProfile, 1)
         self.threads.append(mapObjThread)
         self.threads.append(getProfThread)
