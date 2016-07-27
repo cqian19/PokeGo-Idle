@@ -12,9 +12,10 @@ class fortHandler(Handler):
     def sortCloseForts(self):
         # Sort nearest forts (pokestop)
         logging.info("Sorting Nearest Forts:")
-        latitude, longitude, _ = self.session.getCoordinates()
+        latitude, longitude, _ = self.session.getter.getCoordinates()
         ordered_forts = []
-        stops = self.session.getAllStops()
+        stops = self.session.checkAllStops()
+        print(stops)
         for fort in stops:
             dist = Location.getDistance(
                 latitude,
@@ -31,21 +32,20 @@ class fortHandler(Handler):
     def findClosestFort(self):
         # Find nearest fort (pokestop)
         logging.info("Finding Nearest Fort:")
-        return self.sortCloseForts(self.session)[0]
+        return self.sortCloseForts()[0]
 
     # Walk to fort and spin
     def walkAndSpin(self, fort):
         # No fort, demo == over
         if fort:
-            print(fort)
             logging.info("Spinning a Fort:")
             # Walk over
             self.session.walkTo(fort.latitude, fort.longitude)
             # Give it a spin
-            fortResponse = self.session.getFortSearch(fort)
+            fortResponse = self.session.getter.getFortSearch(fort)
             logging.info(fortResponse)
 
     # Walk and spin everywhere
     def walkAndSpinMany(self, forts):
         for fort in forts:
-            self.walkAndSpin(self.session, fort)
+            self.walkAndSpin(fort)

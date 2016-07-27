@@ -38,6 +38,7 @@ class Bot():
             # Catch problems and reauthenticate
             except GeneralPogoException as e:
                 logging.critical('GeneralPogoException raised: %s', e)
+                self.session.pause()
                 self.session = self.poko_session.reauthenticate(self.session)
                 for mod in self.mods:
                     mod.setSession(self.session)
@@ -46,6 +47,7 @@ class Bot():
 
             except Exception as e:
                 logging.critical('Exception raised: %s', e)
+                self.session.pause()
                 self.session = self.poko_session.reauthenticate(self.session)
                 for mod in self.mods:
                     mod.setSession(self.session)

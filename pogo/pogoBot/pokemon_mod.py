@@ -13,11 +13,11 @@ class pokemonHandler(Handler):
     def findBestPokemon(self):
         # Get Map details and print pokemon
         logging.info("Finding Nearby Pokemon:")
-        cellsList = self.session.getMapObjects()
+        cellsList = self.session.checkMapObjects()
         closest = float("Inf")
         best = -1
         pokemonBest = None
-        latitude, longitude, _ = self.session.getCoordinates()
+        latitude, longitude, _ = self.session.getter.getCoordinates()
         logging.info("Current pos: %f, %f" % (latitude, longitude))
         seenIds = {}
         for cells in cellsList:

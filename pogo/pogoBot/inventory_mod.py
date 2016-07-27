@@ -9,13 +9,13 @@ class inventoryHandler(Handler):
     # Get profile
     def getProfile(self):
         logging.info("Printing Profile:")
-        profile = self.session.getProfile()
+        profile = self.session.checkProfile()
         logging.info(profile)
 
     # Do Inventory stuff
     def getInventory(self):
         logging.info("Get Inventory:")
-        logging.info(self.session.getInventory())
+        logging.info(self.session.checkInventory())
 
 
     # A very brute force approach to evolving
