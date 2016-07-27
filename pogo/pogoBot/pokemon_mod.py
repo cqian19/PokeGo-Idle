@@ -1,11 +1,10 @@
 from pogoAPI.location import Location
-from pokedex import pokedex
+from pokedex import pokedex, Rarity
 from pogoAPI.inventory import items
 from pogoAPI.custom_exceptions import GeneralPogoException
 from mod import Handler
 import logging
 import time
-
 
 class pokemonHandler(Handler):
 
@@ -69,10 +68,12 @@ class pokemonHandler(Handler):
     def encounterAndCatch(self, pokemon, thresholdP=0.5, limit=5, delay=2):
         # Start encounter
         encounter = self.session.encounterPokemon(pokemon)
-
         # Grab needed data from proto
         chances = encounter.capture_probability.capture_probability
-        balls = encounter.capture_probability.pokeball_type
+        if not len(chances):
+            logging.error("Pokemon Inventory may be full")
+            return
+
         bag = self.session.checkInventory().bag
 
         # Have we used a razz berry yet?
@@ -80,7 +81,6 @@ class pokemonHandler(Handler):
 
         # Make sure we aren't oer limit
         count = 0
-
         # Attempt catch
         while True:
             bestBall = items.UNKNOWN
@@ -88,36 +88,41 @@ class pokemonHandler(Handler):
 
             # Check for balls and see if we pass
             # wanted threshold
-            for i in range(len(balls)):
-                if balls[i] in bag:
-                    altBall = balls[i]
+            for i in range(len(chances)):
+                j = i + 1
+                if j in bag:
+                    if not altBall:
+                        altBall = j
                     if chances[i] > thresholdP:
-                        bestBall = balls[i]
+                        bestBall = j
                         break
 
             # If we can't determine a ball, try a berry
             # or use a lower class ball
             if bestBall == items.UNKNOWN:
-                if not berried and items.RAZZ_BERRY in bag and bag[items.RAZZ_BERRY]:
+                if altBall != items.UNKNOWN and not berried and items.RAZZ_BERRY in bag and bag[items.RAZZ_BERRY]:
                     logging.info("Using a RAZZ_BERRY")
                     self.session.useItemCapture(items.RAZZ_BERRY, pokemon)
                     berried = True
                     time.sleep(delay)
                     continue
-
                 # if no alt ball, there are no balls
                 elif altBall == items.UNKNOWN:
-                    raise GeneralPogoException("Out of usable balls")
+                    logging.error("No more pokeballs. Stopping pokemon capture.")
+                    return;
                 else:
                     bestBall = altBall
 
             # Try to catch it!!
-            logging.info("Using a %s" % items[bestBall])
+            name = pokedex[pokemon.pokemon_data.pokemon_id]
+            logging.info("Catch attempt {0} for {1}. {2}% chance to capture".format(count + 1, name, round(chances[bestBall-1]*100, 2)))
+            logging.info("Using a {0}".format(items[bestBall]))
             attempt = self.session.catchPokemon(pokemon, bestBall)
             time.sleep(delay)
 
             # Success or run away
             if attempt.status == 1:
+                logging.info("Caught {0} in {1} attempt(s)!".format(name, count + 1))
                 return attempt
 
             # CATCH_FLEE is bad news
@@ -128,43 +133,31 @@ class pokemonHandler(Handler):
             # Only try up to x attempts
             count += 1
             if count >= limit:
-                logging.info("Over catch limit")
+                logging.info("Over catch limit. Was unable to catch.")
                 return None
 
     def cleanPokemon(self, thresholdCP=250):
         logging.info("Cleaning out Pokemon...")
         party = self.session.checkInventory().party
-        evolables = [pokedex.PIDGEY, pokedex.RATTATA, pokedex.ZUBAT]
-        toEvolve = {evolve: [] for evolve in evolables}
+        stored = len(party)
+        maxStorage = self.session.checkPlayerData().max_pokemon_storage
+        logging.info("Pokemon storage capacity: {0}/{1}".format(stored, maxStorage))
+        if stored/maxStorage < .8: return
+        if stored/maxStorage > .95: thresholdCP += 150
+        # evolables = [pokedex.PIDGEY, pokedex.RATTATA, pokedex.ZUBAT]
+        candies = self.session.checkInventory().candies
         for pokemon in party:
+            id = pokemon.pokemon_id
+            r = pokedex.getRarityById(id)
+            evoCandies = pokedex.evolves[id]
+            # Evolve all pokemon when possible
+            if id in candies and pokemon.cp > thresholdCP and evoCandies and candies[id] >= evoCandies:
+                logging.info("Evolving %s" % pokedex[pokemon.pokemon_id])
+                logging.info(self.session.evolvePokemon(pokemon))
+                time.sleep(.1)
             # If low cp, throw away
-            if pokemon.cp < thresholdCP:
-                # It makes more sense to evolve some,
-                # than throw away
-                if pokemon.pokemon_id in evolables:
-                    toEvolve[pokemon.pokemon_id].append(pokemon)
-                    continue
-
+            if (pokemon.cp < thresholdCP and  r < Rarity.RARE) or r < Rarity.UNCOMMON:
                 # Get rid of low CP, low evolve value
                 logging.info("Releasing %s" % pokedex[pokemon.pokemon_id])
                 self.session.releasePokemon(pokemon)
-
-        # Evolve those we want
-        for evolve in evolables:
-            candies = self.session.checkInventory().candies[evolve]
-            pokemons = toEvolve[evolve]
-            # release for optimal candies
-            while candies // pokedex.evolves[evolve] < len(pokemons):
-                pokemon = pokemons.pop()
-                logging.info("Releasing %s" % pokedex[pokemon.pokemon_id])
-                self.session.releasePokemon(pokemon)
-                time.sleep(1)
-                candies += 1
-
-            # evolve remainder
-            for pokemon in pokemons:
-                logging.info("Evolving %s" % pokedex[pokemon.pokemon_id])
-                logging.info(self.session.evolvePokemon(pokemon))
-                time.sleep(1)
-                self.session.releasePokemon(pokemon)
-                time.sleep(1)
+                time.sleep(.1)
