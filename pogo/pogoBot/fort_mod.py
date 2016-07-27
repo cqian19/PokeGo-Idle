@@ -15,7 +15,6 @@ class fortHandler(Handler):
         latitude, longitude, _ = self.session.getter.getCoordinates()
         ordered_forts = []
         stops = self.session.checkAllStops()
-        print(stops)
         for fort in stops:
             dist = Location.getDistance(
                 latitude,
