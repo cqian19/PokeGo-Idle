@@ -46,7 +46,7 @@ class Bot():
                 cooldown *= 2
 
             except Exception as e:
-                logging.critical('Exception raised: %s', e)
+                logging.exception('Exception raised: %s', e)
                 self.session.pause()
                 self.session = self.poko_session.reauthenticate(self.session)
                 for mod in self.mods:
