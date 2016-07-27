@@ -7,6 +7,8 @@ from pogoBot.pogoAPI import api
 import logging
 import argparse
 import sys
+import threading
+import time
 
 app = Flask(__name__, template_folder="templates")
 
@@ -21,6 +23,8 @@ def setupLogger():
 
 class MapHandler():
 
+    lock = threading.Lock()
+
     def __init__(self, session, geo_key):
         self.session = session
         self.maps_key = geo_key
@@ -34,14 +38,16 @@ class MapHandler():
 
     def get_map_data(self):
         data = {}
-        cells = self.session.getMapObjects()
-        data['pokemon'] = self.session.cleanPokemon(cells)
-        data['forts'] = self.session.cleanStops(cells)
+        cells = self.session.checkMapObjects()
+        data['pokemon'] = self.session.cleanPokemon()
+        data['forts'] = self.session.cleanStops()
+        for p in data['pokemon']:
+            print(p)
         return jsonify(data)
 
     def get_location(self):
         data = {
-            'location': self.session.getCoordinates()
+            'location': self.session.getter.getCoordinates()
         }
         return jsonify(data)
 
@@ -75,13 +81,13 @@ if __name__ == "__main__":
     # Location is not inherent in authentication
     # But is important to session
     try:
-        session = poko_session.authenticate(args.location)
+        pogo_session = poko_session.authenticate(args.location)
     except Exception as e:
         logging.error('Could not log in. Double check your login credentials. The servers may also be down.')
         raise e
-    if session:
-        bot = Bot(session, poko_session)
+    if pogo_session:
+        bot = Bot(pogo_session, poko_session)
         bot.run()
-        mh = MapHandler(session, args.geo_key)
+        mh = MapHandler(pogo_session, args.geo_key)
     else:
         logging.critical('Session not created successfully')
