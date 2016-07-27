@@ -22,19 +22,19 @@ from inventory import Inventory, items
 from location import Location
 from state import State
 from pokedex import pokedex
+from getter import Getter
 
 import requests
 import logging
 import time
-import random
 import threading
+import types
 
 # Hide errors (Yes this is terrible, but prettier)
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 API_URL = 'https://pgorelease.nianticlabs.com/plfe/rpc'
-RPC_ID = int(random.random() * 10 ** 12)
 
 class PogoSession():
 
@@ -44,49 +44,17 @@ class PogoSession():
         self.session = session
         self.authProvider = authProvider
         self.accessToken = accessToken
-        self.location = location
-        self.lastCells = []
-        self.lastMapObjectTime = time.time()
         self._state = State()
-
+        self.location = location
         self.authTicket = None
-        self.endpoint = None
+        self.getter = Getter(self, location, self._state)
         self.endpoint = 'https://{0}{1}'.format(
             self.createApiEndpoint(),
             '/rpc'
         )
+        self.getter.getProfile()
+        self.getter.run()
 
-        # Set up Inventory
-        self.getInventory()
-
-    def __str__(self):
-        s = 'Access Token: {0}\nEndpoint: {1}\nLocation: {2}'.format(
-            self.accessToken,
-            self.endpoint,
-            self.location
-        )
-        return s
-
-    def setCoordinates(self, latitude, longitude):
-        self.location.setCoordinates(latitude, longitude)
-        self.getMapObjects(radius=1)
-
-    def getCoordinates(self):
-        return self.location.getCoordinates()
-
-    def createApiEndpoint(self):
-        payload = []
-        msg = Request_pb2.Request(
-            request_type=RequestType_pb2.GET_PLAYER
-        )
-        payload.append(msg)
-        req = self.wrapInRequest(payload)
-        res = self.request(req, API_URL)
-        if res is None:
-            logging.critical('Servers seem to be busy. Exiting.')
-            raise Exception('Could not connect to servers')
-
-        return res.api_url
 
     def wrapInRequest(self, payload, defaults=True):
 
@@ -102,10 +70,10 @@ class PogoSession():
             )
 
         # Build Envelope
-        latitude, longitude, altitude = self.getCoordinates()
+        latitude, longitude, altitude = self.getter.getCoordinates()
         req = RequestEnvelope_pb2.RequestEnvelope(
             status_code=2,
-            request_id=self.getRPCId(),
+            request_id=self.getter.getRPCId(),
             longitude=longitude,
             latitude=latitude,
             altitude=altitude,
@@ -116,7 +84,7 @@ class PogoSession():
 
         # Add requests
         if defaults:
-            payload += self.getDefaults()
+            payload += self.getter.getDefaults()
         req.requests.extend(payload)
 
         return req
@@ -148,7 +116,7 @@ class PogoSession():
     def wrapAndRequest(self, payload, defaults=True):
         res = self.request(self.wrapInRequest(payload, defaults=defaults))
         if defaults:
-            self.parseDefault(res)
+            self.getter.parseDefault(res)
         if res is None:
             logging.critical(res)
             logging.critical('Servers seem to be busy. Exiting.')
@@ -156,155 +124,38 @@ class PogoSession():
 
         return res
 
-    @staticmethod
-    def getDefaults():
-        # Allocate for 4 default requests
-        data = [None, ] * 4
-
-        # Create Egg request
-        data[0] = Request_pb2.Request(
-            request_type=RequestType_pb2.GET_HATCHED_EGGS
+    def __str__(self):
+        s = 'Access Token: {0}\nEndpoint: {1}\nLocation: {2}'.format(
+            self.accessToken,
+            self.endpoint,
+            self.location
         )
+        return s
 
-        # Create Inventory Request
-        data[1] = Request_pb2.Request(
-            request_type=RequestType_pb2.GET_INVENTORY,
-            request_message=GetInventoryMessage_pb2.GetInventoryMessage(
-                last_timestamp_ms=0
-            ).SerializeToString()
+    def createApiEndpoint(self):
+        payload = []
+        msg = Request_pb2.Request(
+            request_type=RequestType_pb2.GET_PLAYER
         )
+        payload.append(msg)
+        req = self.wrapInRequest(payload)
+        res = self.request(req, API_URL)
+        if res is None:
+            logging.critical('Servers seem to be busy. Exiting.')
+            raise Exception('Could not connect to servers')
 
-        # Create Badge request
-        data[2] = Request_pb2.Request(
-            request_type=RequestType_pb2.CHECK_AWARDED_BADGES
-        )
-
-        # Create Settings request
-        data[3] = Request_pb2.Request(
-            request_type=RequestType_pb2.DOWNLOAD_SETTINGS,
-            request_message=DownloadSettingsMessage_pb2.DownloadSettingsMessage(
-                hash="4a2e9bc330dae60e7b74fc85b98868ab4700802e"
-            ).SerializeToString()
-        )
-
-        return data
+        return res.api_url
 
     # Parse the default responses
     def parseDefault(self, res):
-        try:
-            self._state.eggs.ParseFromString(res.returns[1])
-            self._state.inventory.ParseFromString(res.returns[2])
-            self._state.badges.ParseFromString(res.returns[3])
-            self._state.settings.ParseFromString(res.returns[4])
-        except Exception as e:
-            logging.error(e)
-            raise GeneralPogoException("Error parsing response. Malformed response")
+        self.getter.parseDefault(res)
 
-        # Finally make inventory usable
-        item = self._state.inventory.inventory_delta.inventory_items
-        self.inventory = Inventory(item)
-
-    # Hooks for those bundled in default
-    # Getters
-    def getRPCId(self):
-        global RPC_ID
-        RPC_ID = RPC_ID + 1
-        return RPC_ID
-
-    def getEggs(self):
-        self.getProfile()
-        return self._state.eggs
-
-    def getInventory(self):
-        self.getProfile()
-        return self.inventory
-
-    def getBadges(self):
-        self.getProfile()
-        return self._state.badges
-
-    def getDownloadSettings(self):
-        self.getProfile()
-        return self._state.settings
-
-    # Check, so we don't have to start another request
-    def checkEggs(self):
-        return self._state.eggs
-
-    def checkInventory(self):
-        return self.inventory
-
-    def checkBadges(self):
-        return self._state.badges
-
-    def checkDownloadSettings(self):
-        return self._state.settings
-
-    # Core api calls
-    # Get profile
-    def getProfile(self):
-        # Create profile request
-        payload = [Request_pb2.Request(
-            request_type=RequestType_pb2.GET_PLAYER
-        )]
-
-        # Send
-        res = self.wrapAndRequest(payload)
-
-        # Parse
-        self._state.profile.ParseFromString(res.returns[0])
-
-        # Return everything
-        return self._state.profile
-
-    # Get Location
-    def getMapObjects(self, radius=600):
-        if (self.lock.locked() or time.time() - self.lastMapObjectTime < 10) and self.lastCells: return self.lastCells
-        with self.lock:
-            objectCells = []
-            allSteps = self.location.getAllSteps(radius)
-            for (lat, lon) in allSteps:
-                cells = self.location.getCells(lat, lon)
-                timestamps = [0, ] * len(cells)
-                # Create request
-                payload = [Request_pb2.Request(
-                    request_type=RequestType_pb2.GET_MAP_OBJECTS,
-                    request_message=GetMapObjectsMessage_pb2.GetMapObjectsMessage(
-                        cell_id=cells,
-                        since_timestamp_ms=timestamps,
-                        latitude=lat,
-                        longitude=lon
-                    ).SerializeToString()
-                )]
-                # Send
-                res = self.wrapAndRequest(payload)
-                # Parse
-                self._state.mapObjects.ParseFromString(res.returns[0])
-                objectCells.append(self._state.mapObjects)
-                self.lastCells = objectCells
-                self.lastMapObjectTime = time.time()
-            return objectCells
-
-    def getAllPokemon(self):
-        cellsList = self.getMapObjects()
-        allPokemon = []
-        seenIds = {}
-        for cells in cellsList:
-            pokemon = []
-            for cell in cells.map_cells:
-                print("New Cell")
-                for poke in cell.wild_pokemons:
-                    print(poke)
-                    if poke.encounter_id not in seenIds:
-                        pokemon.append(poke)
-                        seenIds[poke.encounter_id] = True
-            allPokemon.extend(pokemon)
-        return allPokemon
+    def setCoordinates(self, latitude, longitude):
+        self.location.setCoordinates(latitude, longitude)
 
     def cleanPokemon(self):
         r = []
-        pokemons = self.getAllPokemon()
-
+        pokemons = self.checkAllPokemon()
         for poke in pokemons:
             r.append({
                 'encounter_id': poke.encounter_id,
@@ -316,28 +167,10 @@ class PogoSession():
             })
         return r
 
-    def getAllForts(self):
-        cellsList = self.getMapObjects()
-        allForts = []
-        seenIds = {}
-        for cells in cellsList:
-            forts = []
-            for cell in cells.map_cells:
-                for fort in cell.forts:
-                    if fort.id not in seenIds:
-                        forts.append(fort)
-                        seenIds[fort.id] = True
-            allForts.extend(forts)
-        return allForts
-
-    def getAllStops(self):
-        # Forts with type 1 are Pokestops
-        return filter(lambda f: f.type == 1, self.getAllForts())
-
     def cleanStops(self):
         r = []
-        stops = self.getAllStops()
-        plat, plon, alt = self.location.getCoordinates()
+        stops = self.checkAllStops()
+        plat, plon, alt = self.getter.getCoordinates()
         seenIds = {}
         for stop in stops:
             if self.location.getDistance(plat, plon, stop.latitude, stop.longitude) < 300:
@@ -352,55 +185,8 @@ class PogoSession():
                     })
         return r
 
-    # Get Location
-    def getFortSearch(self, fort):
-
-        # Create request
-        payload = [Request_pb2.Request(
-            request_type=RequestType_pb2.FORT_SEARCH,
-            request_message=FortSearchMessage_pb2.FortSearchMessage(
-                fort_id=fort.id,
-                player_latitude=self.location.latitude,
-                player_longitude=self.location.longitude,
-                fort_latitude=fort.latitude,
-                fort_longitude=fort.longitude
-            ).SerializeToString()
-        )]
-
-        # Send
-        res = self.wrapAndRequest(payload)
-
-        # Parse
-        self._state.fortSearch.ParseFromString(res.returns[0])
-
-        # Return everything
-        return self._state.fortSearch
-
-    # set an Egg into an incubator
-    def getFortDetails(self, fort):
-
-        # Create request
-        payload = [Request_pb2.Request(
-            request_type=RequestType_pb2.FORT_DETAILS,
-            request_message=FortDetailsMessage_pb2.FortDetailsMessage(
-                fort_id=fort.id,
-                latitude=fort.latitude,
-                longitude=fort.longitude,
-            ).SerializeToString()
-        )]
-
-        # Send
-        res = self.wrapAndRequest(payload)
-
-        # Parse
-        self._state.fortDetails.ParseFromString(res.returns[0])
-
-        # Return everything
-        return self._state.fortDetails
-
     # Get encounter
     def encounterPokemon(self, pokemon):
-
         # Create request
         payload = [Request_pb2.Request(
             request_type=RequestType_pb2.ENCOUNTER,
@@ -553,7 +339,7 @@ class PogoSession():
     # Walk over to position in meters
     def walkTo(self, olatitude, olongitude, epsilon=10, step=20):
         # Calculate distance to position
-        latitude, longitude, _ = self.getCoordinates()
+        latitude, longitude, _ = self.getter.getCoordinates()
         dist = closest = Location.getDistance(
             latitude,
             longitude,
@@ -585,3 +371,34 @@ class PogoSession():
                 olatitude,
                 olongitude
             )
+
+    def pause(self):
+        self.getter.pause()
+
+    def checkProfile(self):
+        return self._state.profile
+
+    def checkMapObjects(self):
+        return self.getter.lastCells
+
+    def checkAllPokemon(self):
+        return self.getter.pokemon
+
+    def checkAllForts(self):
+        return self.getter.forts
+
+    def checkAllStops(self):
+        return self.getter.stops
+
+    # Check, so we don't have to start another request
+    def checkEggs(self):
+        return self._state.eggs
+
+    def checkInventory(self):
+        return self.getter.inventory
+
+    def checkBadges(self):
+        return self._state.badges
+
+    def checkDownloadSettings(self):
+        return self._state.settings

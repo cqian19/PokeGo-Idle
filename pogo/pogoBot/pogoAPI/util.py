@@ -1,17 +1,19 @@
 import struct
 import time
+import threading
 
-def drange(start, end, step):
-    assert step != 0
-    if step < 0:
-        while start > end:
-            yield start
-            start += step
-    else:
-        while start < end:
-            yield start
-            start += step
-
+def set_interval(func, sec):
+    interval = 0
+    stopped = threading.Event()
+    def loop():  # executed in another thread
+        nonlocal interval
+        while not stopped.wait(interval):  # until stopped
+            interval = sec
+            func()
+    t = threading.Thread(target=loop)
+    t.daemon = True  # stop if the program exits
+    t.start()
+    return stopped
 
 def f2i(float):
     return struct.unpack('<Q', struct.pack('<d', float))[0]
