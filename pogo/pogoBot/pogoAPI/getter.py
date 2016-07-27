@@ -94,7 +94,7 @@ class Getter():
 
         # Parse
         self._state.profile.ParseFromString(res.returns[0])
-
+        self._state.player_data = self._state.profile.player_data
         # Return everything
         return self._state.profile
 

@@ -19,6 +19,7 @@ class State(object):
     """Class to wrap the current state of responses"""
     def __init__(self):
         self.profile = GetPlayerResponse_pb2.GetPlayerResponse()
+        self.player_data = self.profile.player_data
         self.eggs = GetHatchedEggsResponse_pb2.GetHatchedEggsResponse()
         self.inventory = GetInventoryResponse_pb2.GetInventoryResponse()
         self.badges = CheckAwardedBadgesResponse_pb2.CheckAwardedBadgesResponse()
