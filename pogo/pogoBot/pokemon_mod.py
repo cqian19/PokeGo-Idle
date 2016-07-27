@@ -5,56 +5,51 @@ from pogoAPI.custom_exceptions import GeneralPogoException
 from mod import Handler
 import logging
 import time
-
 class pokemonHandler(Handler):
 
     # Grab the nearest pokemon details
     def findBestPokemon(self):
         # Get Map details and print pokemon
+        pokemons = self.session.checkAllPokemon()
+        if pokemons == []: return
         logging.info("Finding Nearby Pokemon:")
-        cellsList = self.session.checkMapObjects()
         closest = float("Inf")
-        best = -1
-        pokemonBest = None
+        best, pokemonBest = -1, None
         latitude, longitude, _ = self.session.getter.getCoordinates()
         logging.info("Current pos: %f, %f" % (latitude, longitude))
         seenIds = {}
-        for cells in cellsList:
-            for cell in cells.map_cells:
-                # Heap in pokemon protos where we have long + lat
-                pokemons = [p for p in cell.wild_pokemons] + [p for p in cell.catchable_pokemons]
-                for pokemon in pokemons:
-                    if pokemon.encounter_id in seenIds: continue
-                    seenIds[pokemon.encounter_id] = True
-                    # Normalize the ID from different protos
-                    pokemonId = getattr(pokemon, "pokemon_id", None)
-                    if not pokemonId:
-                        pokemonId = pokemon.pokemon_data.pokemon_id
+        for pokemon in pokemons:
+            if pokemon.encounter_id in seenIds: continue
+            seenIds[pokemon.encounter_id] = True
+            # Normalize the ID from different protos
+            pokemonId = getattr(pokemon, "pokemon_id", None)
+            if not pokemonId:
+                pokemonId = pokemon.pokemon_data.pokemon_id
 
-                    # Find distance to pokemon
-                    dist = Location.getDistance(
-                        latitude,
-                        longitude,
-                        pokemon.latitude,
-                        pokemon.longitude
-                    )
+            # Find distance to pokemon
+            dist = Location.getDistance(
+                latitude,
+                longitude,
+                pokemon.latitude,
+                pokemon.longitude
+            )
 
-                    # Log the pokemon found
-                    logging.info("%s, %f meters away" % (
-                        pokedex[pokemonId],
-                        dist
-                    ))
+            # Log the pokemon found
+            logging.info("%s, %f meters away" % (
+                pokedex[pokemonId],
+                dist
+            ))
 
-                    rarity = pokedex.getRarityById(pokemonId)
-                    # Greedy for rarest
-                    if rarity > best:
-                        pokemonBest = pokemon
-                        best = rarity
-                        closest = dist
-                    # Greedy for closest of same rarity
-                    elif rarity == best and dist < closest:
-                        pokemonBest = pokemon
-                        closest = dist
+            rarity = pokedex.getRarityById(pokemonId)
+            # Greedy for rarest
+            if rarity > best:
+                pokemonBest = pokemon
+                best = rarity
+                closest = dist
+            # Greedy for closest of same rarity
+            elif rarity == best and dist < closest:
+                pokemonBest = pokemon
+                closest = dist
         return pokemonBest
 
     # Catch a pokemon at a given point
@@ -73,7 +68,6 @@ class pokemonHandler(Handler):
         if not len(chances):
             logging.error("Pokemon Inventory may be full")
             return
-
         bag = self.session.checkInventory().bag
 
         # Have we used a razz berry yet?
@@ -123,17 +117,20 @@ class pokemonHandler(Handler):
             # Success or run away
             if attempt.status == 1:
                 logging.info("Caught {0} in {1} attempt(s)!".format(name, count + 1))
+                self.session.setCaughtPokemon(pokemon)
                 return attempt
 
             # CATCH_FLEE is bad news
             if attempt.status == 3:
                 logging.info("Possible soft ban.")
+                self.session.setCaughtPokemon(pokemon)
                 return attempt
 
             # Only try up to x attempts
             count += 1
             if count >= limit:
                 logging.info("Over catch limit. Was unable to catch.")
+                self.session.setCaughtPokemon(pokemon)
                 return None
 
     def cleanPokemon(self, thresholdCP=250):
@@ -143,7 +140,6 @@ class pokemonHandler(Handler):
         maxStorage = self.session.checkPlayerData().max_pokemon_storage
         logging.info("Pokemon storage capacity: {0}/{1}".format(stored, maxStorage))
         if stored/maxStorage < .8: return
-        if stored/maxStorage > .95: thresholdCP += 150
         # evolables = [pokedex.PIDGEY, pokedex.RATTATA, pokedex.ZUBAT]
         candies = self.session.checkInventory().candies
         for pokemon in party:
@@ -151,6 +147,7 @@ class pokemonHandler(Handler):
             r = pokedex.getRarityById(id)
             evoCandies = pokedex.evolves[id]
             # Evolve all pokemon when possible
+            # TODO: Check if pokemon is a second evolution and needs first evolution id candy
             if id in candies and pokemon.cp > thresholdCP and evoCandies and candies[id] >= evoCandies:
                 logging.info("Evolving %s" % pokedex[pokemon.pokemon_id])
                 logging.info(self.session.evolvePokemon(pokemon))

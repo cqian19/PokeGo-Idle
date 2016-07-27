@@ -23,6 +23,7 @@ class Getter():
         self.session = session
         # Set up Inventory
         self.pokemon = []
+        self.caughtPokemon = []
         self.forts = []
         self.stops = []
         self.lastCells = []
@@ -169,6 +170,11 @@ class Getter():
             self._execThread(self.getAllStops)
             self._execThread(self.getAllPokemon)
             return objectCells
+
+    def getCaughtPokemon(self):
+        orig = self.caughtPokemon
+        self.caughtPokemon = []
+        return orig
 
     def getAllPokemon(self):
         print("Updating pokemon")

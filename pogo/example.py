@@ -31,7 +31,7 @@ class MapHandler():
         app.route('/')(self.default_map)
         app.route('/data', methods=['GET'])(self.get_map_data)
         app.route('/location', methods=['GET'])(self.get_location)
-        app.run(debug=True, use_reloader=True)
+        app.run(debug=False)
 
     def default_map(self):
         return render_template('example.html', lat=37.4419,lng=-122.1419, geo_key=self.maps_key)
@@ -41,8 +41,7 @@ class MapHandler():
         cells = self.session.checkMapObjects()
         data['pokemon'] = self.session.cleanPokemon()
         data['forts'] = self.session.cleanStops()
-        for p in data['pokemon']:
-            print(p)
+        data['caughtPokemon'] = self.session.cleanPokemon(self.session.getter.getCaughtPokemon())
         return jsonify(data)
 
     def get_location(self):
@@ -76,7 +75,6 @@ if __name__ == "__main__":
         args.auth,
         geo_key=args.geo_key
     )
-
     # Authenticate with a given location
     # Location is not inherent in authentication
     # But is important to session

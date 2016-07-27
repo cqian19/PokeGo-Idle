@@ -5,16 +5,18 @@ from mod import Handler
 
 class fortHandler(Handler):
 
+    lastStops = {}
     # Basic solution to spinning all forts.
     # Since traveling salesman problem, not
     # true solution. But at least you get
     # those step in
     def sortCloseForts(self):
         # Sort nearest forts (pokestop)
+        stops = self.session.checkAllStops()
+        if stops == self.lastStops: return
         logging.info("Sorting Nearest Forts:")
         latitude, longitude, _ = self.session.getter.getCoordinates()
         ordered_forts = []
-        stops = self.session.checkAllStops()
         for fort in stops:
             dist = Location.getDistance(
                 latitude,

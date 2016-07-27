@@ -72,10 +72,13 @@ var player = {
 var mapObjects = {
     displayedPokemon: {},
     displayedForts: {},
+    caughtPokemon: {},
     thread: null,
     fortUpdating: false,
     pokemonUpdating: false,
     updateTime: 1000,
+    lastPokemonData: {},
+    lastCaughtPokemonData: {},
     _createPokemonMarker: function(poke, pokeSlot) {
         var marker = new google.maps.Marker({
             map: mapObj,
@@ -108,12 +111,18 @@ var mapObjects = {
         });
         return marker;
     },
-    updatePokemon: function(pokemonData) {
+    updatePokemon: function(pokemonData, caughtPokemonData) {
         if (mapObjects.pokemonUpdating) { return; }
+        if (equals(pokemonData, mapObjects.lastPokemonData) &&
+            equals(caughtPokemonData, mapObjects.lastCaughtPokemonData)) { return; }
+        mapObjects.lastPokemonData = pokemonData;
+        mapObjects.lastCaughtPokemonData = caughtPokemonData;
         pokemonUpdating = true;
         var displayed = mapObjects.displayedPokemon;
+        // Add new pokemon to display
         for (var key in pokemonData) {
             var poke = pokemonData[key];
+            if (poke.encounter_id in mapObjects.caughtPokemon) { continue; }
             if (!(displayed[poke.encounter_id])) {
                 var pokeSlot = {
                     timeLeft: Math.floor(poke.time_remaining),
@@ -122,14 +131,26 @@ var mapObjects = {
                 displayed[poke.encounter_id] = pokeSlot;
             }
         }
+        // Decrease seconds remaining for all pokemon
         for (var key in displayed) {
             pokeObj = displayed[key];
             pokeObj.timeLeft -= mapObjects.updateTime;
             if (pokeObj.timeLeft <= 0) {
                 console.log("Pokemon disappeared");
                 pokeObj.marker.setVisible(false);
-                mapObjects.displayedPokemon[poke.encounter_id] = null;
-                pokeObj = null;
+                delete displayed[key];
+            }
+        }
+        console.log(caughtPokemonData);
+        // Hide all caught pokemon
+        for (var key in caughtPokemonData) {
+            var poke = caughtPokemonData[key];
+            caughtPokemonData[poke.encounter_id] = poke;
+            if (poke.encounter_id in displayed) {
+                console.log("Pokemon caught/fled");
+                var pokeObj = displayed[poke.encounter_id];
+                pokeObj.marker.setVisible(false);
+                delete displayed[key];
             }
         }
         pokemonUpdating = false;
@@ -146,8 +167,8 @@ var mapObjects = {
         return iconPath + "pstop" + (fort.lure ? "lure" : "") + ".png"
     },
     updateForts: function(fortData) {
-        console.log("UpdateForts");
         if (mapObjects.fortUpdating) { return; }
+        console.log("Updating forts");
         mapObjects.fortUpdating = true;
         var f = {};
         var displayed = mapObjects.displayedForts;
@@ -162,6 +183,7 @@ var mapObjects = {
                 marker.setVisible(false);
             }
         }*/
+        // Display new forts or update image
         for (var key in f) {
             if (!displayed[key]) {
                 displayed[key] = {
@@ -172,7 +194,8 @@ var mapObjects = {
                 var marker = displayed[key].marker;
                 if (displayed[key].fort.lure != f[key].lure) {
                     console.log("Updating fort icon");
-                    marker.setIcon(createIcon(mapObjects._getFortIconName(displayed[key].fort), 32, 32))
+                    marker.setIcon(createIcon(mapObjects._getFortIconName(displayed[key].fort), 32, 32));
+                    displayed[key].fort.lure = f[key].lure;
                 }
                 if (!marker.visible) {
                     marker.setVisible(true);
@@ -184,11 +207,13 @@ var mapObjects = {
     update: function() {
         if (mapObj == null) { return; }
         getMapData(function(data) {
-            if (data["pokemon"] == undefined || data["forts"] == undefined) {
-                alert("Error getting map data");
-                return;
+            for (key in data) {
+                if (data[key] == undefined) {
+                    console.log("Error getting map data");
+                    return;
+                }
             }
-            setTimeout(function() { mapObjects.updatePokemon(data["pokemon"]) }, 0);
+            setTimeout(function() { mapObjects.updatePokemon(data["pokemon"], data["caughtPokemon"]) }, 0);
             setTimeout(function() { mapObjects.updateForts(data["forts"]) }, 0);
         }, function() {
             console.log("Getting map data has failed");
@@ -211,6 +236,10 @@ function getMapData(cb, f) {
     }).done(function(r) {
         requester(r, arguments.callee.name, cb);
     }).fail(f);
+}
+
+function equals(d1, d2) {
+    return JSON.stringify(d1) === JSON.stringify(d2);
 }
 
 function getPlayerLocation(cb, f) {

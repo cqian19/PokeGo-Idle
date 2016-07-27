@@ -153,9 +153,10 @@ class PogoSession():
     def setCoordinates(self, latitude, longitude):
         self.location.setCoordinates(latitude, longitude)
 
-    def cleanPokemon(self):
+    def cleanPokemon(self, pokemons = None):
         r = []
-        pokemons = self.checkAllPokemon()
+        if pokemons is None:
+            pokemons = self.checkAllPokemon()
         for poke in pokemons:
             r.append({
                 'encounter_id': poke.encounter_id,
@@ -332,6 +333,9 @@ class PogoSession():
 
         # Return everything
         return self._state.incubator
+
+    def setCaughtPokemon(self, pokemon):
+        self.getter.caughtPokemon.append(pokemon)
 
     # These act as more logical functions.
     # Might be better to break out seperately
