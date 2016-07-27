@@ -46,7 +46,7 @@ var player = {
         }
         if (player.posChanged) {
             player.marker.setPosition(player.latLng);
-            setTimeout(function() { mapObj.panTo(player.latLng); }, playerUpdateTime/2.3);
+            setTimeout(function() { mapObj.panTo(player.latLng); }, playerUpdateTime/2.2);
         }
     },
     update: function () {
@@ -75,7 +75,8 @@ var mapObjects = {
     thread: null,
     fortUpdating: false,
     pokemonUpdating: false,
-    _createPokemonMarker: function(poke) {
+    updateTime: 1000,
+    _createPokemonMarker: function(poke, pokeSlot) {
         var marker = new google.maps.Marker({
             map: mapObj,
             position: new google.maps.LatLng(poke.latitude, poke.longitude),
@@ -85,21 +86,50 @@ var mapObjects = {
         var infoWindow = new google.maps.InfoWindow({
             content: poke.name + "\t" + toTime(poke.time_remaining)
         });
+        // Create and update marker notification with timer
+        var thread; var opened = false;
+        var update = function() {
+            infoWindow.setContent(poke.name + "\t" + toTime(pokeSlot.timeLeft));
+        }
         marker.addListener('mouseover', function() {
-            infoWindow.open(mapObj, this);
+            if (!opened && !thread) {
+                opened = true;
+                thread = setInterval(update, 1);
+                infoWindow.open(mapObj, this);
+            }
         });
         marker.addListener('mouseout', function() {
-            infoWindow.close();
+            if (opened && thread) {
+                opened = false;
+                clearInterval(thread);
+                thread = null;
+                infoWindow.close();
+            }
         });
         return marker;
     },
     updatePokemon: function(pokemonData) {
         if (mapObjects.pokemonUpdating) { return; }
         pokemonUpdating = true;
+        var displayed = mapObjects.displayedPokemon;
         for (var key in pokemonData) {
             var poke = pokemonData[key];
-            if (!mapObjects.displayedPokemon[poke.encounter_id]) {
-                mapObjects.displayedPokemon[poke.encounter_id] = mapObjects._createPokemonMarker(poke);
+            if (!(displayed[poke.encounter_id])) {
+                var pokeSlot = {
+                    timeLeft: Math.floor(poke.time_remaining),
+                };
+                pokeSlot.marker = mapObjects._createPokemonMarker(poke, pokeSlot);
+                displayed[poke.encounter_id] = pokeSlot;
+            }
+        }
+        for (var key in displayed) {
+            pokeObj = displayed[key];
+            pokeObj.timeLeft -= mapObjects.updateTime;
+            if (pokeObj.timeLeft <= 0) {
+                console.log("Pokemon disappeared");
+                pokeObj.marker.setVisible(false);
+                mapObjects.displayedPokemon[poke.encounter_id] = null;
+                pokeObj = null;
             }
         }
         pokemonUpdating = false;
@@ -229,6 +259,6 @@ function initializeMap() {
     makeAnimate();
     setInterval(getMapData, 5000);
     player.thread = setInterval(player.update, 250);
-    mapObjects.thread = setInterval(mapObjects.update, 2000);
+    mapObjects.thread = setInterval(mapObjects.update, mapObjects.updateTime);
     console.log("Done");
 }
