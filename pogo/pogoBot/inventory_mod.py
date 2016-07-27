@@ -55,10 +55,10 @@ class inventoryHandler(Handler):
     def cleanInventory(self):
         logging.info("Cleaning out Inventory...")
         bag = self.session.checkInventory().bag
-        items = sum(bag.values())
+        itemsCount = sum(bag.values())
         maxItems = self.session.checkPlayerData().max_item_storage
-        logging.info("Inventory capacity {0}/{1}".format(items, maxItems))
-        if (items/maxItems) < .9: return
+        logging.info("Inventory capacity {0}/{1}".format(itemsCount, maxItems))
+        if (itemsCount/maxItems) < .9: return
         # Clear out all of a crtain type
         tossable = [items.POTION, items.SUPER_POTION, items.REVIVE]
         keep = {
