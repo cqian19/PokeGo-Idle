@@ -46,7 +46,7 @@ var player = {
         }
         if (player.posChanged) {
             player.marker.setPosition(player.latLng);
-            setTimeout(function() { mapObj.panTo(player.latLng); }, playerUpdateTime/2.35);
+            setTimeout(function() { mapObj.panTo(player.latLng); }, playerUpdateTime/2.3);
         }
     },
     update: function () {
@@ -85,7 +85,12 @@ var mapObjects = {
         var infoWindow = new google.maps.InfoWindow({
             content: poke.name + "\t" + toTime(poke.time_remaining)
         });
-        infoWindow.open(mapObj, marker);
+        marker.addListener('mouseover', function() {
+            infoWindow.open(mapObj, this);
+        });
+        marker.addListener('mouseout', function() {
+            infoWindow.close();
+        });
         return marker;
     },
     updatePokemon: function(pokemonData) {
@@ -120,13 +125,13 @@ var mapObjects = {
             var fort = fortData[key];
             f[fort.id] = fort;
         }
-        for (var key in displayed) {
+        /*for (var key in displayed) {
             var marker = displayed[key].marker;
             var distToFort = google.maps.geometry.spherical.computeDistanceBetween(player.latLng, marker.getPosition());
             if (distToFort > 450 && marker.visible) {
                 marker.setVisible(false);
             }
-        }
+        }*/
         for (var key in f) {
             if (!displayed[key]) {
                 displayed[key] = {
@@ -137,7 +142,7 @@ var mapObjects = {
                 var marker = displayed[key].marker;
                 if (displayed[key].fort.lure != f[key].lure) {
                     console.log("Updating fort icon");
-                    marker.setIcon(mapObjects._getFortIconName(displayed[key].fort))
+                    marker.setIcon(createIcon(mapObjects._getFortIconName(displayed[key].fort), 32, 32))
                 }
                 if (!marker.visible) {
                     marker.setVisible(true);
@@ -201,7 +206,7 @@ function toTime(ms) {
         s += hours + ":";
     }
     s += minutes + ":";
-    s += seconds;
+    s += seconds < 10 ? "0" + seconds : seconds;
     return s;
 }
 
@@ -218,7 +223,7 @@ function initializeMap() {
     mapObj = new google.maps.Map(document.getElementById('map'), {
           center: {lat: 37.4419, lng: -122.1419},
           zoom: 16,
-          minZoom: 12
+          minZoom: 5
     });
     makeSliding();
     makeAnimate();
