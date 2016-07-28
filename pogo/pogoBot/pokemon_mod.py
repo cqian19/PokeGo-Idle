@@ -1,12 +1,14 @@
 from pogoAPI.location import Location
-from pokedex import pokedex, Rarity
+from pokedex import pokedex, Rarity, baseEvolution
 from pogoAPI.inventory import items
 from pogoAPI.custom_exceptions import GeneralPogoException
 from mod import Handler
 import logging
 import time
+
 class pokemonHandler(Handler):
 
+    # TODO: Improve pokemon choosing algorithm
     # Grab the nearest pokemon details
     def findBestPokemon(self):
         # Get Map details and print pokemon
@@ -133,7 +135,7 @@ class pokemonHandler(Handler):
                 self.session.setCaughtPokemon(pokemon)
                 return None
 
-    def cleanPokemon(self, thresholdCP=250):
+    def cleanPokemon(self, thresholdCP=300):
         logging.info("Cleaning out Pokemon...")
         party = self.session.checkInventory().party
         stored = len(party)
@@ -143,12 +145,12 @@ class pokemonHandler(Handler):
         # evolables = [pokedex.PIDGEY, pokedex.RATTATA, pokedex.ZUBAT]
         candies = self.session.checkInventory().candies
         for pokemon in party:
-            id = pokemon.pokemon_id
-            r = pokedex.getRarityById(id)
-            evoCandies = pokedex.evolves[id]
+            candy_id = baseEvolution[pokemon.pokemon_id]
+            evoCandies = pokedex.evolves[candy_id]
+            r = pokedex.getRarityById(pokemon.pokemon_id)
             # Evolve all pokemon when possible
             # TODO: Check if pokemon is a second evolution and needs first evolution id candy
-            if id in candies and pokemon.cp > thresholdCP and evoCandies and candies[id] >= evoCandies:
+            if evoCandies and candies.get(candy_id, 0) >= evoCandies:
                 logging.info("Evolving %s" % pokedex[pokemon.pokemon_id])
                 logging.info(self.session.evolvePokemon(pokemon))
                 time.sleep(.1)
