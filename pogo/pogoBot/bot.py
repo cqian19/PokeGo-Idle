@@ -9,12 +9,13 @@ import sys
 
 class Bot():
 
-    def __init__(self, session, poko_session):
+    def __init__(self, session, pogo_session, poko_session):
         self.session = session
+        self.pogo_session = pogo_session
         self.poko_session = poko_session
-        self.fh = fort_mod.fortHandler(session)
-        self.ih = inventory_mod.inventoryHandler(session)
-        self.ph = pokemon_mod.pokemonHandler(session)
+        self.fh = fort_mod.fortHandler(pogo_session)
+        self.ih = inventory_mod.inventoryHandler(pogo_session)
+        self.ph = pokemon_mod.pokemonHandler(pogo_session)
         self.mods = [self.fh, self.ih, self.ph]
         self.mainThread = threading.Thread(target=self.main)
         self.mainThread.daemon = True
@@ -28,7 +29,7 @@ class Bot():
         while True:
             time.sleep(1)
             forts = self.fh.sortCloseForts()
-            self.ph.cleanPokemon(thresholdCP=500)
+            self.ph.cleanPokemon(thresholdCP=800)
             self.ih.cleanInventory()
             try:
                 if forts:
@@ -42,19 +43,19 @@ class Bot():
             # Catch problems and reauthenticate
             except GeneralPogoException as e:
                 logging.critical('GeneralPogoException raised: %s', e)
-                self.session.pause()
-                self.session = self.poko_session.reauthenticate(self.session)
+                self.pogo_session.pause()
+                self.pogo_session = self.poko_session.reauthenticate(self.session)
                 for mod in self.mods:
-                    mod.setSession(self.session)
+                    mod.setSession(self.pogo_session)
                 time.sleep(cooldown)
                 cooldown *= 2
 
             except Exception as e:
                 logging.exception('Exception raised: %s', e)
-                self.session.pause()
-                self.session = self.poko_session.reauthenticate(self.session)
+                self.pogo_session.pause()
+                self.pogo_session = self.poko_session.reauthenticate(self.session)
                 for mod in self.mods:
-                    mod.setSession(self.session)
+                    mod.setSession(self.pogo_session)
                 time.sleep(cooldown)
                 cooldown *= 2
 

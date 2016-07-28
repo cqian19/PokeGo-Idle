@@ -61,14 +61,9 @@ class inventoryHandler(Handler):
         if (itemsCount/maxItems) < .9: return
         # Clear out all of a crtain type
         tossable = [items.POTION, items.SUPER_POTION, items.REVIVE]
-        keep = {
-            items.POTION: 0,
-            items.SUPER_POTION : 20,
-            items.REVIVE: 10
-        }
         for toss in tossable:
-            if toss in bag and bag[toss] - keep[toss] > 0:
-                self.session.recycleItem(toss, bag[toss] - keep[toss])
+            if toss in bag:
+                self.session.recycleItem(toss, bag[toss])
 
         # Limit a certain type
         limited = {

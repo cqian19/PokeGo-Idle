@@ -38,7 +38,6 @@ class MapHandler():
 
     def get_map_data(self):
         data = {}
-        cells = self.session.checkMapObjects()
         data['pokemon'] = self.session.cleanPokemon()
         data['forts'] = self.session.cleanStops()
         data['caughtPokemon'] = self.session.cleanPokemon(self.session.getter.getCaughtPokemon())
@@ -84,7 +83,7 @@ if __name__ == "__main__":
         logging.error('Could not log in. Double check your login credentials. The servers may also be down.')
         raise e
     if pogo_session:
-        bot = Bot(pogo_session, poko_session)
+        bot = Bot(poko_session.session, pogo_session, poko_session)
         bot.run()
         mh = MapHandler(pogo_session, args.geo_key)
     else:

@@ -145,16 +145,17 @@ class pokemonHandler(Handler):
         # evolables = [pokedex.PIDGEY, pokedex.RATTATA, pokedex.ZUBAT]
         candies = self.session.checkInventory().candies
         for pokemon in party:
-            candy_id = baseEvolution[pokemon.pokemon_id]
-            evoCandies = pokedex.evolves[candy_id]
-            r = pokedex.getRarityById(pokemon.pokemon_id)
+            poke_id = pokemon.pokemon_id
+            candy_id = baseEvolution[poke_id]
+            evoCandies = pokedex.evolves[poke_id]
             # Evolve all pokemon when possible
-            # TODO: Check if pokemon is a second evolution and needs first evolution id candy
             if evoCandies and candies.get(candy_id, 0) >= evoCandies:
                 logging.info("Evolving %s" % pokedex[pokemon.pokemon_id])
                 logging.info(self.session.evolvePokemon(pokemon))
+                poke_id += 1
                 time.sleep(.1)
             # If low cp, throw away
+            r = pokedex.getRarityById(poke_id)
             if (pokemon.cp < thresholdCP and  r < Rarity.RARE) or r < Rarity.UNCOMMON:
                 # Get rid of low CP, low evolve value
                 logging.info("Releasing %s" % pokedex[pokemon.pokemon_id])
