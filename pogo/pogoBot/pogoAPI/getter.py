@@ -73,7 +73,7 @@ class Getter():
             self._state.badges.ParseFromString(res.returns[3])
             self._state.settings.ParseFromString(res.returns[4])
         except Exception as e:
-            logging.error(e)
+            logging.exception(e)
             raise GeneralPogoException("Error parsing response. Malformed response")
 
         # Finally make inventory usable
@@ -91,11 +91,12 @@ class Getter():
         payload = [Request_pb2.Request(
             request_type=RequestType_pb2.GET_PLAYER
         )]
-
+        payload += self.getDefaults()
         # Send
         res = self.session.wrapAndRequest(payload)
 
         # Parse
+        self.parseDefault(res)
         self._state.profile.ParseFromString(res.returns[0])
         self._state.player_data = self._state.profile.player_data
         # Return everything
@@ -152,6 +153,7 @@ class Getter():
             for lat, lon in steps:
                 cells = self.location.getCells(lat, lon)
                 timestamps = [0, ] * len(cells)
+                time.sleep(1)
                 # Create request
                 payload = [Request_pb2.Request(
                     request_type=RequestType_pb2.GET_MAP_OBJECTS,

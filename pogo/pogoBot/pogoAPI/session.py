@@ -52,11 +52,12 @@ class PogoSession():
             self.createApiEndpoint(),
             '/rpc'
         )
+        self.getter.getDefaults()
         self.getter.getProfile()
         self.getter.run()
 
 
-    def wrapInRequest(self, payload, defaults=True, **kwargs):
+    def wrapInRequest(self, payload, **kwargs):
         # If we haven't authenticated before
         info = None
         if not self.authTicket:
@@ -82,10 +83,6 @@ class PogoSession():
             unknown12=989,
             auth_info=info
         )
-
-        # Add requests
-        if defaults:
-            payload += self.getter.getDefaults()
         req.requests.extend(payload)
 
         return req
@@ -114,11 +111,9 @@ class PogoSession():
             logging.error(e)
             raise GeneralPogoException('Probably server fires.')
 
-    def wrapAndRequest(self, payload, defaults=True, **kwargs):
-        res = self.request(self.wrapInRequest(payload, defaults=defaults, **kwargs))
-        if defaults:
-            self.getter.parseDefault(res)
-        if res is None:
+    def wrapAndRequest(self, payload, **kwargs):
+        res = self.request(self.wrapInRequest(payload, **kwargs))
+        if res == []:
             logging.critical(res)
             logging.critical('Servers seem to be busy. Exiting.')
             raise Exception('No Valid Response.')
@@ -225,7 +220,7 @@ class PogoSession():
             ).SerializeToString()
         )]
         # Send
-        res = self.wrapAndRequest(payload, False)
+        res = self.wrapAndRequest(payload)
         # Parse
         self._state.catch.ParseFromString(res.returns[0])
 
@@ -245,7 +240,7 @@ class PogoSession():
         )]
 
         # Send
-        res = self.wrapAndRequest(payload, defaults=False)
+        res = self.wrapAndRequest(payload)
 
         # Parse
         self._state.itemCapture.ParseFromString(res.returns[0])
