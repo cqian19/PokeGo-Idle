@@ -341,7 +341,7 @@ class PogoSession():
     # These act as more logical functions.
     # Might be better to break out seperately
     # Walk over to position in meters
-    def walkTo(self, olatitude, olongitude, epsilon=10, step=20):
+    def walkTo(self, olatitude, olongitude, epsilon=10, step=25):
         # Calculate distance to position
         latitude, longitude, _ = self.getter.getCoordinates()
         dist = closest = Location.getDistance(
@@ -355,14 +355,26 @@ class PogoSession():
         divisions = closest / step
         if (abs(divisions) < 1):
             divisions = 1
-        dLat = (latitude - olatitude) / divisions
-        dLon = (longitude - olongitude) / divisions
+        dLat = (olatitude - latitude) / divisions
+        dLon = (olongitude - longitude) / divisions
 
         logging.info("Walking %f meters. This will take %f seconds..." % (dist, dist / step))
         while dist > epsilon:
             logging.debug("%f m -> %f m away", closest - dist, closest)
-            latitude -= dLat
-            longitude -= dLon
+            newLat = latitude + dLat
+            if dLat > 0 and newLat > olatitude:
+                latitude = olatitude
+            elif dLat < 0 and newLat < olatitude:
+                latitude = olatitude
+            else:
+                latitude = newLat
+            newLon = longitude + dLon
+            if dLon > 0 and newLon > olongitude:
+                longitude = olongitude
+            elif dLon < 0 and newLon < olongitude:
+                longitude = olongitude
+            else:
+                longitude = newLon
             self.setCoordinates(
                 latitude,
                 longitude
