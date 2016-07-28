@@ -184,18 +184,19 @@ class Pokedex(dict):
             self.PINSIR, self.PIDGEOT, self.OMASTAR, self.NIDOQUEEN, self.NIDOKING,
             self.MUK, self.MAROWAK, self.LAPRAS, self.KANGASKHAN, self.KABUTOPS, self.IVYSAUR,
             self.GYARADOS, self.GOLEM, self.GENGAR, self.EXEGGUTOR, self.DRAGONAIR, self.DEWGONG,
-            self.CHARMELEON, self.BEEDRILL, self.ALAKAZAM
+            self.CHARMELEON, self.BEEDRILL, self.ALAKAZAM, self.PORYGON, self.DRATINI,
+            self.MACHAMP, self.SNORLAX, self.ARCANINE, self.AERODACTYL
         ]
         self.rarity[Rarity.RARE] = [
             self.WIGGLYTUFF, self.WEEZING, self.TENTACRUEL, self.TANGELA,
-            self.STARMIE, self.SNORLAX, self.SCYTHER, self.SEAKING, self.SEADRA,
-            self.RHYDON, self.RAPIDASH, self.PRIMEAPE, self.PORYGON, self.POLIWHIRL,
+            self.STARMIE, self.SCYTHER, self.SEAKING, self.SEADRA,
+            self.RHYDON, self.RAPIDASH, self.PRIMEAPE, self.POLIWHIRL,
             self.PARASECT, self.ONIX, self.OMANYTE, self.NINETALES, self.NIDORINO,
-            self.NIDORINA, self.MR_MIME, self.MAGMAR, self.MACHOKE, self.MACHAMP,
-            self.LICKITUNG, self.KINGLER, self.JOLTEON, self.HYPNO, self.HITMONCHAN,
+            self.NIDORINA, self.MR_MIME, self.MAGMAR, self.MACHOKE, self.LICKITUNG,
+            self.KINGLER, self.JOLTEON, self.HYPNO, self.HITMONCHAN,
             self.GLOOM, self.GOLDUCK, self.FLAREON, self.FEAROW, self.FARFETCHD,
-            self.ELECTABUZZ, self.DUGTRIO, self.DRATINI, self.DODRIO, self.CLOYSTER,
-            self.CHANSEY, self.BUTTERFREE, self.ARCANINE, self.AERODACTYL
+            self.ELECTABUZZ, self.DUGTRIO, self.DODRIO, self.CLOYSTER,
+            self.CHANSEY, self.BUTTERFREE
         ]
         self.rarity[Rarity.UNCOMMON] = [
             self.VULPIX, self.TENTACOOL, self.STARYU, self.SQUIRTLE, self.SPEAROW,
