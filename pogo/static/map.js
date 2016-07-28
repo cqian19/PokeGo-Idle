@@ -113,8 +113,6 @@ var mapObjects = {
     },
     updatePokemon: function(pokemonData, caughtPokemonData) {
         if (mapObjects.pokemonUpdating) { return; }
-        if (equals(pokemonData, mapObjects.lastPokemonData) &&
-            equals(caughtPokemonData, mapObjects.lastCaughtPokemonData)) { return; }
         mapObjects.lastPokemonData = pokemonData;
         mapObjects.lastCaughtPokemonData = caughtPokemonData;
         pokemonUpdating = true;

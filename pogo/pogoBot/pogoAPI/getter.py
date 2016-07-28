@@ -144,31 +144,34 @@ class Getter():
         return self._state.fortDetails
 
     # Hooks for those bundled in default
-    def getMapObjects(self, radius=1000):
+    def getMapObjects(self, radius=600):
         with self.lock:
-            objectCells = []
-            lat, lon, alt = self.getCoordinates()
-            # allSteps = self.location.getAllSteps(radius)
-            cells = self.location.getCells(lat, lon)
-            timestamps = [0, ] * len(cells)
-            # Create request
-            payload = [Request_pb2.Request(
-                request_type=RequestType_pb2.GET_MAP_OBJECTS,
-                request_message=GetMapObjectsMessage_pb2.GetMapObjectsMessage(
-                    cell_id=cells,
-                    since_timestamp_ms=timestamps,
-                    latitude=lat,
-                    longitude=lon
-                ).SerializeToString()
-            )]
-            # Send
-            res = self.session.wrapAndRequest(payload)
-            # Parse
-            self._state.mapObjects.ParseFromString(res.returns[0])
-            objectCells.append(self._state.mapObjects)
-            self.lastCells = objectCells
-            self._execThread(self.getAllStops)
-            self._execThread(self.getAllPokemon)
+            pokemon, stops = [], []
+            pokemonSeen, stopsSeen = {}, {}
+            steps = self.location.getAllSteps(radius)
+            for lat, lon in steps:
+                objectCells = []
+                # allSteps = self.location.getAllSteps(radius)
+                cells = self.location.getCells(lat, lon)
+                timestamps = [0, ] * len(cells)
+                # Create request
+                payload = [Request_pb2.Request(
+                    request_type=RequestType_pb2.GET_MAP_OBJECTS,
+                    request_message=GetMapObjectsMessage_pb2.GetMapObjectsMessage(
+                        cell_id=cells,
+                        since_timestamp_ms=timestamps,
+                        latitude=lat,
+                        longitude=lon
+                    ).SerializeToString()
+                )]
+                # Send
+                res = self.session.wrapAndRequest(payload, latitude=lat, longitude=lon)
+                # Parse
+                self._state.mapObjects.ParseFromString(res.returns[0])
+                self.updateAllStops(self._state.mapObjects, stops, stopsSeen)
+                self.updateAllPokemon(self._state.mapObjects, pokemon, pokemonSeen)
+            self.pokemon = pokemon
+            self.stops = stops
             return objectCells
 
     def getCaughtPokemon(self):
@@ -176,42 +179,21 @@ class Getter():
         self.caughtPokemon = []
         return orig
 
-    def getAllPokemon(self):
+    def updateAllPokemon(self, cells, curList, seenIds):
         print("Updating pokemon")
-        cellsList = self.lastCells
-        allPokemon = []
-        seenIds = {}
-        for cells in cellsList:
-            pokemon = []
-            for cell in cells.map_cells:
-                for poke in cell.wild_pokemons:
-                    if poke.encounter_id not in seenIds:
-                        pokemon.append(poke)
-                        seenIds[poke.encounter_id] = True
-            allPokemon.extend(pokemon)
-        self.pokemon = allPokemon
-        return allPokemon
+        for cell in cells.map_cells:
+            for poke in cell.wild_pokemons:
+                if poke.encounter_id not in seenIds:
+                    curList.append(poke)
+                    seenIds[poke.encounter_id] = True
 
-    def getAllForts(self):
+    def updateAllStops(self, cells, curList, seenIds):
         print("Updating forts")
-        cellsList = self.lastCells
-        allForts = []
-        seenIds = {}
-        for cells in cellsList:
-            forts = []
-            for cell in cells.map_cells:
-                for fort in cell.forts:
-                    if fort.id not in seenIds:
-                        forts.append(fort)
-                        seenIds[fort.id] = True
-            allForts.extend(forts)
-        self.forts = allForts
-        return allForts
-
-    def getAllStops(self):
-        # Forts with type 1 are Pokestops
-        self.stops = list(filter(lambda f: f.type == 1, self.getAllForts()))
-        return self.stops
+        for cell in cells.map_cells:
+            for fort in cell.forts:
+                if fort.type == 1 and fort.id not in seenIds:
+                    curList.append(fort)
+                    seenIds[fort.id] = True
 
     # Getters
     def getRPCId(self):
@@ -237,7 +219,7 @@ class Getter():
 
     def _createThreads(self):
         self.getMapObjects(200)
-        mapObjThread = set_interval(self.getMapObjects, 3)
+        mapObjThread = set_interval(self.getMapObjects, 40)
         getProfThread = set_interval(self.getProfile, 1)
         self.threads.append(mapObjThread)
         self.threads.append(getProfThread)

@@ -56,8 +56,7 @@ class PogoSession():
         self.getter.run()
 
 
-    def wrapInRequest(self, payload, defaults=True):
-
+    def wrapInRequest(self, payload, defaults=True, **kwargs):
         # If we haven't authenticated before
         info = None
         if not self.authTicket:
@@ -68,9 +67,11 @@ class PogoSession():
                     unknown2=59
                 )
             )
-
         # Build Envelope
-        latitude, longitude, altitude = self.getter.getCoordinates()
+        coords = self.getter.getCoordinates()
+        latitude = kwargs.get('latitude', coords[0])
+        longitude = kwargs.get('longitude', coords[1])
+        altitude = coords[2]
         req = RequestEnvelope_pb2.RequestEnvelope(
             status_code=2,
             request_id=self.getter.getRPCId(),
@@ -113,8 +114,8 @@ class PogoSession():
             logging.error(e)
             raise GeneralPogoException('Probably server fires.')
 
-    def wrapAndRequest(self, payload, defaults=True):
-        res = self.request(self.wrapInRequest(payload, defaults=defaults))
+    def wrapAndRequest(self, payload, defaults=True, **kwargs):
+        res = self.request(self.wrapInRequest(payload, defaults=defaults, **kwargs))
         if defaults:
             self.getter.parseDefault(res)
         if res is None:
