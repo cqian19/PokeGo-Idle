@@ -219,13 +219,14 @@ class Getter():
 
     def _createThreads(self):
         self.getMapObjects(200)
-        mapObjThread = set_interval(self.getMapObjects, 40)
+        mapObjThread = set_interval(self.getMapObjects, 20)
         getProfThread = set_interval(self.getProfile, 1)
         self.threads.append(mapObjThread)
         self.threads.append(getProfThread)
 
     def run(self):
-        self._createThreads()
+        mainThread = threading.Thread(target=self._createThreads)
+        mainThread.start()
 
     def pause(self):
         for thread in self.threads:

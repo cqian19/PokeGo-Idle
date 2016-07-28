@@ -384,9 +384,6 @@ class PogoSession():
     def checkPlayerData(self):
         return self._state.player_data
 
-    def checkMapObjects(self):
-        return self.getter.lastCells
-
     def checkAllPokemon(self):
         return self.getter.pokemon
 

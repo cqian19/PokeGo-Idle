@@ -1,9 +1,8 @@
-from geopy.geocoders import GoogleV3
 from s2sphere import CellId, LatLng
 from custom_exceptions import GeneralPogoException
 from geopy import Point, distance
+import geocoder
 import gpxpy.geo
-import time
 import math
 
 
@@ -11,10 +10,6 @@ import math
 class Location(object):
     def __init__(self, locationLookup, geo_key):
         self.geo_key = geo_key
-        self.locator = GoogleV3()
-        if geo_key:
-            self.locator = GoogleV3(api_key=geo_key)
-
         self.latitude, self.longitude, self.altitude = self.setLocation(locationLookup)
 
     def __str__(self):
@@ -30,11 +25,13 @@ class Location(object):
         return gpxpy.geo.haversine_distance(*coords)
 
     def setLocation(self, search):
-        try:
-            geo = self.locator.geocode(search)
-        except:
-            raise GeneralPogoException('Error in Geo Request')
-        return geo.latitude, geo.longitude, geo.altitude
+        providers = ['google', 'osm', 'arcgis', 'freegeoip', 'komoot']
+        for p in providers:
+            geo = getattr(geocoder, p)(search)
+            if geo.lat is not None and geo.lng is not None:
+                elev = geocoder.elevation(geo.latlng)
+                return geo.lat, geo.lng, elev.meters
+        raise GeneralPogoException("Location could not be found")
 
     def setCoordinates(self, latitude, longitude):
         self.latitude = latitude
