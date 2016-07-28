@@ -122,8 +122,9 @@ var mapObjects = {
             var poke = pokemonData[key];
             if (poke.encounter_id in mapObjects.caughtPokemon) { continue; }
             if (!(displayed[poke.encounter_id])) {
+                // BUG: Some pokemon have negative time remaining
                 var pokeSlot = {
-                    timeLeft: Math.floor(poke.time_remaining),
+                    timeLeft: poke.time_remaining < - 1000 ? 'Unknown' : Math.floor(poke.time_remaining),
                 };
                 pokeSlot.marker = mapObjects._createPokemonMarker(poke, pokeSlot);
                 displayed[poke.encounter_id] = pokeSlot;
@@ -132,11 +133,13 @@ var mapObjects = {
         // Decrease seconds remaining for all pokemon
         for (var key in displayed) {
             pokeObj = displayed[key];
-            pokeObj.timeLeft -= mapObjects.updateTime;
-            if (pokeObj.timeLeft <= 0) {
-                console.log("Pokemon disappeared");
-                pokeObj.marker.setVisible(false);
-                delete displayed[key];
+            if (typeof pokeObj.timeLeft != 'string') {
+                pokeObj.timeLeft -= mapObjects.updateTime;
+                if (pokeObj.timeLeft <= 0) {
+                    console.log("Pokemon disappeared");
+                    pokeObj.marker.setVisible(false);
+                    delete displayed[key];
+                }
             }
         }
         console.log(caughtPokemonData);
@@ -254,6 +257,7 @@ function getPlayerLocation(cb, f) {
 }
 
 function toTime(ms) {
+    if (typeof ms == 'string') { return ms; }
     if (ms <= 0) { return "0"; }
     seconds = Math.floor((ms/1000)%60);
     minutes = Math.floor((ms/(1000*60))%60);
@@ -279,8 +283,8 @@ function initializeMap() {
     console.log("Initializing map");
     mapObj = new google.maps.Map(document.getElementById('map'), {
           center: {lat: 37.4419, lng: -122.1419},
-          zoom: 16,
-          minZoom: 5
+          zoom: 15,
+          minZoom: 4
     });
     makeSliding();
     makeAnimate();

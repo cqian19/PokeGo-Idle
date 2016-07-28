@@ -53,7 +53,7 @@ html, body {
     top: 5px;
     left:5px;
     border-style: solid;
-    border-width: 10px;
+    border-width: 5px;
   	border-radius: 4px;
     box-shadow:inset 0px 0px 0px 1px black, 0 0 3pt 2pt black;
     border-image: linear-gradient(to left, #1A65DD 0%, #3585E8 100%);
