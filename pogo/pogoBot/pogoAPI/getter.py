@@ -1,6 +1,7 @@
 import logging
 import random
 import threading
+import time
 
 from POGOProtos.Networking.Requests import RequestType_pb2
 from POGOProtos.Networking.Requests import Request_pb2
@@ -22,10 +23,11 @@ class Getter():
         self.location = location
         self.session = session
         # Set up Inventory
-        self.pokemon = []
+        self.pokemon = {}
         self.caughtPokemon = []
-        self.forts = []
-        self.stops = []
+        self.forts = {}
+        self.gyms = {}
+        self.stops = {}
         self.lastCells = []
         self.inventory = []
         self.threads = []
@@ -146,12 +148,8 @@ class Getter():
     # Hooks for those bundled in default
     def getMapObjects(self, radius=600):
         with self.lock:
-            pokemon, stops = [], []
-            pokemonSeen, stopsSeen = {}, {}
             steps = self.location.getAllSteps(radius)
             for lat, lon in steps:
-                objectCells = []
-                # allSteps = self.location.getAllSteps(radius)
                 cells = self.location.getCells(lat, lon)
                 timestamps = [0, ] * len(cells)
                 # Create request
@@ -168,32 +166,44 @@ class Getter():
                 res = self.session.wrapAndRequest(payload, latitude=lat, longitude=lon)
                 # Parse
                 self._state.mapObjects.ParseFromString(res.returns[0])
-                self.updateAllStops(self._state.mapObjects, stops, stopsSeen)
-                self.updateAllPokemon(self._state.mapObjects, pokemon, pokemonSeen)
-            self.pokemon = pokemon
-            self.stops = stops
-            return objectCells
+                self.updateAllForts(self._state.mapObjects)
+                self.updateAllPokemon(self._state.mapObjects)
 
     def getCaughtPokemon(self):
         orig = self.caughtPokemon
         self.caughtPokemon = []
         return orig
 
-    def updateAllPokemon(self, cells, curList, seenIds):
+    def setCaughtPokemon(self, poke):
+        self.pokemon.pop(poke.encounter_id, None)
+        self.caughtPokemon.append(poke)
+
+    def updateAllPokemon(self, cells):
         print("Updating pokemon")
         for cell in cells.map_cells:
             for poke in cell.wild_pokemons:
-                if poke.encounter_id not in seenIds:
-                    curList.append(poke)
-                    seenIds[poke.encounter_id] = True
+                if poke.encounter_id not in self.pokemon:
+                    self.pokemon[poke.encounter_id] = poke
 
-    def updateAllStops(self, cells, curList, seenIds):
+    # Currently Unimplemented
+    def cleanOldPokemon(self):
+        now = time.time()
+        for id, poke in list(self.pokemon.items()):
+            # Don't deal with pokemon with bugged negative time_till_hidden
+            if poke.time_till_hidden_ms > 0:
+                sec = poke.time_till_hidden_ms/1000
+                if now - poke.foundTime > sec:
+                    print("Pokemon has disappeared")
+                    self.pokemon.pop(id)
+
+    def updateAllForts(self, cells):
         print("Updating forts")
         for cell in cells.map_cells:
             for fort in cell.forts:
-                if fort.type == 1 and fort.id not in seenIds:
-                    curList.append(fort)
-                    seenIds[fort.id] = True
+                if fort.id not in self.forts:
+                    stor = self.stops if fort.type == 1 else self.gyms
+                    stor[fort.id] = fort
+                    self.forts[fort.id] = fort
 
     # Getters
     def getRPCId(self):

@@ -336,7 +336,7 @@ class PogoSession():
         return self._state.incubator
 
     def setCaughtPokemon(self, pokemon):
-        self.getter.caughtPokemon.append(pokemon)
+        self.getter.setCaughtPokemon.append(pokemon)
 
     # These act as more logical functions.
     # Might be better to break out seperately
@@ -397,13 +397,13 @@ class PogoSession():
         return self._state.player_data
 
     def checkAllPokemon(self):
-        return self.getter.pokemon
+        return self.getter.pokemon.values()
 
     def checkAllForts(self):
-        return self.getter.forts
+        return self.getter.forts.values()
 
     def checkAllStops(self):
-        return self.getter.stops
+        return self.getter.stops.values()
 
     # Check, so we don't have to start another request
     def checkEggs(self):
