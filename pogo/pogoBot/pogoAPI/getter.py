@@ -1,8 +1,3 @@
-import logging
-import random
-import threading
-import time
-
 from POGOProtos.Networking.Requests import RequestType_pb2
 from POGOProtos.Networking.Requests import Request_pb2
 from POGOProtos.Networking.Requests.Messages import DownloadSettingsMessage_pb2
@@ -13,6 +8,13 @@ from POGOProtos.Networking.Requests.Messages import GetMapObjectsMessage_pb2
 from custom_exceptions import GeneralPogoException
 from inventory import Inventory
 from util import set_interval
+from pokedex import pokedex
+from util import getJSTime
+import logging
+import random
+import threading
+import time
+
 
 RPC_ID = int(random.random() * 10 ** 12)
 
@@ -25,6 +27,7 @@ class Getter():
         # Set up Inventory
         self.pokemon = {}
         self.caughtPokemon = []
+        self.pastEvents = []
         self.forts = {}
         self.gyms = {}
         self.stops = {}
@@ -102,7 +105,6 @@ class Getter():
         return self._state.profile
 
     def getFortSearch(self, fort):
-
         # Create request
         payload = [Request_pb2.Request(
             request_type=RequestType_pb2.FORT_SEARCH,
@@ -125,7 +127,6 @@ class Getter():
         return self._state.fortSearch
 
     def getFortDetails(self, fort):
-
         # Create request
         payload = [Request_pb2.Request(
             request_type=RequestType_pb2.FORT_DETAILS,
@@ -170,14 +171,35 @@ class Getter():
                 self.updateAllForts(self._state.mapObjects)
                 self.updateAllPokemon(self._state.mapObjects)
 
+    def getPastNotifications(self):
+        orig = list(reversed(self.pastEvents))
+        self.pastEvents = []
+        return orig
+
     def getCaughtPokemon(self):
         orig = self.caughtPokemon
         self.caughtPokemon = []
         return orig
 
-    def setCaughtPokemon(self, poke):
+    def setCaughtPokemon(self, poke, status, award=None):
         self.pokemon.pop(poke.encounter_id, None)
         self.caughtPokemon.append(poke)
+        hasAward = award is not None
+        d = {
+            'event': 'pokemonEvent',
+            'status': status,
+            'id': poke.pokemon_data.pokemon_id,
+            'name': pokedex[poke.pokemon_data.pokemon_id],
+            'cp': poke.pokemon_data.cp,
+            'timestamp': getJSTime(),
+            'hasAward': hasAward,
+            'award': [{
+                'xp': 0 if not hasAward else award.xp,
+                'candy': 0 if not hasAward else award.candy,
+                'stardust': 0 if not hasAward else award.stardust
+            }]
+        }
+        self.pastEvents.append(d)
 
     def updateAllPokemon(self, cells):
         print("Updating pokemon")

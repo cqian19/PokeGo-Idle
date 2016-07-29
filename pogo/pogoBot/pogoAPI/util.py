@@ -1,6 +1,12 @@
 import struct
+import datetime
 import time
 import threading
+
+def getJSTime():
+    d = datetime.datetime.utcnow()
+    for_js = int(time.mktime(d.timetuple())) * 1000
+    return for_js
 
 def set_interval(func, sec):
     interval = 0

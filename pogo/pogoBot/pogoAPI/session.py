@@ -330,8 +330,8 @@ class PogoSession():
         # Return everything
         return self._state.incubator
 
-    def setCaughtPokemon(self, pokemon):
-        self.getter.setCaughtPokemon(pokemon)
+    def setCaughtPokemon(self, *args):
+        self.getter.setCaughtPokemon(*args)
 
     # These act as more logical functions.
     # Might be better to break out seperately

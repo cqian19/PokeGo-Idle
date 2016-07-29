@@ -288,7 +288,6 @@ function initializeMap() {
     });
     makeSliding();
     makeAnimate();
-    setInterval(getMapData, 5000);
     player.thread = setInterval(player.update, 250);
     mapObjects.thread = setInterval(mapObjects.update, mapObjects.updateTime);
     console.log("Done");
