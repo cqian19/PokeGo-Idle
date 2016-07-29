@@ -146,7 +146,7 @@ class pokemonHandler(Handler):
         candies = self.session.checkInventory().candies
         for pokemon in party:
             poke_id = pokemon.pokemon_id
-            candy_id = baseEvolution[poke_id]
+            candy_id = baseEvolution[str(poke_id)]
             evoCandies = pokedex.evolves[poke_id]
             # Evolve all pokemon when possible
             if evoCandies and candies.get(candy_id, 0) >= evoCandies:
