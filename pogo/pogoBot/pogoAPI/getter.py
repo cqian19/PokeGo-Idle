@@ -28,7 +28,6 @@ class Getter():
         self.forts = {}
         self.gyms = {}
         self.stops = {}
-        self.lastCells = []
         self.inventory = []
         self.threads = []
         self.lock = threading.Lock()

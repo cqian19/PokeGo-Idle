@@ -331,7 +331,7 @@ class PogoSession():
         return self._state.incubator
 
     def setCaughtPokemon(self, pokemon):
-        self.getter.setCaughtPokemon.append(pokemon)
+        self.getter.setCaughtPokemon(pokemon)
 
     # These act as more logical functions.
     # Might be better to break out seperately

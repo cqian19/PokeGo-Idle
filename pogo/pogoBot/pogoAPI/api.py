@@ -4,6 +4,7 @@ import json
 import random
 import logging
 from session import PogoSession
+from throttled_session import ThrottledSession
 from location import Location
 
 from gpsoauth import perform_master_login, perform_oauth
@@ -22,7 +23,8 @@ CLIENT_SIG = '321187995bc7cdc2b5fc91b11a96e2baa8602c62'
 
 class PokeAuthSession():
     def __init__(self, username, password, provider='google', geo_key=None):
-        self.session = self.createRequestsSession()
+        self.session = ThrottledSession()
+
         self.provider = provider
 
         # User credentials
@@ -31,15 +33,6 @@ class PokeAuthSession():
 
         self.access_token = ''
         self.geo_key = geo_key
-
-    @staticmethod
-    def createRequestsSession():
-        session = requests.session()
-        session.headers = {
-            'User-Agent': 'Niantic App',
-        }
-        session.verify = False
-        return session
 
     def createPogoSession(self, provider=None, locationLookup='', session=None):
         if self.provider:
@@ -90,7 +83,7 @@ class PokeAuthSession():
         )
 
     def createPTCSession(self, locationLookup='', session=None):
-        instance = self.createRequestsSession()
+        instance = self.session
         logging.info('Creating PTC session for %s', self.username)
         r = instance.get(LOGIN_URL)
         jdata = json.loads(r.content.decode())
