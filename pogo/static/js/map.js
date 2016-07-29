@@ -97,7 +97,8 @@ var mapObjects = {
         marker.addListener('mouseover', function() {
             if (!opened && !thread) {
                 opened = true;
-                thread = setInterval(update, 1);
+                update();
+                thread = setInterval(update, 500);
                 infoWindow.open(mapObj, this);
             }
         });
