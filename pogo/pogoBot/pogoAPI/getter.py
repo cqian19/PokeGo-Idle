@@ -231,7 +231,7 @@ class Getter():
     def _createThreads(self):
         self.getMapObjects(200)
         mapObjThread = set_interval(self.getMapObjects, 20)
-        getProfThread = set_interval(self.getProfile, 1)
+        getProfThread = set_interval(self.getProfile, 3)
         self.threads.append(mapObjThread)
         self.threads.append(getProfThread)
 
