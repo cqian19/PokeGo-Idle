@@ -1,7 +1,5 @@
 class Handler():
 
-    def __init__(self, session):
-        self.setSession(session)
-
-    def setSession(self, session):
+    def __init__(self, session, logger):
         self.session = session
+        self.logger = logger

@@ -68,8 +68,8 @@ class Location(object):
         if not lon: lon = self.longitude
         return self.getNeighbors(lat, lon)
 
-    def getAllSteps(self, radius=200):
-        distPerStep = 200
+    def getAllSteps(self, radius=150):
+        distPerStep = 150
         radius = max(radius, distPerStep)
         steps = math.ceil(radius/distPerStep)
         start = list(self.getCoordinates()[:2])

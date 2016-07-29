@@ -147,7 +147,7 @@ class Getter():
         return self._state.fortDetails
 
     # Hooks for those bundled in default
-    def getMapObjects(self, radius=600):
+    def getMapObjects(self, radius=400):
         with self.lock:
             steps = self.location.getAllSteps(radius)
             for lat, lon in steps:
@@ -193,12 +193,22 @@ class Getter():
             'cp': poke.pokemon_data.cp,
             'timestamp': getJSTime(),
             'hasAward': hasAward,
-            'award': [{
-                'xp': 0 if not hasAward else award.xp,
-                'candy': 0 if not hasAward else award.candy,
-                'stardust': 0 if not hasAward else award.stardust
-            }]
         }
+        if hasAward:
+            xpSum = candySum = stardustSum = 0
+            for i in award.xp:
+                xpSum += i
+            for i in award.candy:
+                candySum += i
+            for i in award.stardust:
+                stardustSum += i
+            d.update({
+                'award': {
+                    'xp': 0 if not hasAward else xpSum,
+                    'candy': 0 if not hasAward else candySum,
+                    'stardust': 0 if not hasAward else stardustSum
+                }
+            })
         self.pastEvents.append(d)
 
     def updateAllPokemon(self, cells):

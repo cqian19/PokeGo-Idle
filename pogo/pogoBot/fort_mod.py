@@ -1,4 +1,3 @@
-import logging
 from pogoAPI.location import Location
 from mod import Handler
 
@@ -14,7 +13,7 @@ class fortHandler(Handler):
         # Sort nearest forts (pokestop)
         stops = self.session.checkAllStops()
         if stops == self.lastStops: return
-        logging.info("Sorting Nearest Forts:")
+        self.logger.info("Sorting Nearest Forts:")
         latitude, longitude, _ = self.session.getter.getCoordinates()
         ordered_forts = []
         for fort in stops:
@@ -32,19 +31,19 @@ class fortHandler(Handler):
     # Find the fort closest to user
     def findClosestFort(self):
         # Find nearest fort (pokestop)
-        logging.info("Finding Nearest Fort:")
+        self.logger.info("Finding Nearest Fort:")
         return self.sortCloseForts()[0]
 
     # Walk to fort and spin
     def walkAndSpin(self, fort):
         # No fort, demo == over
         if fort:
-            logging.info("Spinning a Fort:")
+            self.logger.info("Spinning a Fort:")
             # Walk over
             self.session.walkTo(fort.latitude, fort.longitude)
             # Give it a spin
             fortResponse = self.session.getter.getFortSearch(fort)
-            logging.info(fortResponse)
+            self.logger.info(fortResponse)
 
     # Walk and spin everywhere
     def walkAndSpinMany(self, forts):

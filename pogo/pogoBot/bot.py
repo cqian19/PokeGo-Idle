@@ -9,13 +9,14 @@ import sys
 
 class Bot():
 
-    def __init__(self, session, pogo_session, poko_session):
+    def __init__(self, session, pogo_session, poko_session, logger):
         self.session = session
         self.pogo_session = pogo_session
         self.poko_session = poko_session
-        self.fh = fort_mod.fortHandler(pogo_session)
-        self.ih = inventory_mod.inventoryHandler(pogo_session)
-        self.ph = pokemon_mod.pokemonHandler(pogo_session)
+        self.logger = logger
+        self.fh = fort_mod.fortHandler(pogo_session, logger)
+        self.ih = inventory_mod.inventoryHandler(pogo_session, logger)
+        self.ph = pokemon_mod.pokemonHandler(pogo_session, logger)
         self.mods = [self.fh, self.ih, self.ph]
         self.mainThread = threading.Thread(target=self.main)
         self.mainThread.daemon = True
@@ -29,7 +30,7 @@ class Bot():
         while True:
             time.sleep(1)
             forts = self.fh.sortCloseForts()
-            self.ph.cleanPokemon(thresholdCP=800)
+            self.ph.cleanPokemon(thresholdCP=1000)
             self.ih.cleanInventory()
             try:
                 if forts:

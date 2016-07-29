@@ -1,6 +1,5 @@
 from pogoAPI.inventory import items
 from mod import Handler
-import logging
 import time
 
 
@@ -8,21 +7,21 @@ class inventoryHandler(Handler):
 
     # Get profile
     def getProfile(self):
-        logging.info("Printing Profile:")
+        self.logger.info("Printing Profile:")
         profile = self.session.checkProfile()
-        logging.info(profile)
+        self.logger.info(profile)
 
     # Do Inventory stuff
     def getInventory(self):
-        logging.info("Get Inventory:")
-        logging.info(self.session.checkInventory())
+        self.logger.info("Get Inventory:")
+        self.logger.info(self.session.checkInventory())
 
 
     # A very brute force approach to evolving
     def evolveAllPokemon(self):
         inventory = self.session.checkInventory()
         for pokemon in inventory["party"]:
-            logging.info(self.session.evolvePokemon(pokemon))
+            self.logger.info(self.session.evolvePokemon(pokemon))
             time.sleep(1)
 
 
@@ -53,11 +52,11 @@ class inventoryHandler(Handler):
         return self.session.setEgg(incubator, egg)
 
     def cleanInventory(self):
-        logging.info("Cleaning out Inventory...")
+        self.logger.info("Cleaning out Inventory...")
         bag = self.session.checkInventory().bag
         itemsCount = sum(bag.values())
         maxItems = self.session.checkPlayerData().max_item_storage
-        logging.info("Inventory capacity {0}/{1}".format(itemsCount, maxItems))
+        self.logger.info("Inventory capacity {0}/{1}".format(itemsCount, maxItems))
         if (itemsCount/maxItems) < .9: return
         # Clear out all of a crtain type
         tossable = [items.POTION, items.SUPER_POTION, items.REVIVE]

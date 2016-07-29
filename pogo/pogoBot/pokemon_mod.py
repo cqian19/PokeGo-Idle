@@ -3,7 +3,6 @@ from pokedex import pokedex, Rarity, baseEvolution
 from pogoAPI.inventory import items
 from pogoAPI.custom_exceptions import GeneralPogoException
 from mod import Handler
-import logging
 import time
 
 class pokemonHandler(Handler):
@@ -14,11 +13,11 @@ class pokemonHandler(Handler):
         # Get Map details and print pokemon
         pokemons = self.session.checkAllPokemon()
         if pokemons == []: return
-        logging.info("Finding Nearby Pokemon:")
+        self.logger.info("Finding Nearby Pokemon:")
         closest = float("Inf")
         best, pokemonBest = -1, None
         latitude, longitude, _ = self.session.getter.getCoordinates()
-        logging.info("Current pos: %f, %f" % (latitude, longitude))
+        self.logger.info("Current pos: %f, %f" % (latitude, longitude))
         seenIds = {}
         for pokemon in pokemons:
             if pokemon.encounter_id in seenIds: continue
@@ -37,7 +36,7 @@ class pokemonHandler(Handler):
             )
 
             # Log the pokemon found
-            logging.info("%s, %f meters away" % (
+            self.logger.info("%s, %f meters away" % (
                 pokedex[pokemonId],
                 dist
             ))
@@ -57,18 +56,19 @@ class pokemonHandler(Handler):
     # Catch a pokemon at a given point
     def walkAndCatch(self, pokemon):
         if pokemon:
-            logging.info("Catching %s:" % pokedex[pokemon.pokemon_data.pokemon_id])
+            self.logger.info("Catching %s:" % pokedex[pokemon.pokemon_data.pokemon_id])
             self.session.walkTo(pokemon.latitude, pokemon.longitude)
-            logging.info(self.encounterAndCatch(pokemon))
+            self.logger.info(self.encounterAndCatch(pokemon))
 
     # Wrap both for ease
-    def encounterAndCatch(self, pokemon, thresholdP=0.5, limit=5, delay=2):
+    def encounterAndCatch(self, pokemon, thresholdP=0.5, limit=15, delay=2):
         # Start encounter
+        print("Encounter start")
         encounter = self.session.encounterPokemon(pokemon)
         # Grab needed data from proto
         chances = encounter.capture_probability.capture_probability
         if not len(chances):
-            logging.error("Pokemon Inventory may be full")
+            self.logger.error("Pokemon Inventory may be full")
             return
         bag = self.session.checkInventory().bag
 
@@ -97,50 +97,52 @@ class pokemonHandler(Handler):
             # or use a lower class ball
             if bestBall == items.UNKNOWN:
                 if altBall != items.UNKNOWN and not berried and items.RAZZ_BERRY in bag and bag[items.RAZZ_BERRY]:
-                    logging.info("Using a RAZZ_BERRY")
+                    self.logger.info("Using a RAZZ_BERRY")
                     self.session.useItemCapture(items.RAZZ_BERRY, pokemon)
                     berried = True
                     time.sleep(delay)
                     continue
                 # if no alt ball, there are no balls
                 elif altBall == items.UNKNOWN:
-                    logging.error("No more pokeballs. Stopping pokemon capture.")
+                    self.logger.error("No more pokeballs. Stopping pokemon capture.")
                     return;
                 else:
                     bestBall = altBall
 
             # Try to catch it!!
             name = pokedex[pokemon.pokemon_data.pokemon_id]
-            logging.info("Catch attempt {0} for {1}. {2}% chance to capture".format(count + 1, name, round(chances[bestBall-1]*100, 2)))
-            logging.info("Using a {0}".format(items[bestBall]))
+            self.logger.info("Catch attempt {0} for {1}. {2}% chance to capture".format(count + 1, name, round(chances[bestBall-1]*100, 2)))
+            self.logger.info("Using a {0}".format(items[bestBall]))
             attempt = self.session.catchPokemon(pokemon, bestBall)
+            print(attempt)
             time.sleep(delay)
 
-            # Success or run away
+            # Success
             if attempt.status == 1:
-                logging.info("Caught {0} in {1} attempt(s)!".format(name, count + 1))
-                self.session.setCaughtPokemon(pokemon)
+                self.logger.info("Caught {0} in {1} attempt(s)!".format(name, count + 1))
+                print(attempt.capture_award)
+                self.session.setCaughtPokemon(encounter.wild_pokemon, "Caught", attempt.capture_award)
                 return attempt
 
             # CATCH_FLEE is bad news
             if attempt.status == 3:
-                logging.info("Possible soft ban.")
-                self.session.setCaughtPokemon(pokemon)
+                self.logger.info("Possible soft ban.")
+                self.session.setCaughtPokemon(encounter.wild_pokemon, "Fled")
                 return attempt
 
             # Only try up to x attempts
             count += 1
             if count >= limit:
-                logging.info("Over catch limit. Was unable to catch.")
-                self.session.setCaughtPokemon(pokemon)
+                self.logger.info("Over catch limit. Was unable to catch.")
+                self.session.setCaughtPokemon(encounter.wild_pokemon, "Failed")
                 return None
 
     def cleanPokemon(self, thresholdCP=300):
-        logging.info("Cleaning out Pokemon...")
+        self.logger.info("Cleaning out Pokemon...")
         party = self.session.checkInventory().party
         stored = len(party)
         maxStorage = self.session.checkPlayerData().max_pokemon_storage
-        logging.info("Pokemon storage capacity: {0}/{1}".format(stored, maxStorage))
+        self.logger.info("Pokemon storage capacity: {0}/{1}".format(stored, maxStorage))
         if stored/maxStorage < .8: return
         # evolables = [pokedex.PIDGEY, pokedex.RATTATA, pokedex.ZUBAT]
         candies = self.session.checkInventory().candies
@@ -150,14 +152,14 @@ class pokemonHandler(Handler):
             evoCandies = pokedex.evolves[poke_id]
             # Evolve all pokemon when possible
             if evoCandies and candies.get(candy_id, 0) >= evoCandies:
-                logging.info("Evolving %s" % pokedex[pokemon.pokemon_id])
-                logging.info(self.session.evolvePokemon(pokemon))
+                self.logger.info("Evolving %s" % pokedex[pokemon.pokemon_id])
+                self.logger.info(self.session.evolvePokemon(pokemon))
                 poke_id += 1
-                time.sleep(.1)
+                time.sleep(.3)
             # If low cp, throw away
             r = pokedex.getRarityById(poke_id)
             if (pokemon.cp < thresholdCP and  r < Rarity.RARE) or r < Rarity.UNCOMMON:
                 # Get rid of low CP, low evolve value
-                logging.info("Releasing %s" % pokedex[pokemon.pokemon_id])
+                self.logger.info("Releasing %s" % pokedex[pokemon.pokemon_id])
                 self.session.releasePokemon(pokemon)
-                time.sleep(.1)
+                time.sleep(.3)
