@@ -195,8 +195,6 @@ class Getter():
             it['Pokemon Egg'] = 1
         for i in res.items_awarded:
             itemName = items[i.item_id]
-            if 'ball' in itemName.lower():
-                itemName = itemName.replace('_', '')
             it[itemName] = it.get(itemName, 0) + i.item_count
         it['Xp'] = res.experience_awarded
         d['award'] = it
