@@ -77,13 +77,14 @@ if __name__ == "__main__":
     if args.auth not in ['ptc', 'google']:
         logging.error('Invalid auth service {}'.format(args.auth))
         sys.exit(-1)
-
+    print("AUTH")
     # Create PokoAuthObject
     poko_session = api.PokeAuthSession(
         args.username,
         args.password,
         args.auth,
-        geo_key=args.geo_key
+        logger,
+        geo_key=args.geo_key,
     )
     # Authenticate with a given location
     # Location is not inherent in authentication
@@ -93,6 +94,8 @@ if __name__ == "__main__":
     except Exception as e:
         logging.error('Could not log in. Double check your login credentials. The servers may also be down.')
         raise e
+    print("DONE")
+
     if pogo_session:
         bot = Bot(poko_session.session, pogo_session, poko_session, logger)
         bot.run()
