@@ -3,16 +3,18 @@
  */
 
 infoParsers = {
-    'pokemonEvent': parsePokemon
+    'pokemonEvent': parsePokemon,
+    'stopEvent': parseStop
 }
 
 function parsePokemon(poke) {
+    console.log("New pokemon")
     var header;
     var pokeName = poke.name.capitalizeFirstLetter();
     switch(poke.status) {
         case 'Caught':
             header = pokeName + " (CP: " + poke.cp + ")" + " caught!";
-            content = "Caught on:\t" + getTime(poke.timestamp) + "\n" +
+            content = "Caught at\t" + getTime(poke.timestamp) + "\n" +
                       "Rewards:  ";
             break;
         case 'Fled':
@@ -30,6 +32,17 @@ function parsePokemon(poke) {
         content: content
     };
     appendNotification(d, poke.hasAward ? poke.award : []);
+}
+
+function parseStop(stop) {
+    console.log("New stop");
+    d = {
+        icon: iconPath + 'pstop' + (stop.lure ? 'lure' : '') + '.png',
+        header: 'Pokestop has been visited!',
+        content: 'Visited at\t' + getTime(stop.timestamp) + '\n' +
+                 'Rewards:'
+    }
+    appendNotification(d, stop.award);
 }
 
 function appendNotification(info, additional) {
@@ -50,7 +63,7 @@ function appendNotification(info, additional) {
             var l = $("<ul>");
             for (key in additional) {
                 console.log(key);
-                l.append($("<li>").text(key.capitalizeFirstLetter() + ": " + additional[key]));
+                l.append($("<li>").text(key.capitalizeFirstLetter().replace('_', ' ') + ": " + additional[key]));
             }
             list.append(l);
         }
@@ -61,8 +74,8 @@ function appendNotification(info, additional) {
 
 function prependAndShift(note) {
     var container = $(".notificationContainer");
-    container.prepend(note.hide());
-    var sep = 7;
+    container.prepend(note);
+    var sep = 10;
     var height = note.height() + sep;
     var max = 800;
     note.remove();
@@ -79,6 +92,7 @@ function prependAndShift(note) {
     });
     container.prepend(note.hide().fadeIn(1000));
     note.fadeIn(1000);
+    console.log(note.height());
 }
 
 function parsePastInfo(pastInfo) {

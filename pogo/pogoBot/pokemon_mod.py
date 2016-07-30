@@ -114,13 +114,11 @@ class pokemonHandler(Handler):
             self.logger.info("Catch attempt {0} for {1}. {2}% chance to capture".format(count + 1, name, round(chances[bestBall-1]*100, 2)))
             self.logger.info("Using a {0}".format(items[bestBall]))
             attempt = self.session.catchPokemon(pokemon, bestBall)
-            print(attempt)
             time.sleep(delay)
 
             # Success
             if attempt.status == 1:
                 self.logger.info("Caught {0} in {1} attempt(s)!".format(name, count + 1))
-                print(attempt.capture_award)
                 self.session.setCaughtPokemon(encounter.wild_pokemon, "Caught", attempt.capture_award)
                 return attempt
 

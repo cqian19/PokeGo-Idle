@@ -1,3 +1,4 @@
+from POGOProtos.Networking.Responses.FortSearchResponse_pb2 import _FORTSEARCHRESPONSE_RESULT
 from pogoAPI.location import Location
 from mod import Handler
 
@@ -43,7 +44,8 @@ class fortHandler(Handler):
             self.session.walkTo(fort.latitude, fort.longitude)
             # Give it a spin
             fortResponse = self.session.getter.getFortSearch(fort)
-            self.logger.info(fortResponse)
+            if fortResponse.result == 1:
+                self.session.setPastStop(fort, fortResponse)
 
     # Walk and spin everywhere
     def walkAndSpinMany(self, forts):

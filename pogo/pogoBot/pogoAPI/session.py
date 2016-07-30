@@ -333,6 +333,9 @@ class PogoSession():
     def setCaughtPokemon(self, *args):
         self.getter.setCaughtPokemon(*args)
 
+    def setPastStop(self, *args):
+        self.getter.setPastStop(*args)
+
     # These act as more logical functions.
     # Might be better to break out seperately
     # Walk over to position in meters

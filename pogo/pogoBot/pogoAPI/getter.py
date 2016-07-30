@@ -6,7 +6,7 @@ from POGOProtos.Networking.Requests.Messages import FortSearchMessage_pb2
 from POGOProtos.Networking.Requests.Messages import GetInventoryMessage_pb2
 from POGOProtos.Networking.Requests.Messages import GetMapObjectsMessage_pb2
 from custom_exceptions import GeneralPogoException
-from inventory import Inventory
+from inventory import Inventory, items
 from util import set_interval
 from pokedex import pokedex
 from util import getJSTime
@@ -14,7 +14,6 @@ import logging
 import random
 import threading
 import time
-
 
 RPC_ID = int(random.random() * 10 ** 12)
 
@@ -175,6 +174,30 @@ class Getter():
         orig = list(reversed(self.pastEvents))
         self.pastEvents = []
         return orig
+
+    def setPastStop(self, fort, res):
+        if not res.experience_awarded:
+            # Glitched response?
+            return
+        d = {
+            'event': 'stopEvent',
+            'timestamp': getJSTime(),
+            'lure': bool(fort.lure_info.encounter_id),
+            'award': {
+                'Xp': res.experience_awarded
+            }
+        }
+        it = {}
+        if res.pokemon_data_egg.id:
+            it['Pokemon Egg'] = 1
+        for i in res.items_awarded:
+            itemName = items[i.item_id]
+            if 'ball' in itemName.lower():
+                itemName = itemName.replace('_', '')
+            it[itemName] = it.get(itemName, 0) + i.item_count
+        it['Xp'] = res.experience_awarded
+        d['award'] = it
+        self.pastEvents.append(d)
 
     def getCaughtPokemon(self):
         orig = self.caughtPokemon
