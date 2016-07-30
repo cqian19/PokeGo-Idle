@@ -143,13 +143,11 @@ var mapObjects = {
                 }
             }
         }
-        console.log(caughtPokemonData);
         // Hide all caught pokemon
         for (var key in caughtPokemonData) {
             var poke = caughtPokemonData[key];
             caughtPokemonData[poke.encounter_id] = poke;
             if (poke.encounter_id in displayed) {
-                console.log("Pokemon caught/fled");
                 var pokeObj = displayed[poke.encounter_id];
                 pokeObj.marker.setVisible(false);
                 delete displayed[key];

@@ -50,7 +50,7 @@ html, body {
 }
 .notificationContainer {
     position: relative;
-    top: 5px;
+    bottom: 5px;
     left:5px;
     border-style: solid;
     border-width: 5px;
@@ -64,27 +64,44 @@ html, body {
 }
 
 .notification {
-    width: auto;
-    height: 90px;
+    position: absolute;
+    display: flex;
+    width: 97%;
+    min-height: 90px;
+    height:auto;
     box-shadow: 0px 0px 4px rgb(119,119,119);
     margin: 4px 6px 6px 4px;
+    border: groove;
+    border-width: 1px;
 }
 
 .notification > .container {
-    width: auto;
+    width: 100%;
+    height: auto;
     position: relative;
     left: 5px;
+    border-left: rgba(0, 0, 0, 0.05) solid;
+    border-width: 2px;
+    padding: 0;
 }
 
-.notification > .container > .noteHeader {
-    font-size: 14px;
+.notification > .container table {
+    width: 100%;
+}
+
+.notification > .container  .noteHeader {
+    font-size: 14.5px;
     font-weight: bold;
     font-family: "Trebuchet MS", Helvetica, sans-serif;
+    padding-left: 5px;
+    border-bottom: rgba(0, 0, 0, 0.05) solid;
 }
 
-.notification > .container > .noteBody {
+.notification > .container  .noteBody {
     font-size: 13px;
     font-family: Verdana, Geneva, sans-serif;
+    white-space: pre-line;
+    padding-left: 5px;
 }
 
 .notification > .iconContainer {
@@ -92,17 +109,17 @@ html, body {
     left: 2px;
     top: 2px;
     float: left;
-    height: 86px;
-    width: 86px;
-    padding: 4px;
-    border-style: ridge;
-    border-width: 1px;
+    height: inherit;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    margin: auto;
 }
 
 .notification > .iconContainer > .icon {
     height: 65px;
     width: 65px;
-    margin-left: 5px;
-    margin-top: 7.5px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 

@@ -12,17 +12,8 @@ function parsePokemon(poke) {
     switch(poke.status) {
         case 'Caught':
             header = pokeName + " (CP: " + poke.cp + ")" + " caught!";
-            content = "Caught on:\t" + getTime(poke.timestamp) + "<br>"
+            content = "Caught on:\t" + getTime(poke.timestamp) + "\n" +
                       "Rewards:  ";
-            var first = true;
-            for (key in poke.award) {
-                if (first) {
-                    content += key.capitalizeFirstLetter() + "x" + poke.award[key];
-                    first = false;
-                } else {
-                    content += "  " + key.capitalizeFirstLetter() + "x" + poke.award[key];
-                }
-            }
             break;
         case 'Fled':
             header = pokeName + " (CP: " + poke.cp + ")" + " has fled!";
@@ -37,26 +28,57 @@ function parsePokemon(poke) {
         icon: iconPath + poke.id +'.png',
         header: header,
         content: content
-    }
-    appendNotification(d);
+    };
+    appendNotification(d, poke.hasAward ? poke.award : []);
 }
 
-function appendNotification(info) {
-    var container = $(".notificationContainer");
+function appendNotification(info, additional) {
     var note = $("<div class=\"notification\">");
     var iconCont = $("<div class =\"iconContainer\">");
     note.append(iconCont);
     iconCont.append($("<img class=\"icon\">").attr("src", info.icon));
     var inner = ($("<div class=\"container\">"));
-    note.append(inner)
-    inner.append($("<tbody>"))
-        .append($("<td>"))
-        .append($("<tr>"))
-        .append($("<div class=\"noteHeader\">").text(info.header))
-        .append($("<tr>"))
-        .append($("<div class=\"noteBody\">").text(info.content))
-        .append($("</tbody>"));
-    container.prepend(note);
+    note.append(inner);
+    inner.append($("<table>")
+        .append($("<tbody>"))
+            .append($("<tr>")
+            .append($("<div class=\"noteHeader\">").text(info.header)))
+            .append($("<tr>")
+            .append(list = $("<div class=\"noteBody\">").text(info.content)))
+        );
+        if (additional) {
+            var l = $("<ul>");
+            for (key in additional) {
+                console.log(key);
+                l.append($("<li>").text(key.capitalizeFirstLetter() + ": " + additional[key]));
+            }
+            list.append(l);
+        }
+    inner.append("</tbody></table>");
+    prependAndShift(note);
+
+}
+
+function prependAndShift(note) {
+    var container = $(".notificationContainer");
+    container.prepend(note.hide());
+    var sep = 7;
+    var height = note.height() + sep;
+    var max = 800;
+    note.remove();
+    container.children().each(function(i, child) {
+        child = $(child);
+        if (height >= max) {
+            child.remove();
+        } else {
+            $(child).animate({
+                top: height
+            }, 200);
+            height += child.height() + sep;
+        }
+    });
+    container.prepend(note.hide().fadeIn(1000));
+    note.fadeIn(1000);
 }
 
 function parsePastInfo(pastInfo) {
@@ -95,3 +117,18 @@ function getTime(t) {
 String.prototype.capitalizeFirstLetter = function() {
     return this.charAt(0).toUpperCase() + this.toLowerCase().slice(1);
 }
+setTimeout(function() {
+    parsePokemon({
+        status: 'Caught',
+        name: 'Pokeball',
+        timestamp: 1,
+        cp: 1000,
+        id: 1,
+        hasAward: true,
+        award: {
+            'candy': 3,
+            'xp': 210,
+            'stardust': 300
+        }
+    })
+}, 5000);
