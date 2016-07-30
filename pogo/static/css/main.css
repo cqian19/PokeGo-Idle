@@ -127,3 +127,6 @@ html, body {
     margin-right: auto;
 }
 
+.notification .reward {
+    text-transform: capitalize;
+}

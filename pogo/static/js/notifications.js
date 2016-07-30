@@ -63,7 +63,7 @@ function appendNotification(info, additional) {
             var l = $("<ul>");
             for (key in additional) {
                 console.log(key);
-                l.append($("<li>").text(key.capitalizeFirstLetter().replace('_', ' ') + ": " + additional[key]));
+                l.append($("<li class='reward'>").text(key.replace('_', ' ') + ": " + additional[key]));
             }
             list.append(l);
         }
