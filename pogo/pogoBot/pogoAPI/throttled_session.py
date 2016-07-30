@@ -29,5 +29,11 @@ class ThrottledSession():
         res = self.throttle.submit(wrapper).response
         return res
 
+    def restart(self):
+        self.throttle.pause()
+        self.throttle.shutdown()
+        self.throttle = BaseThrottler(name='mainThrottle', session=self.session, delay=THROTTLE_DELAY)
+        self.throttle.start()
+
     def stop(self):
         self.throttle.shutdown()

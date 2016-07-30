@@ -2,7 +2,6 @@ import requests
 import re
 import json
 import random
-import logging
 from session import PogoSession
 from throttled_session import ThrottledSession
 from location import Location
@@ -22,9 +21,9 @@ CLIENT_SIG = '321187995bc7cdc2b5fc91b11a96e2baa8602c62'
 
 
 class PokeAuthSession():
-    def __init__(self, username, password, provider='google', geo_key=None):
+    def __init__(self, username, password, provider, logger, geo_key=None):
         self.session = ThrottledSession()
-
+        self.logger = logger
         self.provider = provider
 
         # User credentials
@@ -44,26 +43,27 @@ class PokeAuthSession():
             location = session.location
         elif locationLookup:
             location = Location(locationLookup, self.geo_key)
-            logging.info(location)
+            self.logger.info(location)
 
         if self.access_token and location:
             return PogoSession(
                 self.session,
                 self.provider,
                 self.access_token,
-                location
+                location,
+                self.logger
             )
 
         # else something has gone wrong
         elif location is None:
-            logging.critical('Location not found')
+            self.logger.critical('Location not found')
         elif self.access_token is None:
-            logging.critical('Access token not generated')
+            self.logger.critical('Access token not generated')
         return None
 
     def createGoogleSession(self, locationLookup='', session=None):
 
-        logging.info('Creating Google session for %s', self.username)
+        self.logger.info('Creating Google session for %s', self.username)
 
         r1 = perform_master_login(self.username, self.password, ANDROID_ID)
         r2 = perform_oauth(
@@ -84,7 +84,7 @@ class PokeAuthSession():
 
     def createPTCSession(self, locationLookup='', session=None):
         instance = self.session
-        logging.info('Creating PTC session for %s', self.username)
+        self.logger.info('Creating PTC session for %s', self.username)
         r = instance.get(LOGIN_URL)
         jdata = json.loads(r.content.decode())
         data = {
@@ -100,7 +100,7 @@ class PokeAuthSession():
         try:
             ticket = re.sub('.*ticket=', '', authResponse.history[0].headers['Location'])
         except:
-            logging.error(authResponse.json()['errors'][0])
+            self.logger.error(authResponse.json()['errors'][0])
             raise
 
         data1 = {

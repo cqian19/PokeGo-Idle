@@ -32,6 +32,7 @@ class Getter():
         self.stops = {}
         self.inventory = []
         self.threads = []
+        self.threadBlock = threading.Event()
         self.lock = threading.Lock()
 
     @staticmethod
@@ -93,6 +94,7 @@ class Getter():
             request_type=RequestType_pb2.GET_PLAYER
         )]
         payload += self.getDefaults()
+        self.threadBlock.wait()
         # Send
         res = self.session.wrapAndRequest(payload)
 
@@ -163,6 +165,7 @@ class Getter():
                         longitude=lon
                     ).SerializeToString()
                 )]
+                self.threadBlock.wait()
                 # Send
                 res = self.session.wrapAndRequest(payload, latitude=lat, longitude=lon)
                 # Parse
@@ -284,6 +287,9 @@ class Getter():
         t.start()
 
     def _createThreads(self):
+        print("Create thread")
+        self.threadBlock.set()
+        self.getProfile()
         self.getMapObjects(200)
         mapObjThread = set_interval(self.getMapObjects, 20)
         getProfThread = set_interval(self.getProfile, 3)
@@ -294,6 +300,14 @@ class Getter():
         mainThread = threading.Thread(target=self._createThreads)
         mainThread.start()
 
-    def pause(self):
+    def unpause(self):
+        self.threadBlock.set()
         for thread in self.threads:
             thread.set()
+
+    def pause(self):
+        print("Pausing")
+        self.threadBlock.clear()
+        for thread in self.threads:
+            thread.clear()
+        time.sleep(1)

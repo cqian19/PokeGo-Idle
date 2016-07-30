@@ -25,7 +25,6 @@ from pokedex import pokedex
 from getter import Getter
 
 import requests
-import logging
 import time
 import threading
 import types
@@ -40,8 +39,9 @@ class PogoSession():
 
     lock = threading.Lock()
 
-    def __init__(self, session, authProvider, accessToken, location):
+    def __init__(self, session, authProvider, accessToken, location, logger):
         self.session = session
+        self.logger = logger
         self.authProvider = authProvider
         self.accessToken = accessToken
         self._state = State()
@@ -52,10 +52,12 @@ class PogoSession():
             self.createApiEndpoint(),
             '/rpc'
         )
-        self.getter.getDefaults()
-        self.getter.getProfile()
+        # self.getter.getDefaults()
+        # self.getter.getProfile()
         self.getter.run()
 
+    def getReqSession(self):
+        return self.session
 
     def wrapInRequest(self, payload, **kwargs):
         # If we haven't authenticated before
@@ -108,14 +110,14 @@ class PogoSession():
         try:
             return self.requestOrThrow(req, url)
         except Exception as e:
-            logging.error(e)
+            self.logger.error(e)
             raise GeneralPogoException('Probably server fires.')
 
     def wrapAndRequest(self, payload, **kwargs):
         res = self.request(self.wrapInRequest(payload, **kwargs))
         if res == []:
-            logging.critical(res)
-            logging.critical('Servers seem to be busy. Exiting.')
+            self.logger.critical(res)
+            self.logger.critical('Servers seem to be busy. Exiting.')
             raise Exception('No Valid Response.')
 
         return res
@@ -137,7 +139,7 @@ class PogoSession():
         req = self.wrapInRequest(payload)
         res = self.request(req, API_URL)
         if res is None:
-            logging.critical('Servers seem to be busy. Exiting.')
+            self.logger.critical('Servers seem to be busy. Exiting.')
             raise Exception('Could not connect to servers')
 
         return res.api_url
@@ -356,9 +358,9 @@ class PogoSession():
         dLat = (olatitude - latitude) / divisions
         dLon = (olongitude - longitude) / divisions
 
-        logging.info("Walking %f meters. This will take %f seconds..." % (dist, dist / step))
+        self.logger.info("Walking %f meters. This will take %f seconds..." % (dist, dist / step))
         while dist > epsilon:
-            logging.debug("%f m -> %f m away", closest - dist, closest)
+            self.logger.debug("%f m -> %f m away", closest - dist, closest)
             newLat = latitude + dLat
             if dLat > 0 and newLat > olatitude:
                 latitude = olatitude

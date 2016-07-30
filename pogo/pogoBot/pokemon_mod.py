@@ -64,6 +64,9 @@ class pokemonHandler(Handler):
     def encounterAndCatch(self, pokemon, thresholdP=0.5, limit=15, delay=2):
         # Start encounter
         print("Encounter start")
+        self.logger.debug("Pausing threads to catch pokemon")
+        self.session.getter.pause()
+        self.session.getReqSession().restart()
         encounter = self.session.encounterPokemon(pokemon)
         # Grab needed data from proto
         chances = encounter.capture_probability.capture_probability
@@ -119,12 +122,15 @@ class pokemonHandler(Handler):
             # Success
             if attempt.status == 1:
                 self.logger.info("Caught {0} in {1} attempt(s)!".format(name, count + 1))
+                self.session.getter.unpause()
                 self.session.setCaughtPokemon(encounter.wild_pokemon, "Caught", attempt.capture_award)
                 return attempt
 
             # CATCH_FLEE is bad news
             if attempt.status == 3:
+                self.logger.info("Pokemon has fled.")
                 self.logger.info("Possible soft ban.")
+                self.session.getter.unpause()
                 self.session.setCaughtPokemon(encounter.wild_pokemon, "Fled")
                 return attempt
 
@@ -132,6 +138,7 @@ class pokemonHandler(Handler):
             count += 1
             if count >= limit:
                 self.logger.info("Over catch limit. Was unable to catch.")
+                self.session.getter.unpause()
                 self.session.setCaughtPokemon(encounter.wild_pokemon, "Failed")
                 return None
 
