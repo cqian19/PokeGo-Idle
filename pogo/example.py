@@ -13,13 +13,20 @@ import time
 app = Flask(__name__, template_folder="templates")
 
 def setupLogger():
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
+    logger = logging.getLogger('requests_throttler')
+    logger.propagate = False
+    logger = logging.getLogger('urllib3')
+    logger.propagate = False
+
+    logger = logging.getLogger(__name__)
+    logger.propagate = True
     ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
     formatter = logging.Formatter('Line %(lineno)d,%(filename)s - %(asctime)s - %(levelname)s - %(message)s')
     ch.setFormatter(formatter)
     logger.addHandler(ch)
+    logger.setLevel(logging.INFO)
+    logger.info("Logging set up")
+    return logger
 
 class MapHandler():
 
@@ -31,6 +38,7 @@ class MapHandler():
         app.route('/')(self.default_map)
         app.route('/data', methods=['GET'])(self.get_map_data)
         app.route('/location', methods=['GET'])(self.get_location)
+        app.route('/pastInfo', methods=['GET'])(self.get_past_items)
         app.run(debug=False)
 
     def default_map(self):
@@ -49,9 +57,12 @@ class MapHandler():
         }
         return jsonify(data)
 
+    def get_past_items(self):
+        return jsonify(self.session.getter.getPastNotifications())
+
 if __name__ == "__main__":
-    setupLogger()
-    logging.debug('Logger set up')
+    logger = setupLogger()
+    logger.debug('Logger set up')
 
     # Read in args
     parser = argparse.ArgumentParser()
@@ -83,7 +94,7 @@ if __name__ == "__main__":
         logging.error('Could not log in. Double check your login credentials. The servers may also be down.')
         raise e
     if pogo_session:
-        bot = Bot(poko_session.session, pogo_session, poko_session)
+        bot = Bot(poko_session.session, pogo_session, poko_session, logger)
         bot.run()
         mh = MapHandler(pogo_session, args.geo_key)
     else:
