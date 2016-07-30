@@ -55,6 +55,7 @@ class PogoSession():
         # self.getter.getDefaults()
         # self.getter.getProfile()
         self.getter.run()
+        self.lock = threading.Lock()
 
     def getReqSession(self):
         return self.session
@@ -167,21 +168,22 @@ class PogoSession():
         return r
 
     def cleanStops(self):
-        r = []
-        stops = self.checkAllStops()
-        plat, plon, alt = self.getter.getCoordinates()
-        seenIds = {}
-        for stop in stops:
-            if self.location.getDistance(plat, plon, stop.latitude, stop.longitude) < 300:
-                if stop.id not in seenIds:
-                    seenIds[stop.id] = True
-                    r.append({
-                        'id': stop.id,
-                        'latitude': stop.latitude,
-                        'longitude': stop.longitude,
-                        'lure': bool(stop.lure_info.encounter_id)
-                    })
-        return r
+        with self.lock:
+            r = []
+            stops = list(self.checkAllStops())
+            plat, plon, alt = self.getter.getCoordinates()
+            seenIds = {}
+            for stop in stops:
+                if self.location.getDistance(plat, plon, stop.latitude, stop.longitude) < 300:
+                    if stop.id not in seenIds:
+                        seenIds[stop.id] = True
+                        r.append({
+                            'id': stop.id,
+                            'latitude': stop.latitude,
+                            'longitude': stop.longitude,
+                            'lure': bool(stop.lure_info.encounter_id)
+                        })
+            return r
 
     # Get encounter
     def encounterPokemon(self, pokemon):
