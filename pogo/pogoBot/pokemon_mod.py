@@ -118,9 +118,8 @@ class pokemonHandler(Handler):
             self.logger.info("Using a {0}".format(items[bestBall]))
             attempt = self.session.catchPokemon(pokemon, bestBall)
             time.sleep(delay)
-            print(attempt.status)
             if attempt.status == 0:
-                self.logger.debug("Error catching {0}".format(name))
+                self.logger.error("Error catching {0}".format(name))
                 return
             # Success
             elif attempt.status == 1:
@@ -146,21 +145,29 @@ class pokemonHandler(Handler):
                 self.session.setCaughtPokemon(encounter.wild_pokemon, "Failed")
                 return None
 
-    def cleanPokemon(self, thresholdCP=300):
+    def calcIV(self, poke):
+        print(poke)
+        at = poke.individual_attack
+        de = poke.individual_defense
+        sta = poke.individual_stamina
+        return 100 * (at + de + sta)/45
+
+    def cleanPokemon(self, thresholdCP=300, thresholdIV=80):
         self.logger.info("Cleaning out Pokemon...")
         party = self.session.checkInventory().party
         stored = len(party)
         maxStorage = self.session.checkPlayerData().max_pokemon_storage
         self.logger.info("Pokemon storage capacity: {0}/{1}".format(stored, maxStorage))
         if stored/maxStorage < .8: return
-        # evolables = [pokedex.PIDGEY, pokedex.RATTATA, pokedex.ZUBAT]
         candies = self.session.checkInventory().candies
         for pokemon in party:
+            iv = self.calcIV(pokemon)
+            print(iv)
             poke_id = pokemon.pokemon_id
             candy_id = baseEvolution[str(poke_id)]
             evoCandies = pokedex.evolves[poke_id]
-            # Evolve all pokemon when possible
-            if evoCandies and candies.get(candy_id, 0) >= evoCandies:
+            # Evolve pokemon when possible
+            if iv > thresholdIV and evoCandies and candies.get(candy_id, 0) >= evoCandies:
                 self.logger.info("Evolving %s" % pokedex[pokemon.pokemon_id])
                 self.logger.info(self.session.evolvePokemon(pokemon))
                 candies[candy_id] -= evoCandies
@@ -168,7 +175,7 @@ class pokemonHandler(Handler):
                 time.sleep(.3)
             # If low cp, throw away
             r = pokedex.getRarityById(poke_id)
-            if (pokemon.cp < thresholdCP and  r < Rarity.RARE) or r < Rarity.UNCOMMON:
+            if iv < thresholdIV and (pokemon.cp < thresholdCP and  r < Rarity.RARE) or r < Rarity.UNCOMMON:
                 # Get rid of low CP, low evolve value
                 self.logger.info("Releasing %s" % pokedex[pokemon.pokemon_id])
                 self.session.releasePokemon(pokemon)
