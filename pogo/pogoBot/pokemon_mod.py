@@ -154,6 +154,7 @@ class pokemonHandler(Handler):
             if evoCandies and candies.get(candy_id, 0) >= evoCandies:
                 self.logger.info("Evolving %s" % pokedex[pokemon.pokemon_id])
                 self.logger.info(self.session.evolvePokemon(pokemon))
+                candies[candy_id] -= evoCandies
                 poke_id += 1
                 time.sleep(.3)
             # If low cp, throw away
@@ -162,4 +163,8 @@ class pokemonHandler(Handler):
                 # Get rid of low CP, low evolve value
                 self.logger.info("Releasing %s" % pokedex[pokemon.pokemon_id])
                 self.session.releasePokemon(pokemon)
+                candies[candy_id] += 1
                 time.sleep(.3)
+                stored -= 1
+            if stored/maxStorage < .8:
+                break;
