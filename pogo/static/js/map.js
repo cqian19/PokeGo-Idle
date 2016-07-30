@@ -282,7 +282,7 @@ function initializeMap() {
     console.log("Initializing map");
     mapObj = new google.maps.Map(document.getElementById('map'), {
           center: {lat: 37.4419, lng: -122.1419},
-          zoom: 15,
+          zoom: 14,
           minZoom: 4
     });
     makeSliding();
