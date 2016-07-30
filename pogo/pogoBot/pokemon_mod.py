@@ -43,12 +43,15 @@ class pokemonHandler(Handler):
 
             rarity = pokedex.getRarityById(pokemonId)
             # Greedy for rarest
-            if rarity > best:
+            if rarity >= Rarity.VERY_RARE and rarity > best:
                 pokemonBest = pokemon
                 best = rarity
                 closest = dist
-            # Greedy for closest of same rarity
-            elif rarity == best and dist < closest:
+            elif best != -1 and rarity == best and dist < closest:
+                pokemonBest = pokemon
+                closest = dist
+            # Greedy for closest of low rarity
+            elif best == -1 and dist < closest:
                 pokemonBest = pokemon
                 closest = dist
         return pokemonBest
@@ -74,7 +77,6 @@ class pokemonHandler(Handler):
             self.logger.error("Pokemon Inventory may be full")
             return
         bag = self.session.checkInventory().bag
-
         # Have we used a razz berry yet?
         berried = False
 
@@ -89,7 +91,7 @@ class pokemonHandler(Handler):
             # wanted threshold
             for i in range(len(chances)):
                 j = i + 1
-                if j in bag:
+                if bag.get(j, 0):
                     if not altBall:
                         altBall = j
                     if chances[i] > thresholdP:
@@ -117,6 +119,7 @@ class pokemonHandler(Handler):
             self.logger.info("Catch attempt {0} for {1}. {2}% chance to capture".format(count + 1, name, round(chances[bestBall-1]*100, 2)))
             self.logger.info("Using a {0}".format(items[bestBall]))
             attempt = self.session.catchPokemon(pokemon, bestBall)
+            bag[bestBall]  = str(int(bag[bestBall]) - 1)
             time.sleep(delay)
             if attempt.status == 0:
                 self.logger.error("Error catching {0}".format(name))
