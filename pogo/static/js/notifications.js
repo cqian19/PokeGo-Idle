@@ -5,10 +5,10 @@
 infoParsers = {
     'pokemonEvent': parsePokemon,
     'stopEvent': parseStop
-}
+};
 
 function parsePokemon(poke) {
-    console.log("New pokemon")
+    console.log("New pokemon");
     var header;
     var pokeName = poke.name.capitalizeFirstLetter();
     switch(poke.status) {
@@ -36,6 +36,7 @@ function parsePokemon(poke) {
 
 function parseStop(stop) {
     console.log("New stop");
+    console.log(stop);
     d = {
         icon: iconPath + 'pstop' + (stop.lure ? 'lure' : '') + '.png',
         header: 'Pokestop has been visited!',
@@ -62,8 +63,7 @@ function appendNotification(info, additional) {
         if (additional) {
             var l = $("<ul>");
             for (key in additional) {
-                console.log(key);
-                l.append($("<li class='reward'>").text(key.replace('_', ' ') + ": " + additional[key]));
+                l.append($("<li class='reward'>").text(key.toLowerCase().replace('_', ' ') + ": " + additional[key]));
             }
             list.append(l);
         }
@@ -92,13 +92,11 @@ function prependAndShift(note) {
     });
     container.prepend(note.hide().fadeIn(1000));
     note.fadeIn(1000);
-    console.log(note.height());
 }
 
 function parsePastInfo(pastInfo) {
     for (key in pastInfo) {
         info = pastInfo[key];
-        console.log(info);
         if (info['event'] in infoParsers) {
             infoParsers[info['event']](info);
         } else {
