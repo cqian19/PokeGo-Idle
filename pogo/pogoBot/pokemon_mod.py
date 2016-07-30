@@ -61,7 +61,7 @@ class pokemonHandler(Handler):
             self.logger.info(self.encounterAndCatch(pokemon))
 
     # Wrap both for ease
-    def encounterAndCatch(self, pokemon, thresholdP=0.5, limit=15, delay=2):
+    def encounterAndCatch(self, pokemon, thresholdP=0.5, limit=7, delay=2):
         # Start encounter
         print("Encounter start")
         self.logger.debug("Pausing threads to catch pokemon")
@@ -118,16 +118,20 @@ class pokemonHandler(Handler):
             self.logger.info("Using a {0}".format(items[bestBall]))
             attempt = self.session.catchPokemon(pokemon, bestBall)
             time.sleep(delay)
-
+            print(attempt.status)
+            if attempt.status == 0:
+                self.logger.debug("Error catching {0}".format(name))
+                return
             # Success
-            if attempt.status == 1:
+            elif attempt.status == 1:
                 self.logger.info("Caught {0} in {1} attempt(s)!".format(name, count + 1))
                 self.session.getter.unpause()
                 self.session.setCaughtPokemon(encounter.wild_pokemon, "Caught", attempt.capture_award)
                 return attempt
-
+            elif attempt.status == 2:
+                self.logger.info("{0} has escaped from the pokeball!".format(name))
             # CATCH_FLEE is bad news
-            if attempt.status == 3:
+            elif attempt.status == 3:
                 self.logger.info("Pokemon has fled.")
                 self.logger.info("Possible soft ban.")
                 self.session.getter.unpause()
