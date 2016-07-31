@@ -76,7 +76,7 @@ function prependAndShift(note) {
     container.prepend(note);
     var sep = 10;
     var height = note.height() + sep;
-    var max = 800;
+    var max = 1500;
     note.remove();
     container.children().each(function(i, child) {
         child = $(child);

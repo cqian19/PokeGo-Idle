@@ -69,6 +69,7 @@ html, body {
     border-radius: 4px;
     left:8px;
     font-family: Fixed, monospace;
+    margin: auto;
 }
 
 .playerCard .playerImage {
@@ -113,15 +114,24 @@ html, body {
 
 .itemLabel {
     left: 0;
-	font-family: Verdana, Geneva, sans-serif;
+    width: 100%;
+    padding-left: 6px;
+    display: inline-block;
+}
+
+.playerCard .itemContainer > .itemLabel div {
     font-weight: lighter;
     font-family: Fixed, monospace;
+    position: absolute;
+    width: 100%;
+    display: inline-block;
+    left: 25px;
 }
 
 .playerCard .itemContainer > .itemLabel img {
   	padding-top: 3px;
     height: 16px;
-    width: 16px;
+    width: auto;
     float: left;
 }
 
@@ -138,6 +148,7 @@ html, body {
     height: 50%;
     overflow-x: hidden;
     overflow-y: scroll;
+    margin: auto;
 }
 
 .notification {
