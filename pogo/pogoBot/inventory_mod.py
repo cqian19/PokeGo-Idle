@@ -72,5 +72,5 @@ class inventoryHandler(Handler):
             items.RAZZ_BERRY: 25
         }
         for limit in limited:
-            if limit in bag and bag[limit] > limited[limit]:
+            if limit in bag and int(bag[limit]) > limited[limit]:
                 self.session.recycleItem(limit, bag[limit] - limited[limit])
