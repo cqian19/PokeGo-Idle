@@ -63,12 +63,12 @@ class pokemonHandler(Handler):
             self.logger.info(self.encounterAndCatch(pokemon))
 
     # Wrap both for ease
-    def encounterAndCatch(self, pokemon, thresholdP=0.5, limit=7, delay=2):
+    def encounterAndCatch(self, pokemon, thresholdP=0.33, limit=7, delay=1):
         # Start encounter
         print("Encounter start")
         self.logger.debug("Pausing threads to catch pokemon")
         self.session.getter.pause()
-        time.sleep(2)
+        time.sleep(1)
         self.session.getReqSession().pauseExec()
         encounter = self.session.encounterPokemon(pokemon)
         # Grab needed data from proto
@@ -76,7 +76,7 @@ class pokemonHandler(Handler):
         if not len(chances):
             self.logger.error("Pokemon Inventory may be full")
             self.logger.error("Pokemon may also have disappeared")
-            self.session.setCaughtPokemon(encounter.wild_pokemon, "Failed")
+            self.session.setCaughtPokemon(pokemon, "Failed")
             return
         bag = self.session.checkInventory().bag
         # Have we used a razz berry yet?
