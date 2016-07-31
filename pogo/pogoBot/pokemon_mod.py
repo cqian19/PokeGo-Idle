@@ -181,7 +181,7 @@ class pokemonHandler(Handler):
                 time.sleep(.3)
             # If low cp, throw away
             r = pokedex.getRarityById(poke_id)
-            if (iv < thresholdIV or pokemon.cp < thresholdCP) and  r < Rarity.RARE or r < Rarity.UNCOMMON:
+            if (iv < thresholdIV or pokemon.cp < thresholdCP) and r <= Rarity.RARE or r <= Rarity.UNCOMMON:
                 # Get rid of low CP, low evolve value
                 self.logger.info("Releasing %s" % pokedex[pokemon.pokemon_id])
                 self.session.releasePokemon(pokemon)
