@@ -7,9 +7,9 @@ from POGOProtos.Networking.Requests.Messages import GetInventoryMessage_pb2
 from POGOProtos.Networking.Requests.Messages import GetMapObjectsMessage_pb2
 from custom_exceptions import GeneralPogoException
 from inventory import Inventory, items
-from util import set_interval
+from util import set_interval, getJSTime
 from pokedex import pokedex
-from util import getJSTime
+from datetime import datetime
 import logging
 import random
 import threading
@@ -258,16 +258,17 @@ class Getter():
             for poke in cell.wild_pokemons:
                 if poke.encounter_id not in self.pokemon:
                     self.pokemon[poke.encounter_id] = poke
+        self.cleanOldPokemon()
 
-    # Currently Unimplemented
     def cleanOldPokemon(self):
-        now = time.time()
+        now = datetime.utcnow()
         for id, poke in list(self.pokemon.items()):
             # Don't deal with pokemon with bugged negative time_till_hidden
             if poke.time_till_hidden_ms > 0:
-                sec = poke.time_till_hidden_ms/1000
-                if now - poke.foundTime > sec:
-                    print("Pokemon has disappeared")
+                d_t = datetime.utcfromtimestamp(
+                    (poke.last_modified_timestamp_ms +
+                     poke.time_till_hidden_ms) / 1000.0)
+                if now > d_t:
                     self.pokemon.pop(id)
 
     def updateAllForts(self, cells):
