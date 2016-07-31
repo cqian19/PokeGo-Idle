@@ -362,7 +362,7 @@ class PogoSession():
     # These act as more logical functions.
     # Might be better to break out seperately
     # Walk over to position in meters
-    def walkTo(self, olatitude, olongitude, epsilon=10, step=25):
+    def walkTo(self, olatitude, olongitude, epsilon=10, step=25, iter=False):
         # Calculate distance to position
         latitude, longitude, _ = self.getter.getCoordinates()
         dist = closest = Location.getDistance(
@@ -378,7 +378,6 @@ class PogoSession():
             divisions = 1
         dLat = (olatitude - latitude) / divisions
         dLon = (olongitude - longitude) / divisions
-
         self.logger.info("Walking %f meters. This will take %f seconds..." % (dist, dist / step))
         while dist > epsilon:
             self.logger.debug("%f m -> %f m away", closest - dist, closest)
@@ -400,6 +399,8 @@ class PogoSession():
                 latitude,
                 longitude
             )
+            if iter:
+                yield
             time.sleep(1)
             dist = Location.getDistance(
                 latitude,
@@ -428,6 +429,9 @@ class PogoSession():
 
     def checkAllStops(self):
         return self.getter.stops.values()
+
+    def checkUnspinnedStops(self):
+       return self.getter.filterUnspinnedStops(self.checkAllStops())
 
     # Check, so we don't have to start another request
     def checkEggs(self):

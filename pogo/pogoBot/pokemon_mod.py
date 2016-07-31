@@ -34,13 +34,11 @@ class pokemonHandler(Handler):
                 pokemon.latitude,
                 pokemon.longitude
             )
-
             # Log the pokemon found
             self.logger.info("%s, %f meters away" % (
                 pokedex[pokemonId],
                 dist
             ))
-
             rarity = pokedex.getRarityById(pokemonId)
             # Greedy for rarest
             if rarity >= Rarity.VERY_RARE and rarity > best:
@@ -60,7 +58,8 @@ class pokemonHandler(Handler):
     def walkAndCatch(self, pokemon):
         if pokemon:
             self.logger.info("Catching %s:" % pokedex[pokemon.pokemon_data.pokemon_id])
-            self.session.walkTo(pokemon.latitude, pokemon.longitude)
+            for i in self.session.walkTo(pokemon.latitude, pokemon.longitude, iter=True):
+                yield # Yield after every step for stops
             self.logger.info(self.encounterAndCatch(pokemon))
 
     # Wrap both for ease
@@ -92,7 +91,7 @@ class pokemonHandler(Handler):
             # wanted threshold
             for i in range(len(chances)):
                 j = i + 1
-                if bag.get(j, 0):
+                if int(bag.get(j, 0)):
                     if not altBall:
                         altBall = j
                     if chances[i] > thresholdP:
@@ -102,7 +101,7 @@ class pokemonHandler(Handler):
             # If we can't determine a ball, try a berry
             # or use a lower class ball
             if bestBall == items.UNKNOWN:
-                if altBall != items.UNKNOWN and not berried and items.RAZZ_BERRY in bag and bag[items.RAZZ_BERRY]:
+                if altBall != items.UNKNOWN and not berried and items.RAZZ_BERRY in bag and int(bag[items.RAZZ_BERRY]):
                     self.logger.info("Using a RAZZ_BERRY")
                     self.session.useItemCapture(items.RAZZ_BERRY, pokemon)
                     berried = True
@@ -111,7 +110,7 @@ class pokemonHandler(Handler):
                 # if no alt ball, there are no balls
                 elif altBall == items.UNKNOWN:
                     self.logger.error("No more pokeballs. Stopping pokemon capture.")
-                    return;
+                    return
                 else:
                     bestBall = altBall
 
@@ -120,7 +119,7 @@ class pokemonHandler(Handler):
             self.logger.info("Catch attempt {0} for {1}. {2}% chance to capture".format(count + 1, name, round(chances[bestBall-1]*100, 2)))
             self.logger.info("Using a {0}".format(items[bestBall]))
             attempt = self.session.catchPokemon(pokemon, bestBall)
-            bag[bestBall]  = str(int(bag[bestBall]) - 1)
+            bag[bestBall] = int(bag[bestBall]) - 1
             time.sleep(delay)
             if attempt.status == 0:
                 self.session.getter.unpause()

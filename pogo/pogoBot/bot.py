@@ -29,17 +29,14 @@ class Bot():
         # Run the bot
         while True:
             time.sleep(1)
-            forts = self.fh.sortCloseForts()
             self.ph.cleanPokemon(thresholdCP=1000)
             self.ih.cleanInventory()
             try:
-                if forts:
-                    for fort in forts:
-                        pokemon = self.ph.findBestPokemon()
-                        if pokemon:
-                            self.ph.walkAndCatch(pokemon)
-                        self.fh.walkAndSpin(fort)
-                        cooldown = 1
+                pokemon = self.ph.findBestPokemon()
+                for i in self.ph.walkAndCatch(pokemon):
+                    forts = self.fh.sortCloseForts()
+                    self.fh.spinAll(forts)
+                    cooldown = 1
 
             # Catch problems and reauthenticate
             except GeneralPogoException as e:

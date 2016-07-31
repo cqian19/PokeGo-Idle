@@ -24,6 +24,10 @@ class Location(object):
     def getDistance(*coords):
         return gpxpy.geo.haversine_distance(*coords)
 
+    def getFortDistance(self, fort):
+        lat, lng ,alt = self.getCoordinates()
+        return self.getDistance(lat, lng, fort.latitude, fort.longitude)
+
     def setLocation(self, search):
         providers = ['google', 'osm', 'arcgis', 'freegeoip', 'komoot']
         for p in providers:

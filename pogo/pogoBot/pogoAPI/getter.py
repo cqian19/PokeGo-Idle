@@ -16,6 +16,7 @@ import threading
 import time
 
 RPC_ID = int(random.random() * 10 ** 12)
+STOP_COOLDOWN = 300
 
 class Getter():
 
@@ -26,6 +27,7 @@ class Getter():
         # Set up Inventory
         self.pokemon = {}
         self.caughtPokemon = []
+        self.pastStops = {}
         self.pastEvents = []
         self.forts = {}
         self.gyms = {}
@@ -186,9 +188,9 @@ class Getter():
         return orig
 
     def setPastStop(self, fort, res):
-        if not res.experience_awarded:
-            # Glitched response?
+        if not res.experience_awarded:  # Glitched response?
             return
+        self.pastStops[fort.id] = time.time()
         d = {
             'event': 'stopEvent',
             'timestamp': getJSTime(),
@@ -206,6 +208,14 @@ class Getter():
         it['Xp'] = res.experience_awarded
         d['award'] = it
         self.pastEvents.append(d)
+
+    def filterUnspinnedStops(self, stops):
+        now = time.time()
+        l = []
+        for stop in stops:
+            if stop.id not in self.pastStops or now - self.pastStops[stop.id] > STOP_COOLDOWN:
+                l.append(stop)
+        return l
 
     def getCaughtPokemon(self):
         orig = self.caughtPokemon
