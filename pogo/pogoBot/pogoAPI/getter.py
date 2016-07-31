@@ -96,14 +96,12 @@ class Getter():
     # Core api calls
     # Get profile
     def getProfile(self):
-        print("Get profile")
         # Create profile request
         payload = [Request_pb2.Request(
             request_type=RequestType_pb2.GET_PLAYER
         )]
         payload += self.getDefaults()
         self.threadBlock.wait()
-        print("Waited")
         # Send
         res = self.session.wrapAndRequest(payload)
         # Parse

@@ -45,6 +45,7 @@ class PogoSession():
         self.authProvider = authProvider
         self.accessToken = accessToken
         self._state = State()
+        self.lock = threading.Lock()
         self.location = location
         self.authTicket = None
         self.getter = Getter(self, location, self._state)
@@ -52,10 +53,8 @@ class PogoSession():
             self.createApiEndpoint(),
             '/rpc'
         )
-        # self.getter.getDefaults()
-        # self.getter.getProfile()
+        time.sleep(.5)
         self.getter.run()
-        self.lock = threading.Lock()
 
     def getReqSession(self):
         return self.session
