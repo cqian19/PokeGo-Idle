@@ -53,7 +53,7 @@ class PogoSession():
             self.createApiEndpoint(),
             '/rpc'
         )
-        time.sleep(.5)
+        time.sleep(2)
         self.getter.run()
 
     def getReqSession(self):
@@ -411,6 +411,7 @@ class PogoSession():
 
     def pause(self):
         self.getter.pause()
+        self.session.stop()
 
     def checkPlayerStats(self):
         return self._state.playerStats
