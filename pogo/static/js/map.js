@@ -5,7 +5,7 @@
 var focused = true;
 var mapObj = null;
 var iconPath = "static/icons/";
-var imagePath = "static/images/"
+var imagePath = "static/images/";
 var playerUpdateTime = 350;
 
 var player = {
@@ -77,7 +77,7 @@ var mapObjects = {
     thread: null,
     fortUpdating: false,
     pokemonUpdating: false,
-    updateTime: 1000,
+    updateTime: 2000,
     lastPokemonData: {},
     lastCaughtPokemonData: {},
     _createPokemonMarker: function(poke, pokeSlot) {
@@ -284,7 +284,7 @@ function initializeMap() {
     console.log("Initializing map");
     mapObj = new google.maps.Map(document.getElementById('map'), {
           center: {lat: 37.4419, lng: -122.1419},
-          zoom: 14,
+          zoom: 16,
           minZoom: 4
     });
     makeSliding();
