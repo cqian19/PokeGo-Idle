@@ -72,6 +72,7 @@ class Getter():
         try:
             self._state.eggs.ParseFromString(res.returns[1])
             self._state.inventory.ParseFromString(res.returns[2])
+            self.parsePlayerStats(self._state.inventory)
             self._state.badges.ParseFromString(res.returns[3])
             self._state.settings.ParseFromString(res.returns[4])
         except Exception as e:
@@ -82,6 +83,15 @@ class Getter():
         item = self._state.inventory.inventory_delta.inventory_items
         self.inventory = Inventory(item)
 
+    def parsePlayerStats(self, inventory):
+        print(inventory)
+        for i in inventory.inventory_delta.inventory_items:
+            stats = i.inventory_item_data.player_stats
+            level = stats.level
+            if level:
+                print(stats)
+                self._state.playerStats = stats
+                break
 
     def getCoordinates(self):
         return self.location.getCoordinates()
@@ -104,6 +114,7 @@ class Getter():
         self._state.player_data = self._state.profile.player_data
         # Return everything
         return self._state.profile
+
 
     def getFortSearch(self, fort):
         # Create request
@@ -286,8 +297,6 @@ class Getter():
 
     def _createThreads(self):
         print("Create thread")
-        self.threadBlock.set()
-        self.getProfile()
         self.getMapObjects(200)
         mapObjThread = set_interval(self.getMapObjects, 20)
         getProfThread = set_interval(self.getProfile, 3)
@@ -295,6 +304,8 @@ class Getter():
         self.threads.append(getProfThread)
 
     def run(self):
+        self.threadBlock.set()
+        self.getProfile()
         mainThread = threading.Thread(target=self._createThreads)
         mainThread.start()
 

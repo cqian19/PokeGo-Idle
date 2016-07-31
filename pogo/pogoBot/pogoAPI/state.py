@@ -34,3 +34,4 @@ class State(object):
         self.release = ReleasePokemonResponse_pb2.ReleasePokemonResponse()
         self.recycle = RecycleInventoryItemResponse_pb2.RecycleInventoryItemResponse()
         self.incubator = UseItemEggIncubatorResponse_pb2.UseItemEggIncubatorResponse()
+        self.playerStats = None

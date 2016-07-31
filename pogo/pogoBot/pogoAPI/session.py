@@ -21,7 +21,7 @@ from custom_exceptions import GeneralPogoException
 from inventory import Inventory, items
 from location import Location
 from state import State
-from pokedex import pokedex
+from pokedex import pokedex, teams
 from getter import Getter
 
 import requests
@@ -168,22 +168,40 @@ class PogoSession():
         return r
 
     def cleanStops(self):
-        with self.lock:
-            r = []
-            stops = list(self.checkAllStops())
-            plat, plon, alt = self.getter.getCoordinates()
-            seenIds = {}
-            for stop in stops:
-                if self.location.getDistance(plat, plon, stop.latitude, stop.longitude) < 300:
-                    if stop.id not in seenIds:
-                        seenIds[stop.id] = True
-                        r.append({
-                            'id': stop.id,
-                            'latitude': stop.latitude,
-                            'longitude': stop.longitude,
-                            'lure': bool(stop.lure_info.encounter_id)
-                        })
-            return r
+        r = []
+        stops = list(self.checkAllStops())
+        plat, plon, alt = self.getter.getCoordinates()
+        seenIds = {}
+        for stop in stops:
+            if self.location.getDistance(plat, plon, stop.latitude, stop.longitude) < 300:
+                if stop.id not in seenIds:
+                    seenIds[stop.id] = True
+                    r.append({
+                        'id': stop.id,
+                        'latitude': stop.latitude,
+                        'longitude': stop.longitude,
+                        'lure': bool(stop.lure_info.encounter_id)
+                    })
+        return r
+
+    def cleanPlayerInfo(self):
+        data = self.checkPlayerData()
+        stats = self.checkPlayerStats()
+        stardust = 0
+        for i in data.currencies:
+            if i.name == 'STARDUST':
+                stardust = i.amount
+                break
+        d = {
+            'username': data.username,
+            'team': teams[data.team],
+            'level': stats.level,
+            'xp': stats.experience,
+            'maxXp': stats.next_level_xp,
+            'stardust': stardust,
+            'gender': 'Male' if data.avatar.gender == 0 else 'Female'
+        }
+        return d
 
     # Get encounter
     def encounterPokemon(self, pokemon):
@@ -391,6 +409,9 @@ class PogoSession():
 
     def pause(self):
         self.getter.pause()
+
+    def checkPlayerStats(self):
+        return self._state.playerStats
 
     def checkProfile(self):
         return self._state.profile
