@@ -33,17 +33,20 @@ function parsePlayerData(playerData) {
     if (exp.text() != expText) {
         exp.text(expText);
         var xpInt = parseInt(playerData.xp);
-        percent = 100 * xpInt / parseInt(playerData.maxXp);
+        var newW = expBar.parent().width() * xpInt / parseInt(playerData.maxXp);
         if (xpInt != lastxp) {
             if (xpInt > lastxp) {
                  $(expBar).animate({
-                    width: percent + '%'
+                    width: newW
                  }, 500, 'easeOutQuart')
             } else {
                  $(expBar).animate({
-                    width: '100%'
+                    width: expBar.parent().width()
                  }, 2000, 'easeOutQuart', function() {
-                     expBar.attr('width', percent + '%');
+                     expBar.attr('width', 0);
+                     $(expBar).animate({
+                         width: newW
+                     }, 500, 'easeOutQuart')
                  })
             }
             lastxp = xpInt;
