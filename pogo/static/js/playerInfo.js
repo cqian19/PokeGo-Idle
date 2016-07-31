@@ -69,4 +69,4 @@ function update() {
     getPlayerData(parsePlayerData, function() { console.log("Get player info failed"); });
 }
 update()
-setInterval(update, 3000);
+setInterval(update, 2000);
