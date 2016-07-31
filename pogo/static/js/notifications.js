@@ -36,7 +36,6 @@ function parsePokemon(poke) {
 
 function parseStop(stop) {
     console.log("New stop");
-    console.log(stop);
     d = {
         icon: iconPath + 'pstop' + (stop.lure ? 'lure' : '') + '.png',
         header: 'Pokestop has been visited!',
@@ -119,8 +118,6 @@ function update() {
     getPastInfo(parsePastInfo, function() { console.log("Get past info failed"); });
 }
 
-setInterval(update, 1000);
-
 function getTime(t) {
     var diff = new Date().getTimezoneOffset();
     return (new Date(t - diff * 60000)).toLocaleTimeString()
@@ -129,6 +126,9 @@ function getTime(t) {
 String.prototype.capitalizeFirstLetter = function() {
     return this.charAt(0).toUpperCase() + this.toLowerCase().slice(1);
 }
+
+setInterval(update, 1000);
+
 setTimeout(function() {
     parsePokemon({
         status: 'Caught',
