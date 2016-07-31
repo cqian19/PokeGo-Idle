@@ -5,7 +5,7 @@ import time
 class fortHandler(Handler):
 
     lastStops = {}
-    close = 30 # Testing within spin distance
+    close = 40 # Testing within spin distance
     # Basic solution to spinning all forts.
     # Since traveling salesman problem, not
     # true solution. But at least you get
