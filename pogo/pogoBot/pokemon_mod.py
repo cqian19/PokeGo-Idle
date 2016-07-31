@@ -75,6 +75,8 @@ class pokemonHandler(Handler):
         chances = encounter.capture_probability.capture_probability
         if not len(chances):
             self.logger.error("Pokemon Inventory may be full")
+            self.logger.error("Pokemon may also have disappeared")
+            self.session.setCaughtPokemon(encounter.wild_pokemon, "Failed")
             return
         bag = self.session.checkInventory().bag
         # Have we used a razz berry yet?
