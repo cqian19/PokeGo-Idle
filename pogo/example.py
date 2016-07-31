@@ -39,6 +39,7 @@ class MapHandler():
         app.route('/data', methods=['GET'])(self.get_map_data)
         app.route('/location', methods=['GET'])(self.get_location)
         app.route('/pastInfo', methods=['GET'])(self.get_past_items)
+        app.route('/playerData', methods=['GET'])(self.get_profile)
         app.run(debug=False)
 
     def default_map(self):
@@ -59,6 +60,9 @@ class MapHandler():
 
     def get_past_items(self):
         return jsonify(self.session.getter.getPastNotifications())
+
+    def get_profile(self):
+        return jsonify(self.session.cleanPlayerInfo())
 
 if __name__ == "__main__":
     logger = setupLogger()
