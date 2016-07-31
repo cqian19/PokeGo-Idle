@@ -128,19 +128,3 @@ String.prototype.capitalizeFirstLetter = function() {
 }
 
 setInterval(update, 1000);
-
-setTimeout(function() {
-    parsePokemon({
-        status: 'Caught',
-        name: 'Pokeball',
-        timestamp: 1,
-        cp: 1000,
-        id: 1,
-        hasAward: true,
-        award: {
-            'candy': 3,
-            'xp': 210,
-            'stardust': 300
-        }
-    })
-}, 5000);

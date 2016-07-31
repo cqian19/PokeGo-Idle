@@ -17,6 +17,7 @@ var player = {
     latLng: null,
     posChanged: false,
     thread: null,
+    updateTime: 250,
     initializeMarker: function() {
         if (player.marker) { return; }
         player.marker = new SlidingMarker({
@@ -77,7 +78,7 @@ var mapObjects = {
     thread: null,
     fortUpdating: false,
     pokemonUpdating: false,
-    updateTime: 2000,
+    updateTime: 1000,
     lastPokemonData: {},
     lastCaughtPokemonData: {},
     _createPokemonMarker: function(poke, pokeSlot) {
@@ -289,7 +290,7 @@ function initializeMap() {
     });
     makeSliding();
     makeAnimate();
-    player.thread = setInterval(player.update, 250);
+    player.thread = setInterval(player.update, player.updateTime);
     mapObjects.thread = setInterval(mapObjects.update, mapObjects.updateTime);
     console.log("Done");
 }
