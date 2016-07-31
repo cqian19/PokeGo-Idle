@@ -11,15 +11,17 @@ def getJSTime():
 def set_interval(func, sec):
     interval = 0
     stopped = threading.Event()
+    outside = threading.Event()
     def loop():  # executed in another thread
         nonlocal interval
-        while not stopped.wait(interval):  # until stopped
+        while not stopped.wait(interval) and outside.wait():  # until stopped
             interval = sec
             func()
+    outside.set()
     t = threading.Thread(target=loop)
     t.daemon = True  # stop if the program exits
     t.start()
-    return stopped
+    return outside
 
 def f2i(float):
     return struct.unpack('<Q', struct.pack('<d', float))[0]

@@ -10,6 +10,7 @@ class ThrottledSession():
         self.session = self.createBaseSession()
         self.throttle = BaseThrottler(name='mainThrottle', session=self.session, delay=THROTTLE_DELAY)
         self.throttle.start()
+        self.orig = None
 
     def createBaseSession(self):
         sess = session()
@@ -30,8 +31,15 @@ class ThrottledSession():
         return res
 
     def restart(self):
-        self.throttle.pause()
-        self.throttle.shutdown()
+        if self.orig:
+            self.throttle.shutdown()
+            self.throttle = self.orig
+            self.throttle.unpause()
+            self.orig = None
+
+    def pauseExec(self):
+        self.orig = self.throttle
+        self.orig.pause()
         self.throttle = BaseThrottler(name='mainThrottle', session=self.session, delay=THROTTLE_DELAY)
         self.throttle.start()
 

@@ -77,19 +77,16 @@ class Getter():
             self._state.settings.ParseFromString(res.returns[4])
         except Exception as e:
             logging.exception(e)
-            raise GeneralPogoException("Error parsing response. Malformed response")
 
         # Finally make inventory usable
         item = self._state.inventory.inventory_delta.inventory_items
         self.inventory = Inventory(item)
 
     def parsePlayerStats(self, inventory):
-        print(inventory)
         for i in inventory.inventory_delta.inventory_items:
             stats = i.inventory_item_data.player_stats
             level = stats.level
             if level:
-                print(stats)
                 self._state.playerStats = stats
                 break
 
@@ -99,15 +96,16 @@ class Getter():
     # Core api calls
     # Get profile
     def getProfile(self):
+        print("Get profile")
         # Create profile request
         payload = [Request_pb2.Request(
             request_type=RequestType_pb2.GET_PLAYER
         )]
         payload += self.getDefaults()
         self.threadBlock.wait()
+        print("Waited")
         # Send
         res = self.session.wrapAndRequest(payload)
-
         # Parse
         self.parseDefault(res)
         self._state.profile.ParseFromString(res.returns[0])
@@ -298,7 +296,7 @@ class Getter():
     def _createThreads(self):
         print("Create thread")
         self.getMapObjects(200)
-        mapObjThread = set_interval(self.getMapObjects, 20)
+        mapObjThread = set_interval(self.getMapObjects, 50)
         getProfThread = set_interval(self.getProfile, 3)
         self.threads.append(mapObjThread)
         self.threads.append(getProfThread)
@@ -319,4 +317,3 @@ class Getter():
         self.threadBlock.clear()
         for thread in self.threads:
             thread.clear()
-        time.sleep(1)

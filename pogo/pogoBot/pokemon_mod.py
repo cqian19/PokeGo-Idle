@@ -69,7 +69,8 @@ class pokemonHandler(Handler):
         print("Encounter start")
         self.logger.debug("Pausing threads to catch pokemon")
         self.session.getter.pause()
-        self.session.getReqSession().restart()
+        time.sleep(2)
+        self.session.getReqSession().pauseExec()
         encounter = self.session.encounterPokemon(pokemon)
         # Grab needed data from proto
         chances = encounter.capture_probability.capture_probability
@@ -122,11 +123,14 @@ class pokemonHandler(Handler):
             bag[bestBall]  = str(int(bag[bestBall]) - 1)
             time.sleep(delay)
             if attempt.status == 0:
+                self.session.getter.unpause()
+                self.session.getReqSession().restart()
                 self.logger.error("Error catching {0}".format(name))
                 return
             # Success
             elif attempt.status == 1:
                 self.logger.info("Caught {0} in {1} attempt(s)!".format(name, count + 1))
+                self.session.getReqSession().restart()
                 self.session.getter.unpause()
                 self.session.setCaughtPokemon(encounter.wild_pokemon, "Caught", attempt.capture_award)
                 return attempt
@@ -136,6 +140,7 @@ class pokemonHandler(Handler):
             elif attempt.status == 3:
                 self.logger.info("Pokemon has fled.")
                 self.logger.info("Possible soft ban.")
+                self.session.getReqSession().restart()
                 self.session.getter.unpause()
                 self.session.setCaughtPokemon(encounter.wild_pokemon, "Fled")
                 return attempt
@@ -144,12 +149,12 @@ class pokemonHandler(Handler):
             count += 1
             if count >= limit:
                 self.logger.info("Over catch limit. Was unable to catch.")
+                self.session.getReqSession().restart()
                 self.session.getter.unpause()
                 self.session.setCaughtPokemon(encounter.wild_pokemon, "Failed")
                 return None
 
     def calcIV(self, poke):
-        print(poke)
         at = poke.individual_attack
         de = poke.individual_defense
         sta = poke.individual_stamina
@@ -165,7 +170,6 @@ class pokemonHandler(Handler):
         candies = self.session.checkInventory().candies
         for pokemon in party:
             iv = self.calcIV(pokemon)
-            print(iv)
             poke_id = pokemon.pokemon_id
             candy_id = baseEvolution[str(poke_id)]
             evoCandies = pokedex.evolves[poke_id]
@@ -178,7 +182,7 @@ class pokemonHandler(Handler):
                 time.sleep(.3)
             # If low cp, throw away
             r = pokedex.getRarityById(poke_id)
-            if iv < thresholdIV and (pokemon.cp < thresholdCP and  r < Rarity.RARE) or r < Rarity.UNCOMMON:
+            if (iv < thresholdIV or pokemon.cp < thresholdCP) and  r < Rarity.RARE or r < Rarity.UNCOMMON:
                 # Get rid of low CP, low evolve value
                 self.logger.info("Releasing %s" % pokedex[pokemon.pokemon_id])
                 self.session.releasePokemon(pokemon)
@@ -186,4 +190,4 @@ class pokemonHandler(Handler):
                 time.sleep(.3)
                 stored -= 1
             if stored/maxStorage < .8:
-                break;
+                break

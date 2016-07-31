@@ -187,18 +187,20 @@ class PogoSession():
     def cleanPlayerInfo(self):
         data = self.checkPlayerData()
         stats = self.checkPlayerStats()
-        stardust = 0
+        pokecoin = stardust = 0
         for i in data.currencies:
             if i.name == 'STARDUST':
                 stardust = i.amount
-                break
+            elif i.name == 'POKECOIN':
+                pokecoin = i.amount
         d = {
             'username': data.username,
-            'team': teams[data.team],
+            'team': teams[str(data.team)],
             'level': stats.level,
             'xp': stats.experience,
             'maxXp': stats.next_level_xp,
             'stardust': stardust,
+            'pokecoin': pokecoin,
             'gender': 'Male' if data.avatar.gender == 0 else 'Female'
         }
         return d

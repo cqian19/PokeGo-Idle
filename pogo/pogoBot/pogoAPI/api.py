@@ -86,6 +86,8 @@ class PokeAuthSession():
         instance = self.session
         self.logger.info('Creating PTC session for %s', self.username)
         r = instance.get(LOGIN_URL)
+        print(r.text)
+        print(r.content)
         jdata = json.loads(r.content.decode())
         data = {
             'lt': jdata['lt'],
