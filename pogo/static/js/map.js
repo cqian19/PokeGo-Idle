@@ -5,6 +5,7 @@
 var focused = true;
 var mapObj = null;
 var iconPath = "static/icons/";
+var imagePath = "static/images/"
 var playerUpdateTime = 350;
 
 var player = {
@@ -84,7 +85,7 @@ var mapObjects = {
             map: mapObj,
             position: new google.maps.LatLng(poke.latitude, poke.longitude),
             icon: createIcon(iconPath + poke.pokemon_id + '.png', 32, 32),
-
+            zIndex: 1
         });
         var infoWindow = new google.maps.InfoWindow({
             content: poke.name + "\t" + toTime(poke.time_remaining)
@@ -159,7 +160,8 @@ var mapObjects = {
         var marker = new google.maps.Marker({
             map: mapObj,
             position: new google.maps.LatLng(fort.latitude, fort.longitude),
-            icon: createIcon(mapObjects._getFortIconName(fort), 32, 32)
+            icon: createIcon(mapObjects._getFortIconName(fort), 32, 32),
+            zIndex: 0
         });
         return marker;
     },
