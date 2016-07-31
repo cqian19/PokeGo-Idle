@@ -181,7 +181,7 @@ class Pokedex(dict):
         self.rarity[Rarity.VERY_RARE] = [
             self.WEEPINBELL, self.WARTORTLE, self.VILEPLUME, self.VICTREEBEL,
             self.VENOMOTH, self.VAPOREON, self.SLOWBRO, self.RAICHU, self.POLIWRATH,
-            self.PINSIR, self.PIDGEOT, self.OMASTAR, self.NIDOQUEEN, self.NIDOKING,
+            self.PIDGEOT, self.OMASTAR, self.NIDOQUEEN, self.NIDOKING,
             self.MUK, self.MAROWAK, self.LAPRAS, self.KANGASKHAN, self.KABUTOPS, self.IVYSAUR,
             self.GYARADOS, self.GOLEM, self.GENGAR, self.EXEGGUTOR, self.DRAGONAIR, self.DEWGONG,
             self.CHARMELEON, self.BEEDRILL, self.ALAKAZAM, self.PORYGON, self.DRATINI,
@@ -196,7 +196,7 @@ class Pokedex(dict):
             self.KINGLER, self.JOLTEON, self.HYPNO, self.HITMONCHAN,
             self.GLOOM, self.GOLDUCK, self.FLAREON, self.FEAROW, self.FARFETCHD,
             self.ELECTABUZZ, self.DUGTRIO, self.DODRIO, self.CLOYSTER,
-            self.CHANSEY, self.BUTTERFREE
+            self.CHANSEY, self.BUTTERFREE, self.PINSIR,
         ]
         self.rarity[Rarity.UNCOMMON] = [
             self.VULPIX, self.TENTACOOL, self.STARYU, self.SQUIRTLE, self.SPEAROW,
@@ -422,6 +422,13 @@ baseEvolution = {
     "149": 147,
     "150": 150,
     "151": 151
+}
+
+teams = {
+    '0': None,
+    '1': 'MYSTIC',
+    '2': 'VALOR',
+    '3': 'INSTINCT'
 }
 
 pokedex = Pokedex()
