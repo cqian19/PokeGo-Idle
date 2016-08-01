@@ -10,7 +10,7 @@ class fortHandler(Handler):
     # Since traveling salesman problem, not
     # true solution. But at least you get
     # those step in
-    def sortCloseForts(self):
+    def sortCloseForts(self, filterClose=True):
         # Sort nearest forts (pokestop)
         stops = self.session.checkUnspinnedStops()
         if stops == self.lastStops: return
@@ -24,7 +24,7 @@ class fortHandler(Handler):
                 fort.latitude,
                 fort.longitude
             )
-            if dist <= self.close:
+            if not filterClose or dist <= self.close:
                 ordered_forts.append({'distance': dist, 'fort': fort})
 
         ordered_forts = sorted(ordered_forts, key=lambda k: k['distance'])
@@ -34,7 +34,7 @@ class fortHandler(Handler):
     def findClosestFort(self):
         # Find nearest fort (pokestop)
         self.logger.info("Finding Nearest Fort:")
-        return self.sortCloseForts()[0]
+        return self.sortCloseForts(False)[0]
 
     def spinAll(self, forts):
         for f in forts:
@@ -42,7 +42,6 @@ class fortHandler(Handler):
 
     def spin(self, fort):
         fortResponse = self.session.getter.getFortSearch(fort)
-        print(fortResponse)
         if fortResponse.result == 1:
             self.session.setPastStop(fort, fortResponse)
         time.sleep(.5)

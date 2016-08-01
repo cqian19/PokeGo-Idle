@@ -33,10 +33,13 @@ class Bot():
             self.ih.cleanInventory()
             try:
                 pokemon = self.ph.findBestPokemon()
-                for i in self.ph.walkAndCatch(pokemon):
-                    forts = self.fh.sortCloseForts()
-                    self.fh.spinAll(forts)
-                    cooldown = 1
+                if pokemon:
+                    for i in self.ph.walkAndCatch(pokemon):
+                        forts = self.fh.sortCloseForts()
+                        self.fh.spinAll(forts)
+                        cooldown = 1
+                else:
+                    self.fh.walkAndSpin(self.fh.findClosestFort())
 
             # Catch problems and reauthenticate
             except GeneralPogoException as e:

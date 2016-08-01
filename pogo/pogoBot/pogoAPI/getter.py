@@ -16,7 +16,7 @@ import threading
 import time
 
 RPC_ID = int(random.random() * 10 ** 12)
-STOP_COOLDOWN = 300
+STOP_COOLDOWN = 305
 
 class Getter():
 
@@ -157,7 +157,7 @@ class Getter():
         return self._state.fortDetails
 
     # Hooks for those bundled in default
-    def getMapObjects(self, radius=400):
+    def getMapObjects(self, radius=600):
         with self.lock:
             steps = self.location.getAllSteps(radius)
             for lat, lon in steps:

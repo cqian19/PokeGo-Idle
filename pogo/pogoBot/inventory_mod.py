@@ -57,7 +57,7 @@ class inventoryHandler(Handler):
         itemsCount = sum(map(lambda b: int(b), bag.values()))
         maxItems = self.session.checkPlayerData().max_item_storage
         self.logger.info("Inventory capacity {0}/{1}".format(itemsCount, maxItems))
-        if (itemsCount/maxItems) < .9: return
+        if (itemsCount/maxItems) < .8: return
         # Clear out all of a crtain type
         tossable = [items.POTION, items.SUPER_POTION, items.REVIVE]
         for toss in tossable:
@@ -69,7 +69,9 @@ class inventoryHandler(Handler):
             items.POKE_BALL: 50,
             items.GREAT_BALL: 100,
             items.ULTRA_BALL: 150,
-            items.RAZZ_BERRY: 25
+            items.RAZZ_BERRY: 25,
+            items.REVIVE: 10,
+            items.HYPER_POTION: 20,
         }
         for limit in limited:
             if limit in bag and int(bag[limit]) > limited[limit]:
