@@ -2,6 +2,7 @@ import requests
 import re
 import json
 import random
+from custom_exceptions import GeneralPogoException
 from session import PogoSession
 from throttled_session import ThrottledSession
 from location import Location
@@ -31,6 +32,8 @@ class PokeAuthSession():
         self.password = password
 
         self.access_token = ''
+        if geo_key and not geo_key.startswith('AIza'):
+            raise GeneralPogoException("Google Maps key is invalid. Must start with 'AIza'")
         self.geo_key = geo_key
 
     def createPogoSession(self, provider=None, locationLookup='', session=None):
@@ -53,12 +56,13 @@ class PokeAuthSession():
                 location,
                 self.logger
             )
-
         # else something has gone wrong
         elif location is None:
             self.logger.critical('Location not found')
         elif self.access_token is None:
             self.logger.critical('Access token not generated')
+            raise GeneralPogoException("Login failed. Double check your username and password.\n" +
+                                       "Servers may also be down.")
         return None
 
     def createGoogleSession(self, locationLookup='', session=None):
@@ -74,7 +78,8 @@ class PokeAuthSession():
             APP,
             CLIENT_SIG
         )
-
+        if r1['Error'] == 'BadAuthentication':
+            raise GeneralPogoException("Google login failed. Double check your username and password.")
         self.access_token = r2.get('Auth')  # access token
         return self.createPogoSession(
             provider='google',
@@ -86,8 +91,6 @@ class PokeAuthSession():
         instance = self.session
         self.logger.info('Creating PTC session for %s', self.username)
         r = instance.get(LOGIN_URL)
-        print(r.text)
-        print(r.content)
         jdata = json.loads(r.content.decode())
         data = {
             'lt': jdata['lt'],
@@ -103,7 +106,7 @@ class PokeAuthSession():
             ticket = re.sub('.*ticket=', '', authResponse.history[0].headers['Location'])
         except:
             self.logger.error(authResponse.json()['errors'][0])
-            raise
+            raise GeneralPogoException(authResponse.json()['errors'][0])
 
         data1 = {
             'client_id': 'mobile-app_pokemon-go',

@@ -1,10 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
+    <head>
+        <meta charset="UTF-8">
+        <nav class="navbar navbar-default">
+            <div class="container">
+              <div class="navbar-header">
+                <a class="brand"><img class="title" src="static/images/title.png"></a>
+              </div>
+              <div class="content">
+                <div class="navbar-center">
+                  <a class="brand" id="center" href="#"><img class="logo" src="static/images/pokeballLogo.PNG"></a>
+                </div>
+              </div>
+           </div>
+        </nav>
+    <link rel="stylesheet" type="text/css" href="../static/css/navigation.css" />
+    <link rel="stylesheet" type="text/css" href="../static/css/login.css" />
+    </head>
+    <body>
+        <div class="loginContainer">
+          <div class="row" id="pwd-container">
+            <div class="col-md-4"></div>
+            <div class="col-md-4">
+              <section class="login-form">
+                <form method="post" action="" role="login">
+                  <img src="../static/images/title.png" class="img-responsive" alt="" />
+                  <div class="buttonContainer">
+                      <input type="radio" name="options" value="google" required /> Google
+                      <input type="radio" name="options" value="ptc" /> PTC
+                  </div>
+                  <input type="username" name="username" placeholder="Username" required class="form-control"
+                         value="{{ request.form.username }}" required />
+                  <input type="password" name="password" class="form-control" id="password" placeholder="Password"
+                         value="{{ request.form.password }}"required />
+                  <input type="api_key" name="api_key" class="form-control" id="api_key" placeholder="Google Maps API Key"
+                         value="{{ request.form.api_key }}" required />
+                  <input type="location" name="location" placeholder="Location Ex. Gary, Indiana" required class="form-control"
+                         value="{{ request.form.location }}" required />
+                  <button type="submit" class="btn btn-lg btn-primary btn-block">Login</button>
+                </form>
+              </section>
+                {% if error %}
+                    <div class="alert alert-danger">
+                      <strong>Error:</strong> {{ error }}
+                    </div>
+                {% endif %}
+            </div>
+
+              <div class="col-md-4"></div>
+
+          </div>
+        </div>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    </body>
 </html>
