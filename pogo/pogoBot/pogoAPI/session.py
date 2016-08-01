@@ -196,8 +196,8 @@ class PogoSession():
             'username': data.username,
             'team': teams[str(data.team)],
             'level': stats.level,
-            'xp': stats.experience,
-            'maxXp': stats.next_level_xp,
+            'xp': stats.experience - stats.prev_level_xp,
+            'maxXp': stats.next_level_xp - stats.prev_level_xp,
             'stardust': stardust,
             'pokecoin': pokecoin,
             'gender': 'Male' if data.avatar.gender == 0 else 'Female'
