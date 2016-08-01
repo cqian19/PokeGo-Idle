@@ -36,14 +36,14 @@ class PokeAuthSession():
             raise GeneralPogoException("Google Maps key is invalid. Must start with 'AIza'")
         self.geo_key = geo_key
 
-    def createPogoSession(self, provider=None, locationLookup='', session=None):
+    def createPogoSession(self, provider=None, locationLookup='', pogo_session=None):
         if self.provider:
             self.provider = provider
 
         # determine location
         location = None
-        if session:
-            location = session.location
+        if pogo_session:
+            location = pogo_session.location
         elif locationLookup:
             location = Location(locationLookup, self.geo_key)
             self.logger.info(location)
@@ -65,7 +65,7 @@ class PokeAuthSession():
                                        "Servers may also be down.")
         return None
 
-    def createGoogleSession(self, locationLookup='', session=None):
+    def createGoogleSession(self, locationLookup='', pogo_session=None):
 
         self.logger.info('Creating Google session for %s', self.username)
 
@@ -84,10 +84,10 @@ class PokeAuthSession():
         return self.createPogoSession(
             provider='google',
             locationLookup=locationLookup,
-            session=session
+            pogo_session=pogo_session
         )
 
-    def createPTCSession(self, locationLookup='', session=None):
+    def createPTCSession(self, locationLookup='', pogo_session=None):
         instance = self.session
         self.logger.info('Creating PTC session for %s', self.username)
         r = instance.get(LOGIN_URL)
@@ -122,7 +122,7 @@ class PokeAuthSession():
         return self.createPogoSession(
             provider='ptc',
             locationLookup=locationLookup,
-            session=session
+            pogo_session=pogo_session
         )
 
     def authenticate(self, locationLookup):
@@ -132,9 +132,11 @@ class PokeAuthSession():
             "ptc": self.createPTCSession
         }[self.provider](locationLookup=locationLookup)
 
-    def reauthenticate(self, session):
-        """Reauthenticate from an old session"""
+    def reauthenticate(self, pogo_session):
+        if self.session:
+            self.session.stop()
+            self.session = ThrottledSession()
         return {
             "google": self.createGoogleSession,
             "ptc": self.createPTCSession
-        }[self.provider](session=session)
+        }[self.provider](pogo_session=pogo_session)

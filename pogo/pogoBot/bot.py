@@ -46,7 +46,7 @@ class Bot():
                 logging.critical('GeneralPogoException raised: %s', e)
                 self.pogo_session.pause()
                 time.sleep(5)
-                self.pogo_session = self.poko_session.reauthenticate(self.session)
+                self.pogo_session = self.poko_session.reauthenticate()
                 for mod in self.mods:
                     mod.setSession(self.pogo_session)
                 time.sleep(cooldown)
@@ -56,7 +56,7 @@ class Bot():
                 logging.exception('Exception raised: %s', e)
                 self.pogo_session.pause()
                 time.sleep(5)
-                self.pogo_session = self.poko_session.reauthenticate(self.session)
+                self.pogo_session = self.poko_session.reauthenticate()
                 for mod in self.mods:
                     mod.setSession(self.pogo_session)
                 time.sleep(cooldown)
