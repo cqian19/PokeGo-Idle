@@ -2,9 +2,19 @@
  * Created by cqian19 on 7/28/2016.
  */
 
+
 infoParsers = {
     'pokemonEvent': parsePokemon,
     'stopEvent': parseStop
+};
+
+notifications = {
+    updateTime: 1000,
+    update: function () {
+        getPastInfo(parsePastInfo, function () {
+            console.log("Get past info failed");
+        });
+    }
 };
 
 function parsePokemon(poke) {
@@ -114,10 +124,6 @@ function getPastInfo(cb, f) {
     }).fail(f);
 }
 
-function update() {
-    getPastInfo(parsePastInfo, function() { console.log("Get past info failed"); });
-}
-
 function getTime(t) {
     var diff = new Date().getTimezoneOffset();
     return (new Date(t - diff * 60000)).toLocaleTimeString()
@@ -126,5 +132,3 @@ function getTime(t) {
 String.prototype.capitalizeFirstLetter = function() {
     return this.charAt(0).toUpperCase() + this.toLowerCase().slice(1);
 }
-
-setInterval(update, 1000);

@@ -4,6 +4,13 @@
 
 var lastxp = 0;
 
+playerInfo = {
+    updateTime: 2000,
+    update: function() {
+        getPlayerData(parsePlayerData, function() { console.log("Get player info failed"); });
+    }
+};
+
 function getPlayerData(cb, f) {
     $.ajax({
         url: 'playerData',
@@ -64,9 +71,3 @@ function parsePlayerData(playerData) {
         pokecoin.text(pcamount);
     }
 }
-
-function update() {
-    getPlayerData(parsePlayerData, function() { console.log("Get player info failed"); });
-}
-update()
-setInterval(update, 2000);

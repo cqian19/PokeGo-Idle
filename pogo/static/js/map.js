@@ -7,6 +7,7 @@ var mapObj = null;
 var iconPath = "static/icons/";
 var imagePath = "static/images/";
 var playerUpdateTime = 350;
+var threads = [player, mapObjects, notifications, playerInfo];
 
 var player = {
     img_name: 'player1',
@@ -290,7 +291,27 @@ function initializeMap() {
     });
     makeSliding();
     makeAnimate();
-    player.thread = setInterval(player.update, player.updateTime);
-    mapObjects.thread = setInterval(mapObjects.update, mapObjects.updateTime);
     console.log("Done");
 }
+
+function startThreads() {
+    for (i in threads) {
+        i.thread = setInterval(i.update, i.updateTime);
+    }
+}
+
+function waitForLogin() {
+    $.ajax({
+        url: 'loggedIn',
+        type: 'GET',
+        dataType: 'json'
+    }).done(function(r) {
+        console.log();
+        if (r["status"] == "1") {
+            clearInterval(loginThread);
+            startThreads();
+        }
+    })
+}
+
+loginThread = setTimeout(waitForLogin, 2000);
