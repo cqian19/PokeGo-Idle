@@ -71,7 +71,8 @@ class inventoryHandler(Handler):
             items.ULTRA_BALL: 150,
             items.RAZZ_BERRY: 25,
             items.REVIVE: 10,
-            items.HYPER_POTION: 20,
+            items.HYPER_POTION: 10,
+            items.MAX_POTION: 30
         }
         for limit in limited:
             if limit in bag and int(bag[limit]) > limited[limit]:
