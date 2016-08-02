@@ -38,11 +38,11 @@ class MapHandler():
         self.is_logged_in = False
         app.route('/', methods = ['GET', 'POST'])(self.login)
         """"""
-        app.run(debug=False)
+        app.run(debug=False, port=5000)
 
     def default_map(self):
         lat, lon, _ = self.session.getter.getCoordinates()
-        return render_template('example.html', lat=lat, lon=lon, geo_key=self.maps_key)
+        return render_template('game.html', lat=lat, lon=lon, geo_key=self.maps_key)
 
     def get_map_data(self):
         data = {}
@@ -69,6 +69,9 @@ class MapHandler():
         return jsonify(d)
 
     def login(self, error=None):
+        if request.method == 'GET':
+            if self.is_logged_in:
+                return redirect(url_for('default_map'))
         if request.method == 'POST':
             print(request.form)
             try:
@@ -79,6 +82,7 @@ class MapHandler():
                 print(e)
                 error = "Internal server error: " + e.__str__()
             else:
+                self.is_logged_in = True
                 app.route('/game', methods=['GET'])(self.default_map)
                 app.route('/data', methods=['GET'])(self.get_map_data)
                 app.route('/loggedIn', methods=['GET'])(self.logged_in)
@@ -130,28 +134,5 @@ if __name__ == "__main__":
     if args.auth not in ['ptc', 'google']:
         logging.error('Invalid auth service {}'.format(args.auth))
         sys.exit(-1)
-    print("AUTH")
-    # Create PokoAuthObject
-    poko_session = api.PokeAuthSession(
-        args.username,
-        args.password,
-        args.auth,
-        logger,
-        geo_key=args.geo_key,
-    )
-    # Authenticate with a given location
-    # Location is not inherent in authentication
-    # But is important to session
-    try:
-        pogo_session = poko_session.authenticate(args.location)
-    except Exception as e:
-        logging.error('Could not log in. Double check your login credentials. The servers may also be down.')
-        raise e
-    print("DONE")
+    print("AUTH")"""
 
-    if pogo_session:
-        bot = Bot(poko_session.session, pogo_session, poko_session, logger)
-        bot.run()
-        mh = MapHandler(pogo_session, args.geo_key)
-    else:
-        logging.critical('Session not created successfully')"""
