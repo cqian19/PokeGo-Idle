@@ -29,9 +29,9 @@ class Bot():
         # Run the bot
         while True:
             time.sleep(1)
-            self.ph.cleanPokemon(thresholdCP=1000)
-            self.ih.cleanInventory()
             try:
+                self.ph.cleanPokemon(thresholdCP=500)
+                self.ih.cleanInventory()
                 pokemon = self.ph.findBestPokemon()
                 if pokemon:
                     for i in self.ph.walkAndCatch(pokemon):
