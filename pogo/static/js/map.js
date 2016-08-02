@@ -306,6 +306,7 @@ function search() {
     if (!location) { return; }
     searchBar.val("Search being processed.");
     searchBar.prop("disabled", true);
+    searchSub.prop("disabled", true);
     $.ajax({
         url: 'search',
         type: 'POST',
@@ -318,10 +319,10 @@ function search() {
         } else {
             searchBar.val("Search succeeded!");
         }
-        setTimeout(function() { searchBar.prop("disabled", false); searchBar.val(location)}, 2000);
+        setTimeout(function() { searchBar.prop("disabled", false); searchSub.prop("disabled", false); searchBar.val(location)}, 2000);
     }).fail(function(r) {
         searchBar.val("Response could not go through.");
-        setTimeout(function() { searchBar.prop("disabled", false); searchBar.val(location)}, 2000);
+        setTimeout(function() { searchBar.prop("disabled", false); searchSub.prop("disabled", false); searchBar.val(location)}, 2000);
     })
 }
 
