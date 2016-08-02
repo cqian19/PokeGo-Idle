@@ -38,15 +38,14 @@ class fortHandler(Handler):
         return self.sortCloseForts(False)[0]
 
     def spinAll(self, forts):
-        print(forts)
         for f in forts:
-            print(self.spin(f))
+           self.spin(f)
 
     def spin(self, fort):
         fortResponse = self.session.getter.getFortSearch(fort)
         if fortResponse.result == 1:
             self.session.setPastStop(fort, fortResponse)
-        time.sleep(.5)
+        time.sleep(.25)
         return fortResponse
 
     # Walk to fort and spin
