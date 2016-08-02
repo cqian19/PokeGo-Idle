@@ -12,6 +12,9 @@ class ThrottledSession():
         self.throttle.start()
         self.orig = None
 
+    def getThrottle(self):
+        return self.throttle
+
     def createBaseSession(self):
         sess = session()
         sess.headers = {

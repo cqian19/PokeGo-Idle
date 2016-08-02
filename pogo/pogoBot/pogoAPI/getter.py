@@ -190,7 +190,7 @@ class Getter():
     def setPastStop(self, fort, res):
         if not res.experience_awarded:  # Glitched response?
             return
-        self.pastStops[fort.id] = time.time()
+        self.pastStops[fort.id] = res.cooldown_complete_timestamp_ms
         d = {
             'event': 'stopEvent',
             'timestamp': getJSTime(),
@@ -210,11 +210,16 @@ class Getter():
         self.pastEvents.append(d)
 
     def filterUnspinnedStops(self, stops):
-        now = time.time()
+        now = datetime.utcnow()
         l = []
         for stop in stops:
-            if stop.id not in self.pastStops or now - self.pastStops[stop.id] > STOP_COOLDOWN:
+            if stop.id not in self.pastStops:
                 l.append(stop)
+            else:
+                print(now, dt)
+                d_t = datetime.utcfromtimestamp(self.pastStops[stop.id] / 1000.0)
+                if now > d_t:
+                    l.append(stop)
         return l
 
     def getCaughtPokemon(self):

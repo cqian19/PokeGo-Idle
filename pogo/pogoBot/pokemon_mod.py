@@ -63,7 +63,7 @@ class pokemonHandler(Handler):
             self.logger.info(self.encounterAndCatch(pokemon))
 
     # Wrap both for ease
-    def encounterAndCatch(self, pokemon, thresholdP=0.33, limit=7, delay=1):
+    def encounterAndCatch(self, pokemon, thresholdP=0.25, limit=7, delay=1):
         # Start encounter
         print("Encounter start")
         self.logger.debug("Pausing threads to catch pokemon")

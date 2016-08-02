@@ -134,7 +134,8 @@ class PokeAuthSession():
 
     def reauthenticate(self, pogo_session):
         if self.session:
-            self.session.stop()
+            if self.session.getThrottle().status not in ['stopped', 'ending', 'ended']:
+                self.session.stop()
             self.session = ThrottledSession()
         return {
             "google": self.createGoogleSession,
