@@ -10,7 +10,7 @@ import math
 class Location(object):
     def __init__(self, locationLookup, geo_key):
         self.geo_key = geo_key
-        self.latitude, self.longitude, self.altitude = self.setLocation(locationLookup)
+        self.setLocation(locationLookup)
 
     def __str__(self):
         s = 'Coordinates: {} {} {}'.format(
@@ -29,12 +29,13 @@ class Location(object):
         return self.getDistance(lat, lng, fort.latitude, fort.longitude)
 
     def setLocation(self, search):
-        providers = ['google', 'osm', 'arcgis', 'freegeoip', 'komoot']
+        providers = ['google', 'osm', 'arcgis', 'freegeoip']
         for p in providers:
             geo = getattr(geocoder, p)(search)
             if geo.lat is not None and geo.lng is not None:
                 elev = geocoder.elevation(geo.latlng)
-                return geo.lat, geo.lng, elev.meters
+                self.latitude, self.longitude, self.altitude = geo.lat, geo.lng, elev.meters
+                return self.latitude, self.longitude, self.altitude
         raise GeneralPogoException("Location could not be found")
 
     def setCoordinates(self, latitude, longitude):

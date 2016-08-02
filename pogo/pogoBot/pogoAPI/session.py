@@ -151,6 +151,16 @@ class PogoSession():
     def setCoordinates(self, latitude, longitude):
         self.location.setCoordinates(latitude, longitude)
 
+    def changeLocation(self, loc):
+        # Restart all requests
+        self.getter.pause()
+        time.sleep(3)
+        self.location.setLocation(loc)
+        self.getter.clear()
+        time.sleep(1)
+        self.session.makeNew()
+        self.getter.unpause(locChanged=True)
+
     def cleanPokemon(self, pokemons = None):
         r = []
         if pokemons is None:

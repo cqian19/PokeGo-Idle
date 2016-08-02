@@ -68,6 +68,18 @@ class MapHandler():
         print(d)
         return jsonify(d)
 
+    def search(self):
+        loc = request.json['location']
+        print(loc)
+        status = 1
+        try:
+            self.bot.stop()
+            self.session.changeLocation(loc)
+        except Exception as e:
+            status = 0
+        self.bot.run()
+        return jsonify({'status': str(status)})
+
     def login(self, error=None):
         if request.method == 'GET':
             if self.is_logged_in:
@@ -75,7 +87,7 @@ class MapHandler():
         if request.method == 'POST':
             print(request.form)
             try:
-                self.doLogin(request.form)
+                self.do_login(request.form)
             except GeneralPogoException as e:
                 error = e.__str__()
             except Exception as e:
@@ -89,10 +101,11 @@ class MapHandler():
                 app.route('/location', methods=['GET'])(self.get_location)
                 app.route('/pastInfo', methods=['GET'])(self.get_past_items)
                 app.route('/playerData', methods=['GET'])(self.get_profile)
+                app.route('/search', methods=['POST'])(self.search)
                 return redirect(url_for('default_map'))
         return render_template('login.html', error=error)
 
-    def doLogin(self, args):
+    def do_login(self, args):
         print("AUTH")
         # Create PokoAuthObject
         poko_session = api.PokeAuthSession(
@@ -114,8 +127,8 @@ class MapHandler():
         self.session = pogo_session
         print("DONE")
         if pogo_session:
-            bot = Bot(poko_session.session, pogo_session, poko_session, logger)
-            bot.run()
+            self.bot = Bot(poko_session.session, pogo_session, poko_session, logger)
+            self.bot.run()
 
 if __name__ == "__main__":
     logger = setupLogger()

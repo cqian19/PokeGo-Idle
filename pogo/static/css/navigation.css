@@ -11,10 +11,16 @@
     height: 40px;
 }
 
-.navbar .navbar-form {
+.navbar .form-group {
     position: relative;
-    top: 5px;
+    margin-top: 15px;
+    right: 15px;
 }
+
+.navbar .form-group #search {
+    display: inline-block;
+}
+
 .navbar .content {
     display: inline-flex;
     align-items:center;

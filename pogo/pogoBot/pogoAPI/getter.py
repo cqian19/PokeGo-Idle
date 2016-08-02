@@ -24,6 +24,7 @@ class Getter():
         self._state = state
         self.location = location
         self.session = session
+        self.locChanged = False
         # Set up Inventory
         self.pokemon = {}
         self.caughtPokemon = []
@@ -158,6 +159,7 @@ class Getter():
 
     # Hooks for those bundled in default
     def getMapObjects(self, radius=600):
+        print("GMO")
         with self.lock:
             steps = self.location.getAllSteps(radius)
             for lat, lon in steps:
@@ -175,6 +177,9 @@ class Getter():
                     ).SerializeToString()
                 )]
                 self.threadBlock.wait()
+                if self.locChanged:
+                    self.locChanged = False
+                    break
                 # Send
                 res = self.session.wrapAndRequest(payload, latitude=lat, longitude=lon)
                 # Parse
@@ -332,7 +337,10 @@ class Getter():
         mainThread = threading.Thread(target=self._createThreads)
         mainThread.start()
 
-    def unpause(self):
+    def unpause(self, locChanged=False):
+        print("Unpause")
+        if locChanged:
+            self.locChanged = True
         self.threadBlock.set()
         for thread in self.threads:
             thread.set()
@@ -342,3 +350,9 @@ class Getter():
         self.threadBlock.clear()
         for thread in self.threads:
             thread.clear()
+
+    def clear(self):
+        self.pokemon = {}
+        self.forts = {}
+        self.gyms = {}
+        self.stops = {}

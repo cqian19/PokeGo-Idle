@@ -119,6 +119,7 @@ var mapObjects = {
         mapObjects.lastPokemonData = pokemonData;
         mapObjects.lastCaughtPokemonData = caughtPokemonData;
         pokemonUpdating = true;
+        console.log(pokemonData);
         var displayed = mapObjects.displayedPokemon;
         // Add new pokemon to display
         for (var key in pokemonData) {
@@ -235,7 +236,7 @@ function getMapData(cb, f) {
     $.ajax({
         url: 'data',
         type: 'GET',
-        dataType: 'json',
+        dataType: 'json'
     }).done(function(r) {
         requester(r, arguments.callee.name, cb);
     }).fail(f);
@@ -291,6 +292,39 @@ function initializeMap() {
     makeSliding();
     makeAnimate();
     console.log("Done");
+}
+
+var searchBar = $("#search");
+var searchSub = $("#searchSubmit");
+searchSub.click(search);
+searchBar.on("keypress",function(e) {
+    if (e.which === 13) {
+        search();
+    }
+});
+function search() {
+    var location = searchBar.val();
+    console.log("LOCATION", location);
+    if (!location) { return; }
+    searchBar.val("Search being processed.");
+    searchBar.prop("disabled", true);
+    $.ajax({
+        url: 'search',
+        type: 'POST',
+        dataType: 'json',
+        contentType: 'application/json',
+        data: JSON.stringify({'location': location })
+    }).done(function (r) {
+        if (r["status"] != "1") {
+            searchBar.val("Search failed.");
+        } else {
+            searchBar.val("Search succeeded!");
+        }
+        setTimeout(function() { searchBar.prop("disabled", false); searchBar.val(location)}, 2000);
+    }).fail(function(r) {
+        searchBar.val("Response could not go through.");
+        setTimeout(function() { searchBar.prop("disabled", false); searchBar.val(location)}, 2000);
+    })
 }
 
 $(function() {

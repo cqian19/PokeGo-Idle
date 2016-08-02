@@ -18,8 +18,8 @@ class Bot():
         self.ih = inventory_mod.inventoryHandler(pogo_session, logger)
         self.ph = pokemon_mod.pokemonHandler(pogo_session, logger)
         self.mods = [self.fh, self.ih, self.ph]
-        self.mainThread = threading.Thread(target=self.main)
-        self.mainThread.daemon = True
+        self.started = False
+        self.mainThread = None
 
     # Basic bot
     def main(self):
@@ -27,7 +27,7 @@ class Bot():
         cooldown = 1
 
         # Run the bot
-        while True:
+        while self.started:
             time.sleep(1)
             try:
                 self.ph.cleanPokemon(thresholdCP=500)
@@ -35,11 +35,15 @@ class Bot():
                 pokemon = self.ph.findBestPokemon()
                 if pokemon:
                     for i in self.ph.walkAndCatch(pokemon):
+                        if not self.started:
+                            break
                         forts = self.fh.sortCloseForts()
                         self.fh.spinAll(forts)
                         cooldown = 1
                 else:
-                    self.fh.walkAndSpin(self.fh.findClosestFort())
+                    fort = self.fh.findClosestFort()
+                    if fort:
+                        self.fh.walkAndSpin(fort)
 
             # Catch problems and reauthenticate
             except GeneralPogoException as e:
@@ -62,9 +66,13 @@ class Bot():
                 time.sleep(cooldown)
                 cooldown *= 2
 
-    def run (self):
-        if not self.mainThread.is_alive():
-            self.mainThread.start()
+    def run(self):
+        self.started = True
+        if self.mainThread and self.mainThread.is_alive():
+            self.mainThread.join()
+        self.mainThread = threading.Thread(target=self.main)
+        self.mainThread.start()
 
     def stop(self):
+        self.started = False
         self.mainThread.join()

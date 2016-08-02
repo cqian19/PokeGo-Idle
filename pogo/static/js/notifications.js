@@ -3,12 +3,12 @@
  */
 
 
-infoParsers = {
+var infoParsers = {
     'pokemonEvent': parsePokemon,
     'stopEvent': parseStop
 };
 
-notifications = {
+var notifications = {
     updateTime: 1000,
     update: function () {
         getPastInfo(parsePastInfo, function () {

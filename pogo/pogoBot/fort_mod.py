@@ -35,7 +35,9 @@ class fortHandler(Handler):
     def findClosestFort(self):
         # Find nearest fort (pokestop)
         self.logger.info("Finding Nearest Fort:")
-        return self.sortCloseForts(False)[0]
+        forts = self.sortCloseForts(False)
+        if len(forts):
+            return forts[0]
 
     def spinAll(self, forts):
         for f in forts:

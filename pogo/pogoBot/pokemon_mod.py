@@ -63,7 +63,7 @@ class pokemonHandler(Handler):
             self.logger.info(self.encounterAndCatch(pokemon))
 
     # Wrap both for ease
-    def encounterAndCatch(self, pokemon, thresholdP=0.25, limit=7, delay=1):
+    def encounterAndCatch(self, pokemon, thresholdP=0.35, limit=7, delay=1):
         # Start encounter
         print("Encounter start")
         self.logger.debug("Pausing threads to catch pokemon")
@@ -164,8 +164,7 @@ class pokemonHandler(Handler):
     def cleanPokemon(self, thresholdCP=300, thresholdIV=80):
         self.logger.info("Cleaning out Pokemon...")
         party = self.session.checkInventory().party
-        stored = len(party)
-        maxStorage = self.session.checkPlayerData().max_pokemon_storage
+        stored, maxStorage = self.session.getter.getPokemonCapacity()
         self.logger.info("Pokemon storage capacity: {0}/{1}".format(stored, maxStorage))
         if stored/maxStorage < .8: return
         candies = self.session.checkInventory().candies

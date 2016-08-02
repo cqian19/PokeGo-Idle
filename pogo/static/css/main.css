@@ -39,6 +39,7 @@ html, body {
     border-radius: 4px;
     font-family: Fixed, monospace;
     margin: auto;
+    margin-bottom: 15px;
     max-height: 150px;
 }
 

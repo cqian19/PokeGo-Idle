@@ -54,8 +54,7 @@ class inventoryHandler(Handler):
     def cleanInventory(self):
         self.logger.info("Cleaning out Inventory...")
         bag = self.session.checkInventory().bag
-        itemsCount = sum(map(lambda b: int(b), bag.values()))
-        maxItems = self.session.checkPlayerData().max_item_storage
+        itemsCount, maxItems = self.session.getter.getInventoryCapacity()
         self.logger.info("Inventory capacity {0}/{1}".format(itemsCount, maxItems))
         if (itemsCount/maxItems) < .8: return
         # Clear out all of a crtain type

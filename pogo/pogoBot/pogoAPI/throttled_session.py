@@ -1,6 +1,7 @@
 from requests import Request, session
 from requests_throttler import BaseThrottler
 import logging
+import time
 THROTTLE_DELAY = 1/3 + .05
 
 class ThrottledSession():
@@ -48,3 +49,9 @@ class ThrottledSession():
 
     def stop(self):
         self.throttle.shutdown()
+
+    def makeNew(self):
+        self.throttle.shutdown()
+        time.sleep(1)
+        self.throttle = BaseThrottler(name='mainThrottle', session=self.session, delay=THROTTLE_DELAY)
+        self.throttle.start()
