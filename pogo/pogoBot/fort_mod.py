@@ -31,13 +31,14 @@ class fortHandler(Handler):
         ordered_forts = sorted(ordered_forts, key=lambda k: k['distance'])
         return [instance['fort'] for instance in ordered_forts]
 
-    # Find the fort closest to user
-    def findClosestFort(self):
-        # Find nearest fort (pokestop)
-        self.logger.info("Finding Nearest Fort:")
+    def findClosestForts(self, num=3):
         forts = self.sortCloseForts(False)
         if len(forts):
-            return forts[0]
+            return forts[0:num]
+
+    # Find the fort closest to user
+    def findClosestFort(self):
+        return self.findClosestForts(1)
 
     def spinAll(self, forts):
         for f in forts:

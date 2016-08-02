@@ -41,9 +41,10 @@ class Bot():
                         self.fh.spinAll(forts)
                         cooldown = 1
                 else:
-                    fort = self.fh.findClosestFort()
-                    if fort:
-                        self.fh.walkAndSpin(fort)
+                    forts = self.fh.findClosestForts()
+                    if forts:
+                        for fort in forts:
+                            self.fh.walkAndSpin(fort)
 
             # Catch problems and reauthenticate
             except GeneralPogoException as e:
