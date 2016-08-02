@@ -88,30 +88,24 @@ var mapObjects = {
             icon: createIcon(iconPath + poke.pokemon_id + '.png', 32, 32),
             zIndex: 1
         });
-        var infoWindow = new google.maps.InfoWindow({
-            content: poke.name + "\t" + toTime(poke.time_remaining)
-        });
+
+        var myOptions = {
+             content: "<div class=\"pokeinfo\">" + toTime(poke.time_remaining) + "</div>"
+            ,disableAutoPan: false
+            ,pixelOffset: new google.maps.Size(-13, -5)
+            ,zIndex: null
+            ,isHidden: false
+            ,pane: "floatPane"
+            ,closeBoxURL: ""
+            ,enableEventPropagation: false
+        };
+        var infoWindow = new InfoBox(myOptions);
+        marker.infoWindow = infoWindow;
+        infoWindow.open(mapObj, marker);
         // Create and update marker notification with timer
-        var thread; var opened = false;
-        var update = function() {
-            infoWindow.setContent(poke.name + "\t" + toTime(pokeSlot.timeLeft));
-        }
-        marker.addListener('mouseover', function() {
-            if (!opened && !thread) {
-                opened = true;
-                update();
-                thread = setInterval(update, 500);
-                infoWindow.open(mapObj, this);
-            }
-        });
-        marker.addListener('mouseout', function() {
-            if (opened && thread) {
-                opened = false;
-                clearInterval(thread);
-                thread = null;
-                infoWindow.close();
-            }
-        });
+        infoWindow.update = function() {
+            infoWindow.setContent("<div class=\"pokeinfo\">" + toTime(pokeSlot.timeLeft) + "</div>");
+        };
         return marker;
     },
     updatePokemon: function(pokemonData, caughtPokemonData) {
@@ -141,8 +135,11 @@ var mapObjects = {
                 pokeObj.timeLeft -= mapObjects.updateTime;
                 if (pokeObj.timeLeft <= 0) {
                     console.log("Pokemon disappeared");
-                    pokeObj.marker.setVisible(false);
+                    pokeObj.marker.setMap(null);
+                    pokeObj.marker.infoWindow.close();
                     delete displayed[key];
+                } else {
+                    pokeObj.marker.infoWindow.update();
                 }
             }
         }
@@ -152,7 +149,8 @@ var mapObjects = {
             caughtPokemonData[poke.encounter_id] = poke;
             if (poke.encounter_id in displayed) {
                 var pokeObj = displayed[poke.encounter_id];
-                pokeObj.marker.setVisible(false);
+                pokeObj.marker.setMap(null);
+                pokeObj.marker.infoWindow.close();
                 delete displayed[key];
             }
         }
@@ -281,7 +279,6 @@ function createIcon(path, width, height) {
     };
     return image;
 }
-
 function initializeMap() {
     console.log("Initializing map");
     mapObj = new google.maps.Map(document.getElementById('map'), {
@@ -290,6 +287,7 @@ function initializeMap() {
           minZoom: 4
     });
     makeSliding();
+    makeBox();
     makeAnimate();
     console.log("Done");
 }
