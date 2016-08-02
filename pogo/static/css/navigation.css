@@ -7,37 +7,41 @@
     max-height: 80px;
 }
 
-.navbar-default > .container > .content {
-    padding-top: 12px;
-}
-
 .navbar-default > .container > .content .form-group > * {
     height: 40px;
 }
 
+.navbar .navbar-form {
+    position: relative;
+    top: 5px;
+}
+.navbar .content {
+    display: inline-flex;
+    align-items:center;
+    justify-content: center;
+}
+
+.navbar .container {
+    width: 100%;
+}
+
 .navbar-center {
     text-align: center;
+    display:flex;
+    justify-content: center;
+    align-items: center;
  }
 
-.navbar-center #center {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-}
 
 .navbar .logo{
   	width: auto;
     max-width: 60px;
     height: auto;
     max-height: 60px;
-    margin-top: 5px;
+    margin-right: 7px;
 }
 
 .navbar .title {
-    position: absolute;
     width: auto;
     height: auto;
-    left: 50px;
-    margin-top: 14px;
 }

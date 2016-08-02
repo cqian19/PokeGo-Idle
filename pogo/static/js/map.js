@@ -7,7 +7,6 @@ var mapObj = null;
 var iconPath = "static/icons/";
 var imagePath = "static/images/";
 var playerUpdateTime = 350;
-var threads = [player, mapObjects, notifications, playerInfo];
 
 var player = {
     img_name: 'player1',
@@ -294,24 +293,31 @@ function initializeMap() {
     console.log("Done");
 }
 
-function startThreads() {
-    for (i in threads) {
-        i.thread = setInterval(i.update, i.updateTime);
-    }
-}
+$(function() {
+    var threads = [player, mapObjects, notifications, playerInfo];
 
-function waitForLogin() {
-    $.ajax({
-        url: 'loggedIn',
-        type: 'GET',
-        dataType: 'json'
-    }).done(function(r) {
-        console.log();
-        if (r["status"] == "1") {
-            clearInterval(loginThread);
-            startThreads();
+    function startThreads() {
+        for (i in threads) {
+            obj = threads[i];
+            console.log("THREAD", obj.update, obj.updateTime);
+            i.thread = setInterval(obj.update, obj.updateTime);
         }
-    })
-}
+    }
 
-loginThread = setTimeout(waitForLogin, 2000);
+    function waitForLogin() {
+        $.ajax({
+            url: 'loggedIn',
+            type: 'GET',
+            dataType: 'json'
+        }).done(function (r) {
+            console.log(r);
+            if (r["status"] == "1") {
+                console.log("Hello");
+                startThreads();
+                clearInterval(loginThread);
+            }
+        })
+    }
+
+    loginThread = setTimeout(waitForLogin, 2000);
+});
