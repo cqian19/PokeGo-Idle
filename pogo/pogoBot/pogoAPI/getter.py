@@ -216,7 +216,6 @@ class Getter():
             if stop.id not in self.pastStops:
                 l.append(stop)
             else:
-                print(now, dt)
                 d_t = datetime.utcfromtimestamp(self.pastStops[stop.id] / 1000.0)
                 if now > d_t:
                     l.append(stop)
