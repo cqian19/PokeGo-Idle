@@ -59,7 +59,7 @@ class inventoryHandler(Handler):
         self.logger.info("Inventory capacity {0}/{1}".format(itemsCount, maxItems))
         if (itemsCount/maxItems) < .8: return
         # Clear out all of a crtain type
-        tossable = [items.POTION, items.SUPER_POTION, items.REVIVE]
+        tossable = [items.POTION, items.SUPER_POTION, items.HYPER_POTION, items.REVIVE]
         for toss in tossable:
             if toss in bag:
                 self.session.recycleItem(toss, bag[toss])
@@ -67,12 +67,11 @@ class inventoryHandler(Handler):
         # Limit a certain type
         limited = {
             items.POKE_BALL: 50,
-            items.GREAT_BALL: 100,
+            items.GREAT_BALL: 75,
             items.ULTRA_BALL: 150,
-            items.RAZZ_BERRY: 25,
+            items.RAZZ_BERRY: 15,
             items.REVIVE: 10,
-            items.HYPER_POTION: 10,
-            items.MAX_POTION: 30
+            items.MAX_POTION: 20
         }
         for limit in limited:
             if limit in bag and int(bag[limit]) > limited[limit]:
