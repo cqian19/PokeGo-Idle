@@ -35,7 +35,7 @@ html, body {
 }
 
 .playerCard {
-    box-shadow:inset 0px 0px 0px 1px black, 0 0 3pt 2pt black;
+    box-shadow:inset 0 0 0 1px black, 0 0 3pt 2pt black;
     border-radius: 4px;
     font-family: Fixed, monospace;
     margin: auto;
@@ -87,6 +87,7 @@ html, body {
     width: 100%;
     padding-left: 6px;
     display: inline-block;
+    height: 16px;
 }
 
 .playerCard .itemContainer > .itemLabel div {
@@ -137,6 +138,7 @@ html, body {
     border-left: rgba(0, 0, 0, 0.05) solid;
     border-width: 2px;
     padding: 0;
+    padding-right: 3px;
 }
 
 .notification > .container table {

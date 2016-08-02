@@ -221,6 +221,18 @@ class Getter():
                     l.append(stop)
         return l
 
+    def getInventoryCapacity(self):
+        bag = self.inventory.bag
+        itemsCount = sum(map(lambda b: int(b), bag.values()))
+        maxItems = self._state.player_data.max_item_storage
+        return [itemsCount, maxItems]
+
+    def getPokemonCapacity(self):
+        party = self.inventory.party
+        stored = len(party)
+        maxStorage = self._state.player_data.max_pokemon_storage
+        return [stored, maxStorage]
+
     def getCaughtPokemon(self):
         orig = self.caughtPokemon
         self.caughtPokemon = []

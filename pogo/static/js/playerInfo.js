@@ -70,4 +70,16 @@ function parsePlayerData(playerData) {
     if (pokecoin.text() != pcamount){
         pokecoin.text(pcamount);
     }
+
+    var pokemon = card.find("#pokemon");
+    var pokeamount = "Pokemon Storage:  " + playerData.pokemon + "/" + playerData.maxPokemon;
+    if (pokemon.text() != pokeamount){
+        pokemon.text(pokeamount);
+    }
+
+    var items = card.find("#items");
+    var itemsamount = "Item Storage:  " + playerData.inventory + "/" + playerData.maxInventory;
+    if (items.text() != itemsamount){
+        items.text(itemsamount);
+    }
 }

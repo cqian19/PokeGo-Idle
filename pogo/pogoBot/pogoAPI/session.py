@@ -192,6 +192,8 @@ class PogoSession():
                 stardust = i.amount
             elif i.name == 'POKECOIN':
                 pokecoin = i.amount
+        inventory, maxInventory = self.getter.getInventoryCapacity()
+        pokemon, maxPokemon = self.getter.getPokemonCapacity()
         d = {
             'username': data.username,
             'team': teams[str(data.team)],
@@ -200,7 +202,11 @@ class PogoSession():
             'maxXp': stats.next_level_xp - stats.prev_level_xp,
             'stardust': stardust,
             'pokecoin': pokecoin,
-            'gender': 'Male' if data.avatar.gender == 0 else 'Female'
+            'gender': 'Male' if data.avatar.gender == 0 else 'Female',
+            'inventory': inventory,
+            'maxInventory': maxInventory,
+            'pokemon': pokemon,
+            'maxPokemon': maxPokemon
         }
         return d
 
