@@ -2,6 +2,8 @@
 
 # PokeGo Adventures Pokemon Go Bot
 A free Pokemon Go bot with local website, live map, and notifications. See your player move around in real time and catch pokemon!
+
+<p align="center"><img src="pogo/static/images/game.png"></p>
 ## Features
 * Easy to use web interface
 * Live map that shows your trainer moving around and pokemon being caught in real time!
@@ -18,17 +20,17 @@ A free Pokemon Go bot with local website, live map, and notifications. See your 
 * Free to use!
 
 ## Getting Started
-This bot requires Python 3. Using versions of Python 2 will not work. If you already have Python 3 and pip configured, skip to step 4.
-1. Fork/Download this project as a zip and extract.
-2. Install Python 3 here. https://www.python.org/downloads/release/python-344/
-3. Follow [(this guide here)](https://github.com/AHAAAAAAA/PokemonGo-Map/wiki/Windows-Installation-and-requirements) to get python and pip running on the command-line (Remember to use Python 3 instead of Python 2).
-4. Follow the instructions at this link to get a Google Maps key. The key is necessary for the map to display. The key should start with "AIza".
-https://developers.google.com/maps/documentation/javascript/get-api-key
-5. On the command-line cd to the project folder `cd C:/PokeAdventuresBot` (or wherever you installed the project).
-6. Run `pip install -r requirements.txt` to get the requirements for the program.
-7. The main client is the `game.py` file in the `pogo` folder. Do `cd pogo` and `python game.py` to start the bot.
-8. **In a web browser (I recommend Chrome.) go to [**localhost:5000**](localhost:5000)**.
-9. Pick a method to log in (PTC or Google) and fill out the rest of the login screen. You're going to need your Google Maps API key. For next time, double clicking the input field should let you select the key, so you don't have to go back to copy and paste it in.
+This bot requires Python 3. Using versions of Python 2 will not work. If you already have Python 3 and pip configured, skip to step 4.  
+1. Fork/Download this project as a zip and extract.  
+2. Install Python 3 here. https://www.python.org/downloads/release/python-344/  
+3. Follow [(this guide here)](https://github.com/AHAAAAAAA/PokemonGo-Map/wiki/Windows-Installation-and-requirements) to get python and pip running on the command-line (Remember to use Python 3 instead of Python 2).  
+4. Follow the instructions at this link to get a Google Maps key. The key is necessary for the map to display. The key should start with "AIza".  
+https://developers.google.com/maps/documentation/javascript/get-api-key  
+5. On the command-line cd to the project folder `cd C:/PokeAdventuresBot` (or wherever you installed the project).  
+6. Run `pip install -r requirements.txt` to get the requirements for the program.  
+7. The main client is the `game.py` file in the `pogo` folder. Do `cd pogo` and `python game.py` to start the bot.  
+8. **In a web browser (I recommend Chrome.) go to [**localhost:5000**](localhost:5000)**.  
+9. Pick a method to log in (PTC or Google) and fill out the rest of the login screen. You're going to need your Google Maps API key. For next time, double clicking the input field should let you select the key, so you don't have to go back to copy and paste it in.  
 10. Click "Login" and you're set! Logging in may take up to a minute or more depending on how great Niantic's servers are going.
 
 ## Contributing
@@ -38,12 +40,13 @@ I'm just a student and the only one working on this project, so I can only do so
 Just a heads up: This bot will drop items and release low CP/IV pokemon if your inventory or pokemon storage is almost full. The bot prioritizes dropping potions and revives. The bot currently tries to discard lower than rare pokemon with CP < 700 and IV < 80%. Configs will be added in a later update. With how fast you're going to level with this bot, it won't matter much, but the bot won't function well with a full inventory/pokemon storage.
 
 ## Upcoming features
-- [ ] Sniping rare pokemon around the world and softban bypass
-- [ ] User option configurations
-- [ ] Setting and hatching eggs (Will require movespeed reduction)
-- [ ] Allowing the user to use lucky eggs and incense
-- [ ] Packaging into exe (not working currently thanks to pycryptodomex shenanigans)
+
+- [ ] Sniping rare pokemon around the world and softban bypass  
+- [ ] User option configurations  
+- [ ] Setting and hatching eggs (Will require movespeed reduction)  
+- [ ] Allowing the user to use lucky eggs and incense  
+- [ ] Packaging into exe (not working currently thanks to pycryptodomex shenanigans)  
 
 ## Credits
-[rubenvereecken](https://github.com/rubenvereecken/pokemongo-api) for the Pokemon Go API.
+[rubenvereecken](https://github.com/rubenvereecken/pokemongo-api) for the Pokemon Go API.  
 [AHAAAAAAA's Pokemon Maps for reference.](https://github.com/AHAAAAAAA/PokemonGo-Map)
