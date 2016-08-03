@@ -1,9 +1,9 @@
 import time
 
-from mod import Handler
-from pogoAPI.pokedex import pokedex, Rarity, baseEvolution
-from pogoAPI.inventory import items
-from pogoAPI.location import Location
+from .mod import Handler
+from .pogoAPI.pokedex import pokedex, Rarity, baseEvolution
+from .pogoAPI.inventory import items
+from .pogoAPI.location import Location
 
 
 class pokemonHandler(Handler):

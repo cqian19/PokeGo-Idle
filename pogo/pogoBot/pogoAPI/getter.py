@@ -11,9 +11,9 @@ from POGOProtos.Networking.Requests.Messages import FortDetailsMessage_pb2
 from POGOProtos.Networking.Requests.Messages import FortSearchMessage_pb2
 from POGOProtos.Networking.Requests.Messages import GetInventoryMessage_pb2
 from POGOProtos.Networking.Requests.Messages import GetMapObjectsMessage_pb2
-from inventory import Inventory, items
-from pokedex import pokedex
-from util import set_interval, getJSTime
+from .inventory import Inventory, items
+from .pokedex import pokedex
+from .util import set_interval, getJSTime
 
 RPC_ID = int(random.random() * 10 ** 12)
 STOP_COOLDOWN = 305
@@ -273,6 +273,7 @@ class Getter():
         self.pastEvents.append(d)
 
     def updateAllPokemon(self, cells):
+        print(cells)
         print("Updating pokemon")
         for cell in cells.map_cells:
             for poke in cell.wild_pokemons:

@@ -1,16 +1,13 @@
 # coding: utf-8
 
-from flask import Flask, render_template, jsonify, request, redirect, url_for
-from pogoBot.bot import Bot
-from pogoBot.pogoAPI import api, custom_exceptions
-from custom_exceptions import GeneralPogoException
-
 import logging
-import argparse
-import sys
 import threading
-import time
-import os
+
+from flask import Flask, render_template, jsonify, request, redirect, url_for
+
+from pogoBot.bot import Bot
+from pogoBot.pogoAPI.api import PokeAuthSession
+from pogoBot.pogoAPI.custom_exceptions import GeneralPogoException
 
 app = Flask(__name__, template_folder="templates")
 
@@ -37,7 +34,6 @@ class MapHandler():
     def __init__(self):
         self.is_logged_in = False
         app.route('/', methods = ['GET', 'POST'])(self.login)
-        """"""
         app.run(debug=False, port=5000)
 
     def default_map(self):
@@ -108,7 +104,7 @@ class MapHandler():
     def do_login(self, args):
         print("AUTH")
         # Create PokoAuthObject
-        poko_session = api.PokeAuthSession(
+        poko_session = PokeAuthSession(
             args['username'],
             args['password'],
             args['options'],
@@ -125,27 +121,11 @@ class MapHandler():
             raise e
         self.maps_key = args['api_key']
         self.session = pogo_session
-        print("DONE")
-        if pogo_session:
-            self.bot = Bot(poko_session.session, pogo_session, poko_session, logger)
-            self.bot.run()
+        self.bot = Bot(poko_session.session, pogo_session, poko_session, logger)
+        self.bot.run()
 
 if __name__ == "__main__":
     logger = setupLogger()
     logger.debug('Logger set up')
     MapHandler()
-    """"# Read in args
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-a", "--auth", help="Auth Service", required=True)
-    parser.add_argument("-u", "--username", help="Username", required=True)
-    parser.add_argument("-p", "--password", help="Password", required=True)
-    parser.add_argument("-l", "--location", help="Location", required=True)
-    parser.add_argument("-g", "--geo_key", help="GEO API Secret", required = True)
-    args = parser.parse_args()
-
-    # Check service
-    if args.auth not in ['ptc', 'google']:
-        logging.error('Invalid auth service {}'.format(args.auth))
-        sys.exit(-1)
-    print("AUTH")"""
 

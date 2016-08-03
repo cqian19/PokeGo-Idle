@@ -3,7 +3,7 @@ import logging
 import threading
 import time
 
-from pogoAPI.custom_exceptions import GeneralPogoException
+from .pogoAPI.custom_exceptions import GeneralPogoException
 from . import fort_mod, inventory_mod, pokemon_mod
 
 

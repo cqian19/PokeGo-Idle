@@ -1,7 +1,7 @@
 import time
 
-from mod import Handler
-from pogoAPI.location import Location
+from .mod import Handler
+from .pogoAPI.location import Location
 
 
 class fortHandler(Handler):

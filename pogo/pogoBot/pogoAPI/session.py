@@ -16,11 +16,11 @@ from POGOProtos.Networking.Requests.Messages import RecycleInventoryItemMessage_
 from POGOProtos.Networking.Requests.Messages import ReleasePokemonMessage_pb2
 from POGOProtos.Networking.Requests.Messages import UseItemCaptureMessage_pb2
 from POGOProtos.Networking.Requests.Messages import UseItemEggIncubatorMessage_pb2
-from custom_exceptions import GeneralPogoException
-from getter import Getter
-from location import Location
-from pokedex import pokedex, teams
-from state import State
+from .custom_exceptions import GeneralPogoException
+from .getter import Getter
+from .location import Location
+from .pokedex import pokedex, teams
+from .state import State
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 

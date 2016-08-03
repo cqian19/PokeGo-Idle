@@ -1,6 +1,6 @@
 import inspect
 
-from pokedex import pokedex
+from .pokedex import pokedex
 
 
 class Items(dict):

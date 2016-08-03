@@ -5,7 +5,7 @@ import gpxpy.geo
 from geopy import Point, distance
 from s2sphere import CellId, LatLng
 
-from custom_exceptions import GeneralPogoException
+from .custom_exceptions import GeneralPogoException
 
 
 # Wrapper for location
