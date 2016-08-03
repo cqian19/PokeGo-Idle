@@ -1,116 +1,49 @@
-# Pokemon Go API for Python
+<p align="center"><img src="pogo/static/images/title.png"></p>
 
-This was originally based on tejado's **original** demo,
-[this API](https://github.com/tejado/pgoapi/tree/eb788ebbde46664013527a2e5f6c16e98d59d5e3/old-demo).
-You can view this as an advanced
-and cleaned up version
-based on object-oriented principles.
+# PokeGo Adventures Pokemon Go Bot
+A free Pokemon Go bot with local website, live map, and notifications. See your player move around in real time and catch pokemon!
+## Features
+* Easy to use web interface
+* Live map that shows your trainer moving around and pokemon being caught in real time!
+* Live web notifications when catching pokemon and spinning pokestops along with rewards!
+* Location spoofing. Set your location anywhere in the world!
+* Displays trainer info (Level, Exp, Stardust, etc.)
+* Login from the website. Supports PTC and Google. No ugly command-line logins.
+* Automatically walks to pokemon and catches them
+* Automatically spins pokestops
+* Automatically releases and evolves pokemon
+* Discards unnecessary items when bag is near full
+* Picks best pokeball to use
+* Search bar feature for changing locations
+* Free to use!
 
-Additions welcome.
+## Getting Started
+This bot requires Python 3. Using versions of Python 2 will not work. If you already have Python 3 and pip configured, skip to step 4.
+1. Fork/Download this project as a zip and extract.
+2. Install Python 3 here. https://www.python.org/downloads/release/python-344/
+3. Follow [(this guide here)](https://github.com/AHAAAAAAA/PokemonGo-Map/wiki/Windows-Installation-and-requirements) to get python and pip running on the command-line (Remember to use Python 3 instead of Python 2).
+4. Follow the instructions at this link to get a Google Maps key. The key is necessary for the map to display. The key should start with "AIza".
+https://developers.google.com/maps/documentation/javascript/get-api-key
+5. On the command-line cd to the project folder `cd C:/PokeAdventuresBot` (or wherever you installed the project).
+6. Run `pip install -r requirements.txt` to get the requirements for the program.
+7. The main client is the `game.py` file in the `pogo` folder. Do `cd pogo` and `python game.py` to start the bot.
+8. **In a web browser (I recommend Chrome.) go to [**localhost:5000**](localhost:5000)**.
+9. Pick a method to log in (PTC or Google) and fill out the rest of the login screen. You're going to need your Google Maps API key. For next time, double clicking the input field should let you select the key, so you don't have to go back to copy and paste it in.
+10. Click "Login" and you're set! Logging in may take up to a minute or more depending on how great Niantic's servers are going.
 
-# Current implementation
-Our current implementaion covers most of the basics of gameplay. The following methods are availible:
+## Contributing
+I'm just a student and the only one working on this project, so I can only do so much. All contributions, from issue reporting to feature development, are welcome! :smile: Stealing this project without giving credit is not welcome.
 
-```
-# Get profile
-def getProfile(self):
+## Disclaimer
+Just a heads up: This bot will drop items and release low CP/IV pokemon if your inventory or pokemon storage is almost full. The bot prioritizes dropping potions and revives. The bot currently tries to discard lower than rare pokemon with CP < 700 and IV < 80%. Configs will be added in a later update. With how fast you're going to level with this bot, it won't matter much, but the bot won't function well with a full inventory/pokemon storage.
 
-# Get Location
-def getMapObjects(self, radius=10):
+## Upcoming features
+[] Sniping rare pokemon around the world and softban bypass
+[] User option configurations
+[] Setting and hatching eggs (Will require movespeed reduction)
+[] Allowing the user to use lucky eggs and incense
+[] Packaging into exe (not working currently thanks to pycryptodomex shenanigans)
 
-# Spin a pokestop
-def getFortSearch(self, fort):
-
-# Get encounter
-def encounterPokemon(self, pokemon):
-
-# Upon Encounter, try and catch
-def catchPokemon(self, pokemon, pokeball=1):
-
-# Evolve Pokemon
-def evolvePokemon(self, pokemon):
-
-# Transfer Pokemon
-def releasePokemon(self, pokemon):
-
-# Throw away items
-def recycleItem(self, item_id, count):
-
-# set an Egg into an incubator
-def setEgg(self, item, pokemon):
-
-# Get Eggs
-def getEggs(self):
-
-# Get Inventory
-def getInventory(self):
-
-# Get Badges
-def getBadges(self):
-
-# Get Settings
-def getDownloadSettings(self):
-```
-Every method has been tested. Pull requests are encouraged.
-
-## Demo
-`demo.py` includes a demo of the API.
-
-```
-➜  python demo.py -a "google" -u "email@gmail.com" -p "thepassword" -l "The Atlantic Ocean"
-
-2016-07-17 16:26:59,947 - INFO - Creating Google session for email@gmail.com
-2016-07-17 16:26:59,953 - INFO - Starting new HTTPS connection (1): android.clients.google.com
-2016-07-17 16:27:00,362 - INFO - Starting new HTTPS connection (1): android.clients.google.com
-2016-07-17 16:27:00,789 - INFO - Location: The Atlantic Ocean
-2016-07-17 16:27:00,789 - INFO - Coordinates: 51.01 7.12 0.0
-2016-07-17 16:27:00,793 - INFO - Starting new HTTPS connection (1): pgorelease.nianticlabs.com
-2016-07-17 16:27:01,633 - INFO - creation_time: 3341800000
-team: 3
-avatar {
-  hair: 1
-  shirt: 1
-  pants: 1
-  hat: 1
-  shoes: 1
-  eyes: 1
-  backpack: 1
-}
-max_pokemon_storage: 250
-max_item_storage: 400
-daily_bonus {
-  next_defender_bonus_collect_timestamp_ms: 4106877052
-}
-currency {
-  type: "STARDUST"
-  quantity: 9001
-}
-```
-
-This is achieved with minimal coding effort on the client's part
-(extract from `demo.py`):
-
-```
-  # ... Blabla define the parser
-  if args.auth == 'ptc':
-      session = api.createPTCSession(args.username, args.password, args.location)
-  elif args.auth == 'google':
-      session = api.createGoogleSession(args.username, args.password, args.location)
-
-  if session: # do stuff
-      profile = session.getProfile()
-      logging.info(profile)
-```
-
-## Contribution
-Hell yeah!
-I'm on [Slack](https://pkre.slack.com) too
-(want an [invite](https://shielded-earth-81203.herokuapp.com)?)
-if you want to have a quick chat.
-
-I welcome all PRs but for big changes it'd be best
-to open an issue so I have some idea of what's going on.
-This thing is under heavy development after all.
-
-## Protocol
-We currently use [AeonLucid's Pokemon Go Protobuf protocol](https://github.com/AeonLucid/POGOProtos).
+## Credits
+[rubenvereecken](https://github.com/rubenvereecken/pokemongo-api) for the Pokemon Go API.
+[AHAAAAAAA's Pokemon Maps for reference.](https://github.com/AHAAAAAAA/PokemonGo-Map)
