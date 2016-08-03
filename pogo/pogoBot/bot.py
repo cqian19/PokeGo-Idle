@@ -1,11 +1,11 @@
 #!/usr/bin/python
-from pogoAPI import api, custom_exceptions, location
-from . import fort_mod, inventory_mod, pokemon_mod
-from pogoAPI.custom_exceptions import GeneralPogoException
 import logging
 import threading
 import time
-import sys
+
+from pogoAPI.custom_exceptions import GeneralPogoException
+from . import fort_mod, inventory_mod, pokemon_mod
+
 
 class Bot():
 
@@ -30,7 +30,7 @@ class Bot():
         while self.started:
             time.sleep(1)
             try:
-                self.ph.cleanPokemon(thresholdCP=500)
+                self.ph.cleanPokemon(thresholdCP=700)
                 self.ih.cleanInventory()
                 pokemon = self.ph.findBestPokemon()
                 if pokemon:
