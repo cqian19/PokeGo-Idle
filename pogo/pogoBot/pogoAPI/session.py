@@ -366,10 +366,14 @@ class PogoSession():
     def setPastStop(self, *args):
         self.getter.setPastStop(*args)
 
+    def walkToWithoutStop(self, olatitude, olongitude, *args, **kwargs):
+        for i in self.walkTo(olatitude, olongitude, *args, **kwargs):
+            continue
+
     # These act as more logical functions.
     # Might be better to break out seperately
     # Walk over to position in meters
-    def walkTo(self, olatitude, olongitude, epsilon=10, step=25, iter=False):
+    def walkTo(self, olatitude, olongitude, epsilon=10, step=35, delay=1):
         # Calculate distance to position
         latitude, longitude, _ = self.getter.getCoordinates()
         dist = closest = Location.getDistance(
@@ -385,7 +389,7 @@ class PogoSession():
             divisions = 1
         dLat = (olatitude - latitude) / divisions
         dLon = (olongitude - longitude) / divisions
-        self.logger.info("Walking %f meters. This will take %f seconds..." % (dist, dist / step))
+        self.logger.info("Walking %f meters. This will take %f seconds..." % (dist, delay * dist / step))
         while dist > epsilon:
             self.logger.debug("%f m -> %f m away", closest - dist, closest)
             newLat = latitude + dLat
@@ -406,9 +410,8 @@ class PogoSession():
                 latitude,
                 longitude
             )
-            if iter:
-                yield
-            time.sleep(1)
+            yield # Search for stops in between
+            time.sleep(delay)
             dist = Location.getDistance(
                 latitude,
                 longitude,

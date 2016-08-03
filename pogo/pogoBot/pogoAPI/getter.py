@@ -159,7 +159,6 @@ class Getter():
 
     # Hooks for those bundled in default
     def getMapObjects(self, radius=600):
-        print("GMO")
         with self.lock:
             steps = self.location.getAllSteps(radius)
             for lat, lon in steps:

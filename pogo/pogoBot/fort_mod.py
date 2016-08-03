@@ -7,7 +7,7 @@ from pogoAPI.location import Location
 class fortHandler(Handler):
 
     lastStops = {}
-    close = 30 # Testing within spin distance
+    close = 40 # Testing within spin distance
     # Basic solution to spinning all forts.
     # Since traveling salesman problem, not
     # true solution. But at least you get
@@ -35,6 +35,7 @@ class fortHandler(Handler):
 
     def findClosestForts(self, num=3):
         forts = self.sortCloseForts(False)
+        print(forts)
         return forts[0:num]
 
     # Find the fort closest to user
@@ -58,7 +59,7 @@ class fortHandler(Handler):
         if fort:
             self.logger.info("Spinning a Fort:")
             # Walk over
-            self.session.walkTo(fort.latitude, fort.longitude)
+            self.session.walkToWithoutStop(fort.latitude, fort.longitude)
             # Give it a spin
             print(self.spin(fort))
 

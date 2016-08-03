@@ -33,6 +33,7 @@ class Bot():
                 self.ph.cleanPokemon(thresholdCP=700)
                 self.ih.cleanInventory()
                 pokemon = self.ph.findBestPokemon()
+
                 if pokemon:
                     for i in self.ph.walkAndCatch(pokemon):
                         if not self.started:

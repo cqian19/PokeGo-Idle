@@ -13,6 +13,7 @@ class pokemonHandler(Handler):
     def findBestPokemon(self):
         # Get Map details and print pokemon
         pokemons = self.session.checkAllPokemon()
+        print(pokemons)
         if pokemons == []: return
         self.logger.info("Finding Nearby Pokemon:")
         closest = float("Inf")
@@ -59,7 +60,7 @@ class pokemonHandler(Handler):
     def walkAndCatch(self, pokemon):
         if pokemon:
             self.logger.info("Catching %s:" % pokedex[pokemon.pokemon_data.pokemon_id])
-            for i in self.session.walkTo(pokemon.latitude, pokemon.longitude, iter=True):
+            for i in self.session.walkTo(pokemon.latitude, pokemon.longitude):
                 yield # Yield after every step for stops
             self.logger.info(self.encounterAndCatch(pokemon))
 
