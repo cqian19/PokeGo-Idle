@@ -1,9 +1,11 @@
-from s2sphere import CellId, LatLng
-from custom_exceptions import GeneralPogoException
-from geopy import Point, distance
+import math
+
 import geocoder
 import gpxpy.geo
-import math
+from geopy import Point, distance
+from s2sphere import CellId, LatLng
+
+from custom_exceptions import GeneralPogoException
 
 
 # Wrapper for location

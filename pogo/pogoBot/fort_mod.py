@@ -1,11 +1,13 @@
-from pogoAPI.location import Location
-from mod import Handler
 import time
+
+from mod import Handler
+from pogoAPI.location import Location
+
 
 class fortHandler(Handler):
 
     lastStops = {}
-    close = 40 # Testing within spin distance
+    close = 35 # Testing within spin distance
     # Basic solution to spinning all forts.
     # Since traveling salesman problem, not
     # true solution. But at least you get
@@ -59,7 +61,7 @@ class fortHandler(Handler):
             # Walk over
             self.session.walkTo(fort.latitude, fort.longitude)
             # Give it a spin
-            self.spin(fort)
+            print(self.spin(fort))
 
     # Walk and spin everywhere
     def walkAndSpinMany(self, forts):

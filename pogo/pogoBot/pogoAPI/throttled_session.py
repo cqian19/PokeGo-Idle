@@ -1,7 +1,8 @@
+import time
+
 from requests import Request, session
 from requests_throttler import BaseThrottler
-import logging
-import time
+
 THROTTLE_DELAY = 1/3 + .05
 
 class ThrottledSession():

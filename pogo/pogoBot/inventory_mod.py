@@ -1,6 +1,7 @@
-from pogoAPI.inventory import items
-from mod import Handler
 import time
+
+from mod import Handler
+from pogoAPI.inventory import items
 
 
 class inventoryHandler(Handler):

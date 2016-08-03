@@ -1,9 +1,10 @@
-from pogoAPI.location import Location
-from pokedex import pokedex, Rarity, baseEvolution
-from pogoAPI.inventory import items
-from pogoAPI.custom_exceptions import GeneralPogoException
-from mod import Handler
 import time
+
+from mod import Handler
+from pogoAPI.pokedex import pokedex, Rarity, baseEvolution
+from pogoAPI.inventory import items
+from pogoAPI.location import Location
+
 
 class pokemonHandler(Handler):
 
@@ -161,7 +162,7 @@ class pokemonHandler(Handler):
         sta = poke.individual_stamina
         return 100 * (at + de + sta)/45
 
-    def cleanPokemon(self, thresholdCP=300, thresholdIV=80):
+    def cleanPokemon(self, thresholdCP=800, thresholdIV=80):
         self.logger.info("Cleaning out Pokemon...")
         party = self.session.checkInventory().party
         stored, maxStorage = self.session.getter.getPokemonCapacity()
@@ -182,7 +183,7 @@ class pokemonHandler(Handler):
                 time.sleep(.3)
             # If low cp, throw away
             r = pokedex.getRarityById(poke_id)
-            if (iv < thresholdIV or pokemon.cp < thresholdCP) and r <= Rarity.RARE or r <= Rarity.UNCOMMON:
+            if iv < thresholdIV and pokemon.cp < thresholdCP and r <= Rarity.RARE or r <= Rarity.UNCOMMON:
                 # Get rid of low CP, low evolve value
                 self.logger.info("Releasing %s" % pokedex[pokemon.pokemon_id])
                 self.session.releasePokemon(pokemon)

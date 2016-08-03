@@ -1,3 +1,9 @@
+import logging
+import random
+import threading
+import time
+from datetime import datetime
+
 from POGOProtos.Networking.Requests import RequestType_pb2
 from POGOProtos.Networking.Requests import Request_pb2
 from POGOProtos.Networking.Requests.Messages import DownloadSettingsMessage_pb2
@@ -5,15 +11,9 @@ from POGOProtos.Networking.Requests.Messages import FortDetailsMessage_pb2
 from POGOProtos.Networking.Requests.Messages import FortSearchMessage_pb2
 from POGOProtos.Networking.Requests.Messages import GetInventoryMessage_pb2
 from POGOProtos.Networking.Requests.Messages import GetMapObjectsMessage_pb2
-from custom_exceptions import GeneralPogoException
 from inventory import Inventory, items
-from util import set_interval, getJSTime
 from pokedex import pokedex
-from datetime import datetime
-import logging
-import random
-import threading
-import time
+from util import set_interval, getJSTime
 
 RPC_ID = int(random.random() * 10 ** 12)
 STOP_COOLDOWN = 305

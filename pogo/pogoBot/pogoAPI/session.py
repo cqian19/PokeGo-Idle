@@ -1,36 +1,27 @@
 # Load Generated Protobuf
-from POGOProtos.Networking.Requests import Request_pb2
-from POGOProtos.Networking.Requests import RequestType_pb2
-from POGOProtos.Networking.Envelopes import ResponseEnvelope_pb2
-from POGOProtos.Networking.Envelopes import RequestEnvelope_pb2
-from POGOProtos.Networking.Requests.Messages import EncounterMessage_pb2
-from POGOProtos.Networking.Requests.Messages import FortSearchMessage_pb2
-from POGOProtos.Networking.Requests.Messages import FortDetailsMessage_pb2
-from POGOProtos.Networking.Requests.Messages import CatchPokemonMessage_pb2
-from POGOProtos.Networking.Requests.Messages import GetInventoryMessage_pb2
-from POGOProtos.Networking.Requests.Messages import GetMapObjectsMessage_pb2
-from POGOProtos.Networking.Requests.Messages import EvolvePokemonMessage_pb2
-from POGOProtos.Networking.Requests.Messages import ReleasePokemonMessage_pb2
-from POGOProtos.Networking.Requests.Messages import UseItemCaptureMessage_pb2
-from POGOProtos.Networking.Requests.Messages import DownloadSettingsMessage_pb2
-from POGOProtos.Networking.Requests.Messages import UseItemEggIncubatorMessage_pb2
-from POGOProtos.Networking.Requests.Messages import RecycleInventoryItemMessage_pb2
-
-# Load local
-from custom_exceptions import GeneralPogoException
-from inventory import Inventory, items
-from location import Location
-from state import State
-from pokedex import pokedex, teams
-from getter import Getter
+import threading
+import time
 
 import requests
-import time
-import threading
-import types
-
-# Hide errors (Yes this is terrible, but prettier)
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
+from POGOProtos.Networking.Envelopes import RequestEnvelope_pb2
+from POGOProtos.Networking.Envelopes import ResponseEnvelope_pb2
+from POGOProtos.Networking.Requests import RequestType_pb2
+from POGOProtos.Networking.Requests import Request_pb2
+from POGOProtos.Networking.Requests.Messages import CatchPokemonMessage_pb2
+from POGOProtos.Networking.Requests.Messages import EncounterMessage_pb2
+from POGOProtos.Networking.Requests.Messages import EvolvePokemonMessage_pb2
+from POGOProtos.Networking.Requests.Messages import RecycleInventoryItemMessage_pb2
+from POGOProtos.Networking.Requests.Messages import ReleasePokemonMessage_pb2
+from POGOProtos.Networking.Requests.Messages import UseItemCaptureMessage_pb2
+from POGOProtos.Networking.Requests.Messages import UseItemEggIncubatorMessage_pb2
+from custom_exceptions import GeneralPogoException
+from getter import Getter
+from location import Location
+from pokedex import pokedex, teams
+from state import State
+
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 API_URL = 'https://pgorelease.nianticlabs.com/plfe/rpc'

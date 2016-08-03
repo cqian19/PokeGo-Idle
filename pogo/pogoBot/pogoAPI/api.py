@@ -1,13 +1,12 @@
-import requests
-import re
 import json
-import random
-from custom_exceptions import GeneralPogoException
-from session import PogoSession
-from throttled_session import ThrottledSession
-from location import Location
+import re
 
 from gpsoauth import perform_master_login, perform_oauth
+
+from custom_exceptions import GeneralPogoException
+from location import Location
+from session import PogoSession
+from throttled_session import ThrottledSession
 
 # Callbacks and Constants
 API_URL = 'https://pgorelease.nianticlabs.com/plfe/rpc'

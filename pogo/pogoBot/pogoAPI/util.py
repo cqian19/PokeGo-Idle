@@ -1,7 +1,8 @@
-import struct
 import datetime
-import time
+import struct
 import threading
+import time
+
 
 def getJSTime():
     d = datetime.datetime.utcnow()
