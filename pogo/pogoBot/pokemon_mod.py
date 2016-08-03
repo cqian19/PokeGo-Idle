@@ -95,8 +95,7 @@ class pokemonHandler(Handler):
             for i in range(len(chances)):
                 j = i + 1
                 if int(bag.get(j, 0)):
-                    if not altBall:
-                        altBall = j
+                    altBall = j
                     if chances[i] > thresholdP:
                         bestBall = j
                         break
