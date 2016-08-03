@@ -32,17 +32,17 @@ https://developers.google.com/maps/documentation/javascript/get-api-key
 10. Click "Login" and you're set! Logging in may take up to a minute or more depending on how great Niantic's servers are going.
 
 ## Contributing
-I'm just a student and the only one working on this project, so I can only do so much. All contributions, from issue reporting to feature development, are welcome! :smile: Stealing this project without giving credit is not welcome.
+I'm just a student and the only one working on this project, so I can only do so much. All contributions, from issue reporting to feature development, are welcome! :smile: Stealing this project without giving credit though is not welcome.
 
 ## Disclaimer
 Just a heads up: This bot will drop items and release low CP/IV pokemon if your inventory or pokemon storage is almost full. The bot prioritizes dropping potions and revives. The bot currently tries to discard lower than rare pokemon with CP < 700 and IV < 80%. Configs will be added in a later update. With how fast you're going to level with this bot, it won't matter much, but the bot won't function well with a full inventory/pokemon storage.
 
 ## Upcoming features
-[] Sniping rare pokemon around the world and softban bypass
-[] User option configurations
-[] Setting and hatching eggs (Will require movespeed reduction)
-[] Allowing the user to use lucky eggs and incense
-[] Packaging into exe (not working currently thanks to pycryptodomex shenanigans)
+- [ ] Sniping rare pokemon around the world and softban bypass
+- [ ] User option configurations
+- [ ] Setting and hatching eggs (Will require movespeed reduction)
+- [ ] Allowing the user to use lucky eggs and incense
+- [ ] Packaging into exe (not working currently thanks to pycryptodomex shenanigans)
 
 ## Credits
 [rubenvereecken](https://github.com/rubenvereecken/pokemongo-api) for the Pokemon Go API.
