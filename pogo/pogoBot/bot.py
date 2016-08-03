@@ -41,7 +41,7 @@ class Bot():
                         self.fh.spinAll(forts)
                         cooldown = 1
                 else:
-                    forts = self.fh.findClosestForts()
+                    forts = self.fh.findClosestForts(num=4)
                     if forts:
                         for fort in forts:
                             self.fh.walkAndSpin(fort)
