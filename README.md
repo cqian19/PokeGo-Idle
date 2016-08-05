@@ -26,11 +26,11 @@ This bot requires Python 3. Using versions of Python 2 will not work. If you alr
 3. Follow [(this guide here)](https://github.com/AHAAAAAAA/PokemonGo-Map/wiki/Windows-Installation-and-requirements) to get python and pip running on the command-line (Remember to use Python 3 instead of Python 2).  
 4. Follow the instructions at this link to get a Google Maps key. The key is necessary for the map to display. The key should start with "AIza".  
 https://developers.google.com/maps/documentation/javascript/get-api-key  
-5. On the command-line cd to the project folder `cd C:/PokeAdventuresBot` (or wherever you installed the project).  
+5. On the command-line cd to the project folder `cd C:/PathToPokeAdventuresBot` (or wherever you installed the project).  
 6. Run `pip install -r requirements.txt` to get the requirements for the program.  
 7. The main client is the `game.py` file in the `pogo` folder. Do `cd pogo` and `python game.py` to start the bot.  
 8. **In a web browser (I recommend Chrome.) go to [**localhost:5000**](localhost:5000)**.  
-9. Pick a method to log in (PTC or Google) and fill out the rest of the login screen. You're going to need your Google Maps API key. For next time, double clicking the input field should let you select the key, so you don't have to go back to copy and paste it in.  
+9. Pick a method to log in (PTC or Google) and fill out the rest of the login screen. You're going to need your Google Maps API key. The bot will save login configurations for next time.  
 10. Click "Login" and you're set! Logging in may take up to a minute or more depending on how great Niantic's servers are going.
 
 ## Contributing
