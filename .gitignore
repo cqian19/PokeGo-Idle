@@ -2,3 +2,4 @@ dumps
 *.pyc
 venv
 build
+config.ini
