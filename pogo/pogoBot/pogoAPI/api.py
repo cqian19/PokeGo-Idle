@@ -7,6 +7,7 @@ from .custom_exceptions import GeneralPogoException
 from .location import Location
 from .session import PogoSession
 from .throttled_session import ThrottledSession
+from .pgoapi import pgoapi
 
 # Callbacks and Constants
 API_URL = 'https://pgorelease.nianticlabs.com/plfe/rpc'
@@ -25,7 +26,7 @@ class PokeAuthSession():
         self.session = ThrottledSession()
         self.logger = logger
         self.provider = provider
-
+        self.api = pgoapi.PGoApi()
         # User credentials
         self.username = username
         self.password = password
@@ -53,7 +54,8 @@ class PokeAuthSession():
                 self.provider,
                 self.access_token,
                 location,
-                self.logger
+                self.logger,
+                self.api
             )
         # else something has gone wrong
         elif location is None:
@@ -67,19 +69,7 @@ class PokeAuthSession():
     def createGoogleSession(self, locationLookup='', pogo_session=None):
 
         self.logger.info('Creating Google session for %s', self.username)
-
-        r1 = perform_master_login(self.username, self.password, ANDROID_ID)
-        r2 = perform_oauth(
-            self.username,
-            r1.get('Token', ''),
-            ANDROID_ID,
-            SERVICE,
-            APP,
-            CLIENT_SIG
-        )
-        if r1['Error'] == 'BadAuthentication':
-            raise GeneralPogoException("Google login failed. Double check your username and password.")
-        self.access_token = r2.get('Auth')  # access token
+        self.api.login('google', self.username, self.password)
         return self.createPogoSession(
             provider='google',
             locationLookup=locationLookup,
@@ -89,34 +79,7 @@ class PokeAuthSession():
     def createPTCSession(self, locationLookup='', pogo_session=None):
         instance = self.session
         self.logger.info('Creating PTC session for %s', self.username)
-        r = instance.get(LOGIN_URL)
-        jdata = json.loads(r.content.decode())
-        data = {
-            'lt': jdata['lt'],
-            'execution': jdata['execution'],
-            '_eventId': 'submit',
-            'username': self.username,
-            'password': self.password,
-        }
-        authResponse = instance.post(LOGIN_URL, data=data)
-
-        ticket = None
-        try:
-            ticket = re.sub('.*ticket=', '', authResponse.history[0].headers['Location'])
-        except:
-            self.logger.error(authResponse.json()['errors'][0])
-            raise GeneralPogoException(authResponse.json()['errors'][0])
-
-        data1 = {
-            'client_id': 'mobile-app_pokemon-go',
-            'redirect_uri': 'https://www.nianticlabs.com/pokemongo/error',
-            'client_secret': PTC_CLIENT_SECRET,
-            'grant_type': 'refresh_token',
-            'code': ticket,
-        }
-        r2 = instance.post(LOGIN_OAUTH, data=data1)
-        self.access_token = re.sub('&expires.*', '', r2.content.decode('utf-8'))
-        self.access_token = re.sub('.*access_token=', '', self.access_token)
+        self.api.login('ptc', self.username, self.password)
 
         return self.createPogoSession(
             provider='ptc',

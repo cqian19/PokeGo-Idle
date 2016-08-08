@@ -2,5 +2,5 @@
 	path = proto
 	url = https://github.com/AeonLucid/POGOProtos 
 [submodule "pgoapi"]
-	path = pgoapi
+	path = pogo/pogoBot/pogoAPI/pgoapi
 	url = https://github.com/keyphact/pgoapi

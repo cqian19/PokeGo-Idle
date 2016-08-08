@@ -93,7 +93,6 @@ def long_to_bytes (val, endianness='big'):
 
     return s
     
-    
 def generateLocation1(authticket, lat, lng, alt): 
     firstHash = xxhash.xxh32(authticket, seed=0x1B845238).intdigest()
     locationBytes = d2h(lat) + d2h(lng) + d2h(alt)
@@ -106,7 +105,6 @@ def generateLocation2(lat, lng, alt):
     if not alt:
         alt = "\x00\x00\x00\x00\x00\x00\x00\x00"
     return xxhash.xxh32(locationBytes, seed=0x1B845238).intdigest()      #Hash of location using static seed 0x1B845238
-    
 
 def generateRequestHash(authticket, request):
     firstHash = xxhash.xxh64(authticket, seed=0x1B845238).intdigest()                      

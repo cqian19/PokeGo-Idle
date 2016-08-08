@@ -1,7 +1,7 @@
 # Load Generated Protobuf
 import threading
 import time
-
+import ctypes
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
@@ -16,11 +16,13 @@ from POGOProtos.Networking.Requests.Messages import RecycleInventoryItemMessage_
 from POGOProtos.Networking.Requests.Messages import ReleasePokemonMessage_pb2
 from POGOProtos.Networking.Requests.Messages import UseItemCaptureMessage_pb2
 from POGOProtos.Networking.Requests.Messages import UseItemEggIncubatorMessage_pb2
+from POGOProtos import Signature_pb2
 from .custom_exceptions import GeneralPogoException
 from .getter import Getter
 from .location import Location
 from .pokedex import pokedex, teams
 from .state import State
+from .util import generateLocation1, generateLocation2, generateRequestHash, getMs
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -30,11 +32,13 @@ class PogoSession():
 
     lock = threading.Lock()
 
-    def __init__(self, session, authProvider, accessToken, location, logger):
+    def __init__(self, session, authProvider, accessToken, location, logger, api):
         self.session = session
         self.logger = logger
         self.authProvider = authProvider
         self.accessToken = accessToken
+        self.api = api
+        self.startTime = getMs()
         self._state = State()
         self.lock = threading.Lock()
         self.location = location
@@ -50,7 +54,7 @@ class PogoSession():
     def getReqSession(self):
         return self.session
 
-    def wrapInRequest(self, payload, **kwargs):
+    """def wrapInRequest(self, payload, **kwargs):
         # If we haven't authenticated before
         info = None
         if not self.authTicket:
@@ -77,6 +81,7 @@ class PogoSession():
             auth_info=info
         )
         req.requests.extend(payload)
+        self.addUnknown6(req)
 
         return req
 
@@ -111,7 +116,7 @@ class PogoSession():
             self.logger.critical('Servers seem to be busy. Exiting.')
             raise Exception('No Valid Response.')
 
-        return res
+        return res"""
 
     def __str__(self):
         s = 'Access Token: {0}\nEndpoint: {1}\nLocation: {2}'.format(
