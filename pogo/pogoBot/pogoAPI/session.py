@@ -1,28 +1,12 @@
 # Load Generated Protobuf
 import threading
 import time
-import ctypes
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
-
-from POGOProtos.Networking.Envelopes import RequestEnvelope_pb2
-from POGOProtos.Networking.Envelopes import ResponseEnvelope_pb2
-from POGOProtos.Networking.Requests import RequestType_pb2
-from POGOProtos.Networking.Requests import Request_pb2
-from POGOProtos.Networking.Requests.Messages import CatchPokemonMessage_pb2
-from POGOProtos.Networking.Requests.Messages import EncounterMessage_pb2
-from POGOProtos.Networking.Requests.Messages import EvolvePokemonMessage_pb2
-from POGOProtos.Networking.Requests.Messages import RecycleInventoryItemMessage_pb2
-from POGOProtos.Networking.Requests.Messages import ReleasePokemonMessage_pb2
-from POGOProtos.Networking.Requests.Messages import UseItemCaptureMessage_pb2
-from POGOProtos.Networking.Requests.Messages import UseItemEggIncubatorMessage_pb2
-from POGOProtos import Signature_pb2
-from .custom_exceptions import GeneralPogoException
 from .getter import Getter
 from .location import Location
 from .pokedex import pokedex, teams
-from .state import State
-from .util import generateLocation1, generateLocation2, generateRequestHash, getMs
+# from .state import State
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -32,22 +16,16 @@ class PogoSession():
 
     lock = threading.Lock()
 
-    def __init__(self, session, authProvider, accessToken, location, logger, api):
+    def __init__(self, session, authProvider, location, logger, api):
         self.session = session
         self.logger = logger
         self.authProvider = authProvider
-        self.accessToken = accessToken
         self.api = api
-        self.startTime = getMs()
-        self._state = State()
+        # self._state = State()
         self.lock = threading.Lock()
         self.location = location
         self.authTicket = None
-        self.getter = Getter(self, location, self._state)
-        self.endpoint = 'https://{0}{1}'.format(
-            self.createApiEndpoint(),
-            '/rpc'
-        )
+        self.getter = Getter(self, location, api)
         time.sleep(2)
         self.getter.run()
 
@@ -125,20 +103,6 @@ class PogoSession():
             self.location
         )
         return s
-
-    def createApiEndpoint(self):
-        payload = []
-        msg = Request_pb2.Request(
-            request_type=RequestType_pb2.GET_PLAYER
-        )
-        payload.append(msg)
-        req = self.wrapInRequest(payload)
-        res = self.request(req, API_URL)
-        if res is None:
-            self.logger.critical('Servers seem to be busy. Exiting.')
-            raise Exception('Could not connect to servers')
-
-        return res.api_url
 
     # Parse the default responses
     def parseDefault(self, res):
@@ -219,89 +183,69 @@ class PogoSession():
     # Get encounter
     def encounterPokemon(self, pokemon):
         # Create request
-        payload = [Request_pb2.Request(
-            request_type=RequestType_pb2.ENCOUNTER,
-            request_message=EncounterMessage_pb2.EncounterMessage(
-                encounter_id=pokemon.encounter_id,
-                spawn_point_id=pokemon.spawn_point_id,
-                player_latitude=self.location.latitude,
-                player_longitude=self.location.longitude
-            ).SerializeToString()
-        )]
-
-        # Send
-        res = self.wrapAndRequest(payload)
-
+        self.api.encounter(
+            encounter_id=pokemon.encounter_id,
+            spawn_point_id=pokemon.spawn_point_id,
+            player_latitude=self.location.latitude,
+            player_longitude=self.location.longitude
+        )
         # Parse
-        self._state.encounter.ParseFromString(res.returns[0])
+        # self._state.encounter.ParseFromString(res.returns[0])
 
         # Return everything
-        return self._state.encounter
+        # return self._state.encounter
 
     # Upon Encounter, try and catch
     def catchPokemon(self, pokemon, pokeball=1):
 
         # Create request
-        payload = [Request_pb2.Request(
-            request_type=RequestType_pb2.CATCH_POKEMON,
-            request_message=CatchPokemonMessage_pb2.CatchPokemonMessage(
-                encounter_id=pokemon.encounter_id,
-                pokeball=pokeball,
-                normalized_reticle_size=1.950,
-                spawn_point_guid=pokemon.spawn_point_id,
-                hit_pokemon=True,
-                spin_modifier=0.850,
-                normalized_hit_position=1.0
-            ).SerializeToString()
-        )]
+        self.api.catch_pokemon(
+            encounter_id=pokemon.encounter_id,
+            pokeball=pokeball,
+            normalized_reticle_size=1.950,
+            spawn_point_guid=pokemon.spawn_point_id,
+            hit_pokemon=True,
+            spin_modifier=0.850,
+            normalized_hit_position=1.0
+        )
         # Send
-        res = self.wrapAndRequest(payload)
+        # res = self.wrapAndRequest(payload)
         # Parse
-        self._state.catch.ParseFromString(res.returns[0])
+        # self._state.catch.ParseFromString(res.returns[0])
 
         # Return everything
-        return self._state.catch
+        # return self._state.catch
 
     # Use a razz berry or the like
     def useItemCapture(self, item_id, pokemon):
 
         # Create request
-        payload = [Request_pb2.Request(
-            request_type=RequestType_pb2.USE_ITEM_CAPTURE,
-            request_message=UseItemCaptureMessage_pb2.UseItemCaptureMessage(
-                item_id=item_id,
-                encounter_id=pokemon.encounter_id
-            ).SerializeToString()
-        )]
-
+        self.api.use_item_capture(
+            item_id=item_id,
+            encounter_id=pokemon.encounter_id,
+            spawn_point_id=pokemon.spawn_point_id
+        )
         # Send
-        res = self.wrapAndRequest(payload)
+        # res = self.wrapAndRequest(payload)
 
         # Parse
-        self._state.itemCapture.ParseFromString(res.returns[0])
+        # self._state.itemCapture.ParseFromString(res.returns[0])
 
         # Return everything
-        return self._state.itemCapture
+        # return self._state.itemCapture
 
     # Evolve Pokemon
     def evolvePokemon(self, pokemon):
-
-        # Create request
-        payload = [Request_pb2.Request(
-            request_type=RequestType_pb2.EVOLVE_POKEMON,
-            request_message=EvolvePokemonMessage_pb2.EvolvePokemonMessage(
-                pokemon_id=pokemon.id
-            ).SerializeToString()
-        )]
+        self.api.evolve_pokemon(pokemon_id=pokemon.id)
 
         # Send
-        res = self.wrapAndRequest(payload)
+        # res = self.wrapAndRequest(payload)
 
         # Parse
-        self._state.evolve.ParseFromString(res.returns[0])
+        # self._state.evolve.ParseFromString(res.returns[0])
 
         # Return everything
-        return self._state.evolve
+        # return self._state.evolve
 
     # Transfer Pokemon
     def releasePokemon(self, pokemon):

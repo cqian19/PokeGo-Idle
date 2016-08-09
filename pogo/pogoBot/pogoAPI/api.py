@@ -23,6 +23,9 @@ CLIENT_SIG = '321187995bc7cdc2b5fc91b11a96e2baa8602c62'
 
 class PokeAuthSession():
     def __init__(self, username, password, provider, logger, geo_key=None):
+        if geo_key and not geo_key.startswith('AIza'):
+            raise GeneralPogoException("Google Maps key is invalid. Must start with 'AIza'")
+        self.geo_key = geo_key
         self.session = ThrottledSession()
         self.logger = logger
         self.provider = provider
@@ -31,10 +34,6 @@ class PokeAuthSession():
         self.username = username
         self.password = password
 
-        self.access_token = ''
-        if geo_key and not geo_key.startswith('AIza'):
-            raise GeneralPogoException("Google Maps key is invalid. Must start with 'AIza'")
-        self.geo_key = geo_key
 
     def createPogoSession(self, provider=None, locationLookup='', pogo_session=None):
         if self.provider:
@@ -48,11 +47,11 @@ class PokeAuthSession():
             location = Location(locationLookup, self.geo_key)
             self.logger.info(location)
 
-        if self.access_token and location:
+        if location:
+            self.api.set_position(*location.getCoordinates())
             return PogoSession(
                 self.session,
                 self.provider,
-                self.access_token,
                 location,
                 self.logger,
                 self.api
@@ -67,9 +66,10 @@ class PokeAuthSession():
         return None
 
     def createGoogleSession(self, locationLookup='', pogo_session=None):
-
         self.logger.info('Creating Google session for %s', self.username)
-        self.api.login('google', self.username, self.password)
+        log = self.api.login('google', self.username, self.password)
+        if not log:
+            raise GeneralPogoException("Google login failed. Double check your login info.")
         return self.createPogoSession(
             provider='google',
             locationLookup=locationLookup,
@@ -79,8 +79,9 @@ class PokeAuthSession():
     def createPTCSession(self, locationLookup='', pogo_session=None):
         instance = self.session
         self.logger.info('Creating PTC session for %s', self.username)
-        self.api.login('ptc', self.username, self.password)
-
+        log = self.api.login('ptc', self.username, self.password)
+        if not log:
+            raise GeneralPogoException("Google login failed. Double check your login info.")
         return self.createPogoSession(
             provider='ptc',
             locationLookup=locationLookup,

@@ -1,4 +1,5 @@
-from Networking.Responses import CatchPokemonResponse_pb2
+"""from pgoapi.pgoapi.protos.POGOProtos import Networking
+from Networking.Responses_pb2 import CatchPokemonResponse_pb2
 from Networking.Responses import CheckAwardedBadgesResponse_pb2
 from Networking.Responses import DownloadSettingsResponse_pb2
 from Networking.Responses import EncounterResponse_pb2
@@ -12,11 +13,11 @@ from Networking.Responses import GetPlayerResponse_pb2
 from Networking.Responses import RecycleInventoryItemResponse_pb2
 from Networking.Responses import ReleasePokemonResponse_pb2
 from Networking.Responses import UseItemCaptureResponse_pb2
-from Networking.Responses import UseItemEggIncubatorResponse_pb2
+from Networking.Responses import UseItemEggIncubatorResponse_pb2"""
 
 
-class State(object):
-    """Class to wrap the current state of responses"""
+"""class State(object):
+    Class to wrap the current state of responses
     def __init__(self):
         self.profile = GetPlayerResponse_pb2.GetPlayerResponse()
         self.player_data = self.profile.player_data
@@ -34,4 +35,4 @@ class State(object):
         self.release = ReleasePokemonResponse_pb2.ReleasePokemonResponse()
         self.recycle = RecycleInventoryItemResponse_pb2.RecycleInventoryItemResponse()
         self.incubator = UseItemEggIncubatorResponse_pb2.UseItemEggIncubatorResponse()
-        self.playerStats = None
+        self.playerStats = None"""

@@ -3,14 +3,6 @@ import random
 import threading
 import time
 from datetime import datetime
-
-from POGOProtos.Networking.Requests import RequestType_pb2
-from POGOProtos.Networking.Requests import Request_pb2
-from POGOProtos.Networking.Requests.Messages import DownloadSettingsMessage_pb2
-from POGOProtos.Networking.Requests.Messages import FortDetailsMessage_pb2
-from POGOProtos.Networking.Requests.Messages import FortSearchMessage_pb2
-from POGOProtos.Networking.Requests.Messages import GetInventoryMessage_pb2
-from POGOProtos.Networking.Requests.Messages import GetMapObjectsMessage_pb2
 from .inventory import Inventory, items
 from .pokedex import pokedex
 from .util import set_interval, getJSTime
@@ -20,10 +12,11 @@ STOP_COOLDOWN = 305
 
 class Getter():
 
-    def __init__(self, session, location, state):
-        self._state = state
+    def __init__(self, session, location, api):
+        # self._state = state
         self.location = location
         self.session = session
+        self.api = api
         self.locChanged = False
         # Set up Inventory
         self.pokemon = {}
@@ -39,37 +32,11 @@ class Getter():
         self.lock = threading.Lock()
 
     @staticmethod
-    def getDefaults():
-        # Allocate for 4 default requests
-        data = [None, ] * 4
-
-        # Create Egg request
-        data[0] = Request_pb2.Request(
-            request_type=RequestType_pb2.GET_HATCHED_EGGS
-        )
-
-        # Create Inventory Request
-        data[1] = Request_pb2.Request(
-            request_type=RequestType_pb2.GET_INVENTORY,
-            request_message=GetInventoryMessage_pb2.GetInventoryMessage(
-                last_timestamp_ms=0
-            ).SerializeToString()
-        )
-
-        # Create Badge request
-        data[2] = Request_pb2.Request(
-            request_type=RequestType_pb2.CHECK_AWARDED_BADGES
-        )
-
-        # Create Settings request
-        data[3] = Request_pb2.Request(
-            request_type=RequestType_pb2.DOWNLOAD_SETTINGS,
-            request_message=DownloadSettingsMessage_pb2.DownloadSettingsMessage(
-                hash="4a2e9bc330dae60e7b74fc85b98868ab4700802e"
-            ).SerializeToString()
-        )
-
-        return data
+    def getDefaults(req):
+        req.get_hatched_eggs()
+        req.get_inventory(last_timestamp_ms=0)
+        req.check_awarded_badges()
+        req.download_settings(hash="4a2e9bc330dae60e7b74fc85b98868ab4700802e")
 
     def parseDefault(self, res):
         try:
@@ -100,62 +67,47 @@ class Getter():
     # Get profile
     def getProfile(self):
         # Create profile request
-        payload = [Request_pb2.Request(
-            request_type=RequestType_pb2.GET_PLAYER
-        )]
-        payload += self.getDefaults()
+        req = self.api.create_request()
         self.threadBlock.wait()
+        req.get_player()
+        self.getDefaults(req)
+        res = req.call()
         # Send
-        res = self.session.wrapAndRequest(payload)
         # Parse
-        self.parseDefault(res)
-        self._state.profile.ParseFromString(res.returns[0])
-        self._state.player_data = self._state.profile.player_data
+        # self.parseDefault(res)
+        # self._state.profile.ParseFromString(res.returns[0])
+        # self._state.player_data = self._state.profile.player_data
         # Return everything
-        return self._state.profile
+        # return self._state.profile
 
 
     def getFortSearch(self, fort):
         # Create request
-        payload = [Request_pb2.Request(
-            request_type=RequestType_pb2.FORT_SEARCH,
-            request_message=FortSearchMessage_pb2.FortSearchMessage(
-                fort_id=fort.id,
-                player_latitude=self.location.latitude,
-                player_longitude=self.location.longitude,
-                fort_latitude=fort.latitude,
-                fort_longitude=fort.longitude
-            ).SerializeToString()
-        )]
-
-        # Send
-        res = self.session.wrapAndRequest(payload)
-
+        self.api.fort_search(
+            fort_id=fort.id,
+            player_latitude=self.location.latitude,
+            player_longitude=self.location.longitude,
+            fort_latitude=fort.latitude,
+            fort_longitude=fort.longitude
+        )
         # Parse
-        self._state.fortSearch.ParseFromString(res.returns[0])
+        # self._state.fortSearch.ParseFromString(res.returns[0])
 
         # Return everything
-        return self._state.fortSearch
+        # return self._state.fortSearch
 
     def getFortDetails(self, fort):
         # Create request
-        payload = [Request_pb2.Request(
-            request_type=RequestType_pb2.FORT_DETAILS,
-            request_message=FortDetailsMessage_pb2.FortDetailsMessage(
-                fort_id=fort.id,
-                latitude=fort.latitude,
-                longitude=fort.longitude,
-            ).SerializeToString()
-        )]
-
-        # Send
-        res = self.session.wrapAndRequest(payload)
-
+        self.api.fort_details(
+            fort_id=fort.id,
+            latitude=fort.latitude,
+            longitude=fort.longitude,
+        )
         # Parse
-        self._state.fortDetails.ParseFromString(res.returns[0])
+        # self._state.fortDetails.ParseFromString(res.returns[0])
 
         # Return everything
-        return self._state.fortDetails
+        # return self._state.fortDetails
 
     # Hooks for those bundled in default
     def getMapObjects(self, radius=600):
@@ -165,26 +117,21 @@ class Getter():
                 cells = self.location.getCells(lat, lon)
                 timestamps = [0, ] * len(cells)
                 time.sleep(1)
-                # Create request
-                payload = [Request_pb2.Request(
-                    request_type=RequestType_pb2.GET_MAP_OBJECTS,
-                    request_message=GetMapObjectsMessage_pb2.GetMapObjectsMessage(
-                        cell_id=cells,
-                        since_timestamp_ms=timestamps,
-                        latitude=lat,
-                        longitude=lon
-                    ).SerializeToString()
-                )]
                 self.threadBlock.wait()
+                self.api.get_map_objects(
+                    cell_id = cells,
+                    since_timestamp_ms = timestamps,
+                    latitude = lat,
+                    longitude = lon
+                )
                 if self.locChanged:
                     self.locChanged = False
                     break
                 # Send
-                res = self.session.wrapAndRequest(payload, latitude=lat, longitude=lon)
                 # Parse
-                self._state.mapObjects.ParseFromString(res.returns[0])
-                self.updateAllForts(self._state.mapObjects)
-                self.updateAllPokemon(self._state.mapObjects)
+                # self._state.mapObjects.ParseFromString(res.returns[0])
+                # self.updateAllForts(self._state.mapObjects)
+                # self.updateAllPokemon(self._state.mapObjects)
 
     def getPastNotifications(self):
         orig = list(reversed(self.pastEvents))
