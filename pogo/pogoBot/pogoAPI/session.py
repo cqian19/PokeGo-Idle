@@ -250,64 +250,39 @@ class PogoSession():
     # Transfer Pokemon
     def releasePokemon(self, pokemon):
 
-        # Create request
-        payload = [Request_pb2.Request(
-            request_type=RequestType_pb2.RELEASE_POKEMON,
-            request_message=ReleasePokemonMessage_pb2.ReleasePokemonMessage(
-                pokemon_id=pokemon.id
-            ).SerializeToString()
-        )]
-
-        # Send
-        res = self.wrapAndRequest(payload)
+        self.api.release_pokemon(pokemon_id=pokemon.id)
 
         # Parse
-        self._state.release.ParseFromString(res.returns[0])
+        #self._state.release.ParseFromString(res.returns[0])
 
         # Return everything
-        return self._state.release
+        #return self._state.release
 
     # Throw away items
     def recycleItem(self, item_id, count):
 
-        # Create request
-        payload = [Request_pb2.Request(
-            request_type=RequestType_pb2.RECYCLE_INVENTORY_ITEM,
-            request_message=RecycleInventoryItemMessage_pb2.RecycleInventoryItemMessage(
-                item_id=item_id,
-                count=count
-            ).SerializeToString()
-        )]
-
-        # Send
-        res = self.wrapAndRequest(payload)
+        self.api.recycle_inventory_item(
+            item_id=item_id,
+            count=count
+        )
 
         # Parse
-        self._state.recycle.ParseFromString(res.returns[0])
+        # self._state.recycle.ParseFromString(res.returns[0])
 
         # Return everything
-        return self._state.recycle
+        # return self._state.recycle
 
     # set an Egg into an incubator
     def setEgg(self, item, pokemon):
+        self.api.use_item_egg_incubator(
+            item_id=item.id,
+            pokemon_id=pokemon.id
+        )
 
-        # Create request
-        payload = [Request_pb2.Request(
-            request_type=RequestType_pb2.USE_ITEM_EGG_INCUBATOR,
-            request_message=UseItemEggIncubatorMessage_pb2.UseItemEggIncubatorMessage(
-                item_id=item.id,
-                pokemon_id=pokemon.id
-            ).SerializeToString()
-        )]
-
-        # Send
-        res = self.wrapAndRequest(payload)
-
-        # Parse
-        self._state.incubator.ParseFromString(res.returns[0])
+        # self._state.incubator.ParseFromString(res.returns[0])
 
         # Return everything
-        return self._state.incubator
+        # return self._state.incubator
 
     def setCaughtPokemon(self, *args):
         self.getter.setCaughtPokemon(*args)

@@ -16,23 +16,22 @@ from Networking.Responses import UseItemCaptureResponse_pb2
 from Networking.Responses import UseItemEggIncubatorResponse_pb2"""
 
 
-"""class State(object):
-    Class to wrap the current state of responses
+class State(object):
     def __init__(self):
-        self.profile = GetPlayerResponse_pb2.GetPlayerResponse()
+        self.profile = None
         self.player_data = self.profile.player_data
-        self.eggs = GetHatchedEggsResponse_pb2.GetHatchedEggsResponse()
-        self.inventory = GetInventoryResponse_pb2.GetInventoryResponse()
-        self.badges = CheckAwardedBadgesResponse_pb2.CheckAwardedBadgesResponse()
-        self.settings = DownloadSettingsResponse_pb2.DownloadSettingsResponse()
-        self.mapObjects =  GetMapObjectsResponse_pb2.GetMapObjectsResponse()
-        self.fortSearch = FortSearchResponse_pb2.FortSearchResponse()
-        self.fortDetails = FortDetailsResponse_pb2.FortDetailsResponse()
-        self.encounter = EncounterResponse_pb2.EncounterResponse()
-        self.catch = CatchPokemonResponse_pb2.CatchPokemonResponse()
-        self.itemCapture = UseItemCaptureResponse_pb2.UseItemCaptureResponse()
-        self.evolve = EvolvePokemonResponse_pb2.EvolvePokemonResponse()
-        self.release = ReleasePokemonResponse_pb2.ReleasePokemonResponse()
-        self.recycle = RecycleInventoryItemResponse_pb2.RecycleInventoryItemResponse()
-        self.incubator = UseItemEggIncubatorResponse_pb2.UseItemEggIncubatorResponse()
-        self.playerStats = None"""
+        self.eggs = None
+        self.inventory = None
+        self.badges = None
+        self.settings = None
+        self.mapObjects =  None
+        self.fortSearch = None
+        self.fortDetails = None
+        self.encounter = None
+        self.catch = None
+        self.itemCapture = None
+        self.evolve = None
+        self.release = None
+        self.recycle = None
+        self.incubator = None
+        self.playerStats = None
