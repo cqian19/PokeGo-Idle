@@ -36,7 +36,7 @@ class Location(object):
             geo = getattr(geocoder, p)(search)
             if geo.lat is not None and geo.lng is not None:
                 elev = geocoder.elevation(geo.latlng)
-                self.latitude, self.longitude, self.altitude = geo.lat, geo.lng, elev.meters
+                self.latitude, self.longitude, self.altitude = geo.lat, geo.lng, elev.meters or 8
                 return self.latitude, self.longitude, self.altitude
         raise GeneralPogoException("Location could not be found")
 

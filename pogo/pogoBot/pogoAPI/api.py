@@ -35,10 +35,7 @@ class PokeAuthSession():
         self.password = password
 
 
-    def createPogoSession(self, provider=None, locationLookup='', pogo_session=None):
-        if self.provider:
-            self.provider = provider
-
+    def setLocation(self, locationLookup, pogo_session=None):
         # determine location
         location = None
         if pogo_session:
@@ -46,45 +43,44 @@ class PokeAuthSession():
         elif locationLookup:
             location = Location(locationLookup, self.geo_key)
             self.logger.info(location)
-
         if location:
             self.api.set_position(*location.getCoordinates())
-            return PogoSession(
-                self.session,
-                self.provider,
-                location,
-                self.logger,
-                self.api
-            )
-        # else something has gone wrong
-        elif location is None:
-            self.logger.critical('Location not found')
-        elif self.access_token is None:
-            self.logger.critical('Access token not generated')
-            raise GeneralPogoException("Login failed. Double check your username and password.\n" +
-                                       "Servers may also be down.")
-        return None
+            return location
+        else:
+            raise GeneralPogoException('Location not found')
+
+    def createPogoSession(self, location, provider=None, pogo_session=None):
+        if self.provider:
+            self.provider = provider
+        return PogoSession(
+            self.session,
+            self.provider,
+            location,
+            self.logger,
+            self.api
+        )
 
     def createGoogleSession(self, locationLookup='', pogo_session=None):
         self.logger.info('Creating Google session for %s', self.username)
+        location = self.setLocation(locationLookup, pogo_session)
         log = self.api.login('google', self.username, self.password)
         if not log:
             raise GeneralPogoException("Google login failed. Double check your login info.")
         return self.createPogoSession(
+            location,
             provider='google',
-            locationLookup=locationLookup,
             pogo_session=pogo_session
         )
 
     def createPTCSession(self, locationLookup='', pogo_session=None):
         instance = self.session
         self.logger.info('Creating PTC session for %s', self.username)
+        location = self.setLocation(locationLookup, pogo_session)
         log = self.api.login('ptc', self.username, self.password)
         if not log:
             raise GeneralPogoException("Google login failed. Double check your login info.")
         return self.createPogoSession(
-            provider='ptc',
-            locationLookup=locationLookup,
+            location,
             pogo_session=pogo_session
         )
 
