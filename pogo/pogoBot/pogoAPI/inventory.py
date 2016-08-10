@@ -62,38 +62,39 @@ class Inventory():
         self.eggs = []
         self.bag = {}
         for item in items:
-            data = item.inventory_item_data
+            data = item['inventory_item_data']
 
-            if data.HasField("player_stats"):
-                self.stats = data.player_stats
+            playerStats = data.get('player_stats')
+            if playerStats:
+                self.stats = playerStats
                 continue
 
-            pokedexEntry = getattr(data, "pokedex_entry", None)
-            if data.HasField("pokedex_entry"):
-                self.pokedex[pokedexEntry.pokemon_id] = data.pokedex_entry
+            pokedexEntry = data.get('pokedex_entry')
+            if pokedexEntry:
+                self.pokedex[pokedexEntry['pokemon_id']] = pokedexEntry
                 continue
 
-            pokemonFamily = getattr(data, "pokemon_family", None)
-            if data.HasField("pokemon_family"):
-                self.candies[pokemonFamily.family_id] = pokemonFamily.candy
+            pokemonFamily = data.get('pokemon_family')
+            if pokemonFamily:
+                self.candies[pokemonFamily['family_id']] = pokemonFamily['candy']
                 continue
 
-            pokemonData = getattr(data, "pokemon_data", None)
-            if data.HasField("pokemon_data"):
-                if pokemonData.is_egg:
+            pokemonData = data.get('pokemon_data')
+            if pokemonData:
+                if pokemonData.get('is_egg'):
                     self.eggs.append(pokemonData)
                 else:
                     self.party.append(pokemonData)
                 continue
 
-            incubators = getattr(data, "egg_incubators", None)
-            if data.HasField("egg_incubators"):
-                self.incubators = incubators.egg_incubator
+            incubators = data.get('egg_incubators')
+            if incubators:
+                self.incubators = incubators['egg_incubator']
                 continue
 
-            bagItem = getattr(data, "item", None)
-            if data.HasField("item"):
-                self.bag[bagItem.item_id] = bagItem.count
+            bagItem = data.get('item')
+            if bagItem and bagItem.get('count'):
+                self.bag[bagItem['item_id']] = bagItem['count']
                 continue
 
     def __getitem__(self, lookup):

@@ -19,7 +19,7 @@ from Networking.Responses import UseItemEggIncubatorResponse_pb2"""
 class State(object):
     def __init__(self):
         self.profile = None
-        self.player_data = self.profile.player_data
+        self.player_data = None
         self.eggs = None
         self.inventory = None
         self.badges = None

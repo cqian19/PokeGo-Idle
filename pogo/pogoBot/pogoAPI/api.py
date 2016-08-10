@@ -1,13 +1,8 @@
-import json
-import re
-
-from gpsoauth import perform_master_login, perform_oauth
-
+from throttled_session import ThrottledSession
 from .custom_exceptions import GeneralPogoException
 from .location import Location
-from .session import PogoSession
-from .throttled_session import ThrottledSession
 from .pgoapi import pgoapi
+from .session import PogoSession
 
 # Callbacks and Constants
 API_URL = 'https://pgorelease.nianticlabs.com/plfe/rpc'
@@ -41,7 +36,7 @@ class PokeAuthSession():
         if pogo_session:
             location = pogo_session.location
         elif locationLookup:
-            location = Location(locationLookup, self.geo_key)
+            location = Location(locationLookup, self.geo_key, self.api)
             self.logger.info(location)
         if location:
             self.api.set_position(*location.getCoordinates())

@@ -6,7 +6,7 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from .getter import Getter
 from .location import Location
 from .pokedex import pokedex, teams
-# from .state import State
+from .state import State
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -21,11 +21,11 @@ class PogoSession():
         self.logger = logger
         self.authProvider = authProvider
         self.api = api
-        # self._state = State()
+        self._state = State()
         self.lock = threading.Lock()
         self.location = location
         self.authTicket = None
-        self.getter = Getter(self, location, api)
+        self.getter = Getter(self._state, location, api)
         time.sleep(2)
         self.getter.run()
 
@@ -95,14 +95,6 @@ class PogoSession():
             raise Exception('No Valid Response.')
 
         return res"""
-
-    def __str__(self):
-        s = 'Access Token: {0}\nEndpoint: {1}\nLocation: {2}'.format(
-            self.accessToken,
-            self.endpoint,
-            self.location
-        )
-        return s
 
     # Parse the default responses
     def parseDefault(self, res):

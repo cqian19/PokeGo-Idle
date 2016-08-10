@@ -5,6 +5,10 @@ import time
 import os
 import sys
 import platform
+import pprint
+
+def fprint(response):
+    print('Response dictionary:\n\r{}'.format(pprint.PrettyPrinter(indent=2).pformat(response)))
 
 def getJSTime():
     d = datetime.datetime.utcnow()

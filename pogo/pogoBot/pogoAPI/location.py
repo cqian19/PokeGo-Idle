@@ -1,16 +1,15 @@
 import math
-
+import random
 import geocoder
 import gpxpy.geo
 from geopy import Point, distance
 from s2sphere import CellId, LatLng
-
 from .custom_exceptions import GeneralPogoException
 
 
 # Wrapper for location
 class Location(object):
-    def __init__(self, locationLookup, geo_key):
+    def __init__(self, locationLookup, geo_key, api):
         self.geo_key = geo_key
         self.setLocation(locationLookup)
 
@@ -43,6 +42,8 @@ class Location(object):
     def setCoordinates(self, latitude, longitude):
         self.latitude = latitude
         self.longitude = longitude
+        self.altitude = random.randint(10)
+        self.api.set_position(latitude, longitude, self.altitude)
 
     def getCoordinates(self):
         return self.latitude, self.longitude, self.altitude
