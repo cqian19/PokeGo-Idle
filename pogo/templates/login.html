@@ -24,8 +24,8 @@
                 <form method="post" action="" role="login">
                   <img src="../static/images/title.png" class="img-responsive" alt="" />
                   <div class="buttonContainer">
-                      <input type="radio" name="method" value="google" required {% if config['method'] == 'google' %} checked {% endif %} /> Google
-                      <input type="radio" name="method" value="ptc" {% if config['method'] == 'ptc' %} checked {% endif %} /> PTC
+                      <input type="radio" name="method" value="google" required {% if request.form.method == 'google' or config['method'] == 'google' %} checked {% endif %} /> Google
+                      <input type="radio" name="method" value="ptc" {% if request.form.method == 'ptc' or config['method'] == 'ptc' %} checked {% endif %} /> PTC
                   </div>
                   <input type="username" name="username" placeholder="Username" required class="form-control"
                          value="{{ request.form.username or config['username'] }}" required />
