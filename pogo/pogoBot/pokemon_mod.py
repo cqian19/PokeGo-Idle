@@ -112,7 +112,7 @@ class pokemonHandler(Handler):
             name = pokedex[pokemon['pokemon_data']['pokemon_id']]
             self.logger.info("Catch attempt {0} for {1}. {2}% chance to capture".format(count + 1, name, round(chances[bestBall-1]*100, 2)))
             self.logger.info("Using a {0}".format(items[bestBall]))
-            time.sleep(.3)
+            time.sleep(1)
             attempt = self.session.catchPokemon(pokemon, bestBall)
             bag[bestBall] = int(bag[bestBall]) - 1
             status = attempt.get('status', 0)
@@ -164,13 +164,13 @@ class pokemonHandler(Handler):
             candy_id = baseEvolution[str(poke_id)]
             evoCandies = pokedex.evolves[poke_id]
             # Evolve pokemon when possible
-            if poke_id in self.EVOLVABLES or\
-                iv > thresholdIV and evoCandies and candies.get(candy_id, 0) >= evoCandies:
+            if evoCandies and candies.get(candy_id, 0) >= evoCandies and \
+                poke_id in self.EVOLVABLES or iv > thresholdIV:
                 self.logger.info("Evolving %s" % pokedex[poke_id])
                 self.logger.info(self.session.evolvePokemon(pokemon))
                 candies[candy_id] -= evoCandies
                 poke_id += 1
-                time.sleep(.5)
+                time.sleep(.75)
                 continue
             # If low cp, throw away
             r = pokedex.getRarityById(poke_id)
@@ -179,7 +179,7 @@ class pokemonHandler(Handler):
                 self.logger.info("Releasing %s" % pokedex[poke_id])
                 self.session.releasePokemon(pokemon)
                 candies[candy_id] += 1
-                time.sleep(.5)
+                time.sleep(.75)
                 stored -= 1
             if stored/maxStorage < .8:
                 break
