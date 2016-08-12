@@ -26,10 +26,11 @@ class Getter():
         self.forts = {}
         self.gyms = {}
         self.stops = {}
-        self.inventory = []
+        self.inventory = None
         self.threads = []
         self.threadBlock = threading.Event()
         self.lock = threading.Lock()
+        time.sleep(1)
         self.getProfile()
 
     @staticmethod
@@ -43,7 +44,7 @@ class Getter():
         try:
             self._state.eggs = res['GET_HATCHED_EGGS'] # Currently only success
             self._state.inventory = res['GET_INVENTORY']
-            fprint(res['GET_INVENTORY'])
+            self.parsePlayerStats(self._state.inventory)
             self._state.badges = res['CHECK_AWARDED_BADGES'] # Currently only success
             self._state.settings = res['DOWNLOAD_SETTINGS']
         except Exception as e:
@@ -54,11 +55,10 @@ class Getter():
         self.inventory = Inventory(item)
 
     def parsePlayerStats(self, inventory):
-        fprint(inventory)
         for i in inventory['inventory_delta']['inventory_items']:
-            stats = i['inventory_item_data']['player_stats']
-            level = stats['level']
-            if level:
+            if 'player_stats' in i['inventory_item_data']:
+                stats = i['inventory_item_data']['player_stats']
+                level = stats['level']
                 self._state.playerStats = stats
                 break
 
@@ -95,16 +95,14 @@ class Getter():
 
     def getFortDetails(self, fort):
         # Create request
-        self.api.fort_details(
-            fort_id=fort.id,
-            latitude=fort.latitude,
-            longitude=fort.longitude,
+        res = self.api.fort_details(
+            fort_id=fort['id'],
+            latitude=fort['latitude'],
+            longitude=fort['longitude'],
         )
-        # Parse
-        # self._state.fortDetails.ParseFromString(res.returns[0])
-
-        # Return everything
-        # return self._state.fortDetails
+        fprint(res)
+        self._state.fortDetails = res['responses']['FORT_DETAILS']
+        return self._state.fortDetails
 
     # Hooks for those bundled in default
     def getMapObjects(self, radius=600):
@@ -116,6 +114,7 @@ class Getter():
                 time.sleep(1)
                 self.threadBlock.wait()
                 res = self.api.get_map_objects(
+                    location_override=(lat, lon, 8),
                     cell_id = cells,
                     since_timestamp_ms = timestamps,
                     latitude = lat,
@@ -133,28 +132,6 @@ class Getter():
         self.pastEvents = []
         return orig
 
-    def setPastStop(self, fort, res):
-        if not res['experience_awarded']:  # Glitched response?
-            return
-        self.pastStops[fort['id']] = res['cooldown_complete_timestamp_ms']
-        d = {
-            'event': 'stopEvent',
-            'timestamp': getJSTime(),
-            'lure': bool(fort['lure_info']['encounter_id']),
-            'award': {
-                'Xp': res['experience_awarded']
-            }
-        }
-        it = {}
-        if res['pokemon_data_egg']['id']:
-            it['Pokemon Egg'] = 1
-        for i in res['items_awarded']:
-            itemName = items[i['item_id']]
-            it[itemName] = it.get(itemName, 0) + i['item_count']
-        it['Xp'] = res['experience_awarded']
-        d['award'] = it
-        self.pastEvents.append(d)
-
     def filterUnspinnedStops(self, stops):
         now = datetime.utcnow()
         l = []
@@ -168,15 +145,15 @@ class Getter():
         return l
 
     def getInventoryCapacity(self):
-        bag = self.inventory['bag']
+        bag = self.inventory.bag
         itemsCount = sum(map(lambda b: int(b), bag.values()))
-        maxItems = self._state.player_data.max_item_storage
+        maxItems = self._state.player_data['max_item_storage']
         return [itemsCount, maxItems]
 
     def getPokemonCapacity(self):
-        party = self.inventory['party']
+        party = self.inventory.party
         stored = len(party)
-        maxStorage = self._state.player_data.max_pokemon_storage
+        maxStorage = self._state.player_data['max_pokemon_storage']
         return [stored, maxStorage]
 
     def getCaughtPokemon(self):
@@ -193,32 +170,46 @@ class Getter():
             'status': status,
             'id': poke['pokemon_data']['pokemon_id'],
             'name': pokedex[poke['pokemon_data']['pokemon_id']],
-            'cp': poke['pokemon_data']['cp'],
+            'cp': poke['pokemon_data'].get('cp', 0),
             'timestamp': getJSTime(),
             'hasAward': hasAward,
         }
         if hasAward:
-            xpSum = candySum = stardustSum = 0
-            for i in award.xp:
-                xpSum += i
-            for i in award.candy:
-                candySum += i
-            for i in award.stardust:
-                stardustSum += i
             d.update({
                 'award': {
-                    'xp': 0 if not hasAward else xpSum,
-                    'candy': 0 if not hasAward else candySum,
-                    'stardust': 0 if not hasAward else stardustSum
+                    'xp': sum(award['xp']),
+                    'candy': sum(award['candy']),
+                    'stardust': sum(award['stardust'])
                 }
             })
         self.pastEvents.append(d)
 
+    def setPastStop(self, fort, res):
+        if not res.get('experience_awarded'):  # Glitched response?
+            return
+        self.pastStops[fort['id']] = res['cooldown_complete_timestamp_ms']
+        d = {
+            'event': 'stopEvent',
+            'timestamp': getJSTime(),
+            'lure': bool(fort.get('lure_info')),
+            'award': {
+                'xp': res['experience_awarded']
+            }
+        }
+        it = {}
+        if res.get('pokemon_data_egg'):
+            it['Pokemon Egg'] = 1
+        for i in res.get('items_awarded', []):
+            itemName = items[i['item_id']]
+            it[itemName] = it.get(itemName, 0) + i['item_count']
+        it['xp'] = res['experience_awarded']
+        d['award'] = it
+        self.pastEvents.append(d)
+
     def updateAllPokemon(self, cells):
-        print(cells)
         print("Updating pokemon")
         for cell in cells['map_cells']:
-            for poke in cell['wild_pokemons']:
+            for poke in cell.get('wild_pokemons', []):
                 if poke['encounter_id'] not in self.pokemon:
                     self.pokemon[poke['encounter_id']] = poke
         self.cleanOldPokemon()
@@ -237,10 +228,11 @@ class Getter():
     def updateAllForts(self, cells):
         print("Updating forts")
         for cell in cells['map_cells']:
-            for fort in cell['forts']:
+            for fort in cell.get('forts', []):
                 if fort['id'] not in self.forts:
-                    fprint(fort)
-                    stor = self.stops if fort['type'] == 1 else self.gyms
+                    stor = self.stops if fort.get('type') == 1 else self.gyms
+                    if fort.get('type') == 1 and fort.get('active_fort_modifier'):
+                        self.getFortDetails(fort)
                     stor[fort['id']] = fort
                     self.forts[fort['id']] = fort
 

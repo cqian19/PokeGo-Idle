@@ -21,6 +21,7 @@ class PogoSession():
         self.logger = logger
         self.authProvider = authProvider
         self.api = api
+        self.api.set_logger(self.logger)
         self._state = State()
         self.lock = threading.Lock()
         self.location = location
@@ -31,70 +32,6 @@ class PogoSession():
 
     def getReqSession(self):
         return self.session
-
-    """def wrapInRequest(self, payload, **kwargs):
-        # If we haven't authenticated before
-        info = None
-        if not self.authTicket:
-            info = RequestEnvelope_pb2.RequestEnvelope.AuthInfo(
-                provider=self.authProvider,
-                token=RequestEnvelope_pb2.RequestEnvelope.AuthInfo.JWT(
-                    contents=self.accessToken,
-                    unknown2=59
-                )
-            )
-        # Build Envelope
-        coords = self.getter.getCoordinates()
-        latitude = kwargs.get('latitude', coords[0])
-        longitude = kwargs.get('longitude', coords[1])
-        altitude = coords[2]
-        req = RequestEnvelope_pb2.RequestEnvelope(
-            status_code=2,
-            request_id=self.getter.getRPCId(),
-            longitude=longitude,
-            latitude=latitude,
-            altitude=altitude,
-            auth_ticket=self.authTicket,
-            unknown12=989,
-            auth_info=info
-        )
-        req.requests.extend(payload)
-        self.addUnknown6(req)
-
-        return req
-
-    def requestOrThrow(self, req, url=None):
-        if url is None:
-            url = self.endpoint
-
-        # Send request
-        rawResponse = self.session.post(url, data=req.SerializeToString())
-
-        # Parse it out
-        res = ResponseEnvelope_pb2.ResponseEnvelope()
-        res.ParseFromString(rawResponse.content)
-
-        # Update Auth ticket if it exists
-        if res.auth_ticket.start:
-            self.authTicket = res.auth_ticket
-
-        return res
-
-    def request(self, req, url=None):
-        try:
-            return self.requestOrThrow(req, url)
-        except Exception as e:
-            self.logger.error(e)
-            raise GeneralPogoException('Probably server fires.')
-
-    def wrapAndRequest(self, payload, **kwargs):
-        res = self.request(self.wrapInRequest(payload, **kwargs))
-        if res == []:
-            self.logger.critical(res)
-            self.logger.critical('Servers seem to be busy. Exiting.')
-            raise Exception('No Valid Response.')
-
-        return res"""
 
     # Parse the default responses
     def parseDefault(self, res):
@@ -119,12 +56,12 @@ class PogoSession():
             pokemons = self.checkAllPokemon()
         for poke in pokemons:
             r.append({
-                'encounter_id': poke.encounter_id,
-                'pokemon_id': poke.pokemon_data.pokemon_id,
-                'name': pokedex[poke.pokemon_data.pokemon_id],
-                'latitude': poke.latitude,
-                'longitude': poke.longitude,
-                'time_remaining': poke.time_till_hidden_ms
+                'encounter_id': poke['encounter_id'],
+                'pokemon_id': poke['pokemon_data']['pokemon_id'],
+                'name': pokedex[poke['pokemon_data']['pokemon_id']],
+                'latitude': poke['latitude'],
+                'longitude': poke['longitude'],
+                'time_remaining': poke['time_till_hidden_ms']
             })
         return r
 
@@ -132,39 +69,36 @@ class PogoSession():
         r = []
         stops = list(self.checkAllStops())
         plat, plon, alt = self.getter.getCoordinates()
-        seenIds = {}
         for stop in stops:
-            if self.location.getDistance(plat, plon, stop.latitude, stop.longitude) < 300:
-                if stop.id not in seenIds:
-                    seenIds[stop.id] = True
-                    r.append({
-                        'id': stop.id,
-                        'latitude': stop.latitude,
-                        'longitude': stop.longitude,
-                        'lure': bool(stop.lure_info.encounter_id)
-                    })
+            if self.location.getDistance(plat, plon, stop['latitude'], stop['longitude']) < 300:
+                r.append({
+                    'id': stop['id'],
+                    'latitude': stop['latitude'],
+                    'longitude': stop['longitude'],
+                    'lure': bool(stop.get('active_fort_modifier'))
+                })
         return r
 
     def cleanPlayerInfo(self):
         data = self.checkPlayerData()
         stats = self.checkPlayerStats()
         pokecoin = stardust = 0
-        for i in data.currencies:
-            if i.name == 'STARDUST':
-                stardust = i.amount
-            elif i.name == 'POKECOIN':
-                pokecoin = i.amount
+        for i in data['currencies']:
+            if i['name'] == 'STARDUST':
+                stardust = i['amount']
+            elif i['name'] == 'POKECOIN':
+                pokecoin = i['amount']
         inventory, maxInventory = self.getter.getInventoryCapacity()
         pokemon, maxPokemon = self.getter.getPokemonCapacity()
         d = {
-            'username': data.username,
-            'team': teams[str(data.team)],
-            'level': stats.level,
-            'xp': stats.experience - stats.prev_level_xp,
-            'maxXp': stats.next_level_xp - stats.prev_level_xp,
+            'username': data['username'],
+            'team': teams[str(data['team'])],
+            'level': stats['level'],
+            'xp': stats['experience'] - stats['prev_level_xp'],
+            'maxXp': stats['next_level_xp'] - stats['prev_level_xp'],
             'stardust': stardust,
             'pokecoin': pokecoin,
-            'gender': 'Male' if data.avatar.gender == 0 else 'Female',
+            'gender': 'Female' if data['avatar'].get('gender') else 'Male',
             'inventory': inventory,
             'maxInventory': maxInventory,
             'pokemon': pokemon,
@@ -175,106 +109,72 @@ class PogoSession():
     # Get encounter
     def encounterPokemon(self, pokemon):
         # Create request
-        self.api.encounter(
-            encounter_id=pokemon.encounter_id,
-            spawn_point_id=pokemon.spawn_point_id,
+        res = self.api.encounter(
+            encounter_id=pokemon['encounter_id'],
+            spawn_point_id=pokemon['spawn_point_id'],
             player_latitude=self.location.latitude,
             player_longitude=self.location.longitude
         )
         # Parse
-        # self._state.encounter.ParseFromString(res.returns[0])
+        self._state.encounter = res['responses']['ENCOUNTER']
 
-        # Return everything
-        # return self._state.encounter
+        return self._state.encounter
 
     # Upon Encounter, try and catch
     def catchPokemon(self, pokemon, pokeball=1):
-
         # Create request
-        self.api.catch_pokemon(
-            encounter_id=pokemon.encounter_id,
+        res = self.api.catch_pokemon(
+            encounter_id=pokemon['encounter_id'],
             pokeball=pokeball,
             normalized_reticle_size=1.950,
-            spawn_point_guid=pokemon.spawn_point_id,
+            spawn_point_id=pokemon['spawn_point_id'],
             hit_pokemon=True,
             spin_modifier=0.850,
             normalized_hit_position=1.0
         )
-        # Send
-        # res = self.wrapAndRequest(payload)
-        # Parse
-        # self._state.catch.ParseFromString(res.returns[0])
-
-        # Return everything
-        # return self._state.catch
+        self._state.catch = res['responses']['CATCH_POKEMON']
+        return self._state.catch
 
     # Use a razz berry or the like
     def useItemCapture(self, item_id, pokemon):
-
         # Create request
-        self.api.use_item_capture(
+        res = self.api.use_item_capture(
             item_id=item_id,
-            encounter_id=pokemon.encounter_id,
-            spawn_point_id=pokemon.spawn_point_id
+            encounter_id=pokemon['encounter_id'],
+            spawn_point_id=pokemon['spawn_point_id']
         )
-        # Send
-        # res = self.wrapAndRequest(payload)
-
-        # Parse
-        # self._state.itemCapture.ParseFromString(res.returns[0])
-
-        # Return everything
-        # return self._state.itemCapture
+        self._state.itemCapture = res['responses']['USE_ITEM_CAPTURE']
+        return self._state.itemCapture
 
     # Evolve Pokemon
     def evolvePokemon(self, pokemon):
-        self.api.evolve_pokemon(pokemon_id=pokemon.id)
-
-        # Send
-        # res = self.wrapAndRequest(payload)
-
-        # Parse
-        # self._state.evolve.ParseFromString(res.returns[0])
-
-        # Return everything
-        # return self._state.evolve
+        res = self.api.evolve_pokemon(pokemon_id=pokemon['id'])
+        self._state.evolve = res['responses']['EVOLVE_POKEMON']
+        return self._state.evolve
 
     # Transfer Pokemon
     def releasePokemon(self, pokemon):
-
-        self.api.release_pokemon(pokemon_id=pokemon.id)
-
-        # Parse
-        #self._state.release.ParseFromString(res.returns[0])
-
-        # Return everything
-        #return self._state.release
+        res = self.api.release_pokemon(pokemon_id=pokemon['id'])
+        self._state.release =  res['responses']['RELEASE_POKEMON']
+        return self._state.release
 
     # Throw away items
     def recycleItem(self, item_id, count):
-
-        self.api.recycle_inventory_item(
+        res = self.api.recycle_inventory_item(
             item_id=item_id,
             count=count
         )
-
-        # Parse
-        # self._state.recycle.ParseFromString(res.returns[0])
-
-        # Return everything
-        # return self._state.recycle
+        self._state.recycle = res['responses']['RECYCLE_INVENTORY_ITEM']
+        return self._state.recycle
 
     # set an Egg into an incubator
     def setEgg(self, item, pokemon):
-        self.api.use_item_egg_incubator(
-            item_id=item.id,
-            pokemon_id=pokemon.id
+        res = self.api.use_item_egg_incubator(
+            item_id=item['id'],
+            pokemon_id=pokemon['id']
         )
-
-        # self._state.incubator.ParseFromString(res.returns[0])
-
-        # Return everything
-        # return self._state.incubator
+        self._state.incubator = res['responses']['USE_ITEM_EGG_INCUBATOR']
+        return self._state.incubator
 
     def setCaughtPokemon(self, *args):
         self.getter.setCaughtPokemon(*args)
@@ -324,7 +224,7 @@ class PogoSession():
                 longitude = newLon
             self.setCoordinates(
                 latitude,
-                longitude
+                longitude,
             )
             yield # Search for stops in between
             time.sleep(delay)

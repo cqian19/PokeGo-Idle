@@ -24,8 +24,8 @@ class fortHandler(Handler):
             dist = Location.getDistance(
                 latitude,
                 longitude,
-                fort.latitude,
-                fort.longitude
+                fort['latitude'],
+                fort['longitude']
             )
             if not filterClose or dist <= self.close:
                 ordered_forts.append({'distance': dist, 'fort': fort})
@@ -35,7 +35,6 @@ class fortHandler(Handler):
 
     def findClosestForts(self, num=3):
         forts = self.sortCloseForts(False)
-        print(forts)
         return forts[0:num]
 
     # Find the fort closest to user
@@ -48,7 +47,7 @@ class fortHandler(Handler):
 
     def spin(self, fort):
         fortResponse = self.session.getter.getFortSearch(fort)
-        if fortResponse.result == 1:
+        if fortResponse['result'] == 1:
             self.session.setPastStop(fort, fortResponse)
         time.sleep(.25)
         return fortResponse
@@ -59,9 +58,9 @@ class fortHandler(Handler):
         if fort:
             self.logger.info("Spinning a Fort:")
             # Walk over
-            self.session.walkToWithoutStop(fort.latitude, fort.longitude)
+            self.session.walkToWithoutStop(fort['latitude'], fort['longitude'])
             # Give it a spin
-            print(self.spin(fort))
+            self.spin(fort)
 
     # Walk and spin everywhere
     def walkAndSpinMany(self, forts):

@@ -11,6 +11,7 @@ from .custom_exceptions import GeneralPogoException
 class Location(object):
     def __init__(self, locationLookup, geo_key, api):
         self.geo_key = geo_key
+        self.api = api
         self.setLocation(locationLookup)
 
     def __str__(self):
@@ -39,10 +40,10 @@ class Location(object):
                 return self.latitude, self.longitude, self.altitude
         raise GeneralPogoException("Location could not be found")
 
-    def setCoordinates(self, latitude, longitude):
+    def setCoordinates(self, latitude, longitude, override=True):
         self.latitude = latitude
         self.longitude = longitude
-        self.altitude = random.randint(10)
+        self.altitude = random.randint(0,10)
         self.api.set_position(latitude, longitude, self.altitude)
 
     def getCoordinates(self):
@@ -69,7 +70,7 @@ class Location(object):
             for cell2 in cell.get_edge_neighbors():
                 neighbors.add(cell2.id())
 
-        return neighbors
+        return list(neighbors)
 
     def getCells(self, lat=0, lon=0):
         if not lat: lat = self.latitude

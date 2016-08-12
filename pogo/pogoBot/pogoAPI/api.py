@@ -3,7 +3,7 @@ from .custom_exceptions import GeneralPogoException
 from .location import Location
 from .pgoapi import pgoapi
 from .session import PogoSession
-
+from .util import get_encryption_lib_path
 # Callbacks and Constants
 API_URL = 'https://pgorelease.nianticlabs.com/plfe/rpc'
 LOGIN_URL = 'https://sso.pokemon.com/sso/login?service=https%3A%2F%2Fsso.pokemon.com%2Fsso%2Foauth2.0%2FcallbackAuthorize'
@@ -21,10 +21,11 @@ class PokeAuthSession():
         if geo_key and not geo_key.startswith('AIza'):
             raise GeneralPogoException("Google Maps key is invalid. Must start with 'AIza'")
         self.geo_key = geo_key
-        self.session = ThrottledSession()
         self.logger = logger
         self.provider = provider
         self.api = pgoapi.PGoApi()
+        self.api.activate_signature(get_encryption_lib_path())
+        self.session = self.api.get_session()
         # User credentials
         self.username = username
         self.password = password
@@ -45,8 +46,6 @@ class PokeAuthSession():
             raise GeneralPogoException('Location not found')
 
     def createPogoSession(self, location, provider=None, pogo_session=None):
-        if self.provider:
-            self.provider = provider
         return PogoSession(
             self.session,
             self.provider,
@@ -58,7 +57,7 @@ class PokeAuthSession():
     def createGoogleSession(self, locationLookup='', pogo_session=None):
         self.logger.info('Creating Google session for %s', self.username)
         location = self.setLocation(locationLookup, pogo_session)
-        log = self.api.login('google', self.username, self.password)
+        log = self.api.login('google', self.username, self.password, app_simulation=False)
         if not log:
             raise GeneralPogoException("Google login failed. Double check your login info.")
         return self.createPogoSession(
@@ -71,7 +70,7 @@ class PokeAuthSession():
         instance = self.session
         self.logger.info('Creating PTC session for %s', self.username)
         location = self.setLocation(locationLookup, pogo_session)
-        log = self.api.login('ptc', self.username, self.password)
+        log = self.api.login('ptc', self.username, self.password, app_simulation=False)
         if not log:
             raise GeneralPogoException("Google login failed. Double check your login info.")
         return self.createPogoSession(
@@ -88,9 +87,7 @@ class PokeAuthSession():
 
     def reauthenticate(self, pogo_session):
         if self.session:
-            if self.session.getThrottle().status not in ['stopped', 'ending', 'ended']:
-                self.session.stop()
-            self.session = ThrottledSession()
+            self.session = self.api.make_new_session()
         return {
             "google": self.createGoogleSession,
             "ptc": self.createPTCSession

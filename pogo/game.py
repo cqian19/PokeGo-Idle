@@ -65,7 +65,6 @@ class MapHandler():
 
     def logged_in(self):
         d = {'status': '1' if self.is_logged_in else '0'}
-        print(d)
         return jsonify(d)
 
     def search(self):

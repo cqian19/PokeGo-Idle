@@ -74,9 +74,9 @@ class Inventory():
                 self.pokedex[pokedexEntry['pokemon_id']] = pokedexEntry
                 continue
 
-            pokemonFamily = data.get('pokemon_family')
-            if pokemonFamily:
-                self.candies[pokemonFamily['family_id']] = pokemonFamily['candy']
+            pokemonCandy = data.get('candy')
+            if pokemonCandy:
+                self.candies[pokemonCandy['family_id']] = pokemonCandy.get('candy', 0)
                 continue
 
             pokemonData = data.get('pokemon_data')
