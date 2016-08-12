@@ -1,4 +1,3 @@
-from throttled_session import ThrottledSession
 from .custom_exceptions import GeneralPogoException
 from .location import Location
 from .pgoapi import pgoapi
@@ -13,7 +12,6 @@ ANDROID_ID = '9774d56d682e549c'
 SERVICE = 'audience:server:client_id:848232511240-7so421jotr2609rmqakceuu1luuq0ptb.apps.googleusercontent.com'
 APP = 'com.nianticlabs.pokemongo'
 CLIENT_SIG = '321187995bc7cdc2b5fc91b11a96e2baa8602c62'
-
 
 
 class PokeAuthSession():

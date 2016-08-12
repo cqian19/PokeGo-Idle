@@ -110,7 +110,7 @@ class Getter():
             for lat, lon in steps:
                 cells = self.location.getCells(lat, lon)
                 timestamps = [0, ] * len(cells)
-                time.sleep(1)
+                time.sleep(.5)
                 self.threadBlock.wait()
                 res = self.api.get_map_objects(
                     location_override=(lat, lon, 8),
