@@ -33,7 +33,7 @@
                          value="{{ request.form.password }}"required />
                   <input type="api_key" name="api_key" class="form-control" id="api_key" placeholder="Google Maps API Key"
                          value="{{ request.form.api_key or config['key'] }}" required />
-                  <input type="location" name="location" placeholder="Location Ex. Gary, Indiana" required class="form-control"
+                  <input type="location" name="location" placeholder="Location 'Gary, Indiana' '38.9, 77.03'" required class="form-control"
                          value="{{ request.form.location or config['location'] }}" required />
                   <button type="submit" class="btn btn-lg btn-primary btn-block">Login</button>
                 </form>

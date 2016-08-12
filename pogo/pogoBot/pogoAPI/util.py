@@ -80,3 +80,10 @@ def get_encryption_lib_path():
         err = "Could not find {} encryption library {}".format(sys.platform, lib_path)
         raise Exception(err)
     return lib_path
+
+def is_float(num):
+    try:
+        float(num)
+        return True
+    except ValueError:
+        return False

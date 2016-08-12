@@ -5,7 +5,7 @@ import gpxpy.geo
 from geopy import Point, distance
 from s2sphere import CellId, LatLng
 from .custom_exceptions import GeneralPogoException
-
+from .util import is_float
 
 # Wrapper for location
 class Location(object):
@@ -31,6 +31,14 @@ class Location(object):
         return self.getDistance(lat, lng, fort.latitude, fort.longitude)
 
     def setLocation(self, search):
+        if len(search.split(" ")) == 2:
+            f, s = [i.replace(',','') for i in search.split(" ")]
+            # Input location is coordinates
+            if is_float(f) and is_float(s):
+                self.latitude = float(f)
+                self.longitude = float(s)
+                self.altitude = 8
+                return self.latitude, self.longitude, self.altitude
         providers = ['google', 'osm', 'arcgis', 'freegeoip']
         for p in providers:
             geo = getattr(geocoder, p)(search)
