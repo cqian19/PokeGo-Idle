@@ -165,7 +165,7 @@ class pokemonHandler(Handler):
             evoCandies = pokedex.evolves[poke_id]
             # Evolve pokemon when possible
             if evoCandies and candies.get(candy_id, 0) >= evoCandies and \
-                poke_id in self.EVOLVABLES or iv > thresholdIV:
+                (poke_id in self.EVOLVABLES or iv > thresholdIV):
                 self.logger.info("Evolving %s" % pokedex[poke_id])
                 self.logger.info(self.session.evolvePokemon(pokemon))
                 candies[candy_id] -= evoCandies

@@ -46,6 +46,8 @@ class Bot():
                     if forts:
                         for fort in forts:
                             self.fh.walkAndSpin(fort)
+                            if self.ph.findBestPokemon():
+                                break
 
             # Catch problems and reauthenticate
             except GeneralPogoException as e:
