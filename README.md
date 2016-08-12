@@ -2,7 +2,7 @@
 
 # PokeGo Adventures Pokemon Go Bot
 A free Pokemon Go bot with local website, live map, and notifications. See your player move around in real time and catch pokemon!  
-Status: Down until protos are fixed
+Status: **FIXED and Running!**
 <p align="center"><img src="pogo/static/images/game.png"></p>
 ## Features
 * Easy to use web interface
@@ -48,5 +48,6 @@ Just a heads up: This bot will drop items and release low CP/IV pokemon if your 
 - [ ] Packaging into exe (not working currently thanks to pycryptodomex shenanigans)  
 
 ## Credits
+[keyphact and other's updated api](https://github.com/keyphact/pgoapi)
 [rubenvereecken](https://github.com/rubenvereecken/pokemongo-api) for the Pokemon Go API.  
 [AHAAAAAAA's Pokemon Maps for reference.](https://github.com/AHAAAAAAA/PokemonGo-Map)
