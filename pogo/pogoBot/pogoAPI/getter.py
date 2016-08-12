@@ -112,6 +112,7 @@ class Getter():
                 timestamps = [0, ] * len(cells)
                 time.sleep(.5)
                 self.threadBlock.wait()
+                print("GMO")
                 res = self.api.get_map_objects(
                     location_override=(lat, lon, 8),
                     cell_id = cells,
