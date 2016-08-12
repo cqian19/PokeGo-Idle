@@ -100,7 +100,6 @@ class Getter():
             latitude=fort['latitude'],
             longitude=fort['longitude'],
         )
-        fprint(res)
         self._state.fortDetails = res['responses']['FORT_DETAILS']
         return self._state.fortDetails
 
@@ -231,8 +230,6 @@ class Getter():
             for fort in cell.get('forts', []):
                 if fort['id'] not in self.forts:
                     stor = self.stops if fort.get('type') == 1 else self.gyms
-                    if fort.get('type') == 1 and fort.get('active_fort_modifier'):
-                        self.getFortDetails(fort)
                     stor[fort['id']] = fort
                     self.forts[fort['id']] = fort
 
@@ -291,3 +288,9 @@ class Getter():
         self.forts = {}
         self.gyms = {}
         self.stops = {}
+
+    def copyInto(self, getter):
+        getter.pokemon = self.pokemon.copy()
+        getter.forts = self.forts.copy()
+        getter.gyms = self.gyms.copy()
+        getter.stops = self.stops.copy()

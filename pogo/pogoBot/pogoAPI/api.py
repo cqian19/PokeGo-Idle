@@ -46,12 +46,14 @@ class PokeAuthSession():
             raise GeneralPogoException('Location not found')
 
     def createPogoSession(self, location, provider=None, pogo_session=None):
+        getter = None if not pogo_session else pogo_session.getter
         return PogoSession(
             self.session,
             self.provider,
             location,
             self.logger,
-            self.api
+            self.api,
+            getter
         )
 
     def createGoogleSession(self, locationLookup='', pogo_session=None):

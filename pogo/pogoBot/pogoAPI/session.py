@@ -16,7 +16,7 @@ class PogoSession():
 
     lock = threading.Lock()
 
-    def __init__(self, session, authProvider, location, logger, api):
+    def __init__(self, session, authProvider, location, logger, api, getter=None):
         self.session = session
         self.logger = logger
         self.authProvider = authProvider
@@ -27,6 +27,7 @@ class PogoSession():
         self.location = location
         self.authTicket = None
         self.getter = Getter(self._state, location, api)
+        if getter: getter.copyInto(self.getter)
         time.sleep(2)
         self.getter.run()
 
