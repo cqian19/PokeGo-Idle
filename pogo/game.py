@@ -38,9 +38,12 @@ class MapHandler():
         self.logger = logger
         self.config = Config()
         app.route('/', methods = ['GET', 'POST'])(self.login)
+        app.route('/game', methods=['GET'])(self.default_map)
         app.run(debug=False, port=5000)
 
     def default_map(self):
+        if not self.is_logged_in:
+            return redirect(url_for('login'))
         lat, lon, _ = self.session.getter.getCoordinates()
         return render_template('game.html', lat=lat, lon=lon, geo_key=self.maps_key)
 
@@ -94,7 +97,6 @@ class MapHandler():
                 error = "Internal server error: " + e.__str__()
             else:
                 self.is_logged_in = True
-                app.route('/game', methods=['GET'])(self.default_map)
                 app.route('/data', methods=['GET'])(self.get_map_data)
                 app.route('/loggedIn', methods=['GET'])(self.logged_in)
                 app.route('/location', methods=['GET'])(self.get_location)
@@ -126,7 +128,7 @@ class MapHandler():
             pogo_session = poko_session.authenticate(args['location'])
         except Exception as e:
             logging.error('Could not log in. Double check your login credentials. The servers may also be down.')
-            raise e
+            raise GeneralPogoException('Could not log in. Double check your login credentials. The servers may also be down.')
         else:
             self.config.update_config({
                 'username': args['username'],
