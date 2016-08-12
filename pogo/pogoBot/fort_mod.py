@@ -47,7 +47,7 @@ class fortHandler(Handler):
 
     def spin(self, fort):
         fortResponse = self.session.getter.getFortSearch(fort)
-        if fortResponse['result'] == 1:
+        if fortResponse.get('result') == 1:
             self.session.setPastStop(fort, fortResponse)
         time.sleep(.25)
         return fortResponse
