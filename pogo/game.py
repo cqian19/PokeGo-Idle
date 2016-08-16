@@ -129,7 +129,7 @@ class MapHandler():
             pogo_session = poko_session.authenticate(args['location'])
         except Exception as e:
             logging.exception(e)
-            raise GeneralPogoException('Could not log in. Double check your login credentials. The servers may also be down.')
+            raise e
         else:
             self.config.update_config({
                 'username': args['username'],

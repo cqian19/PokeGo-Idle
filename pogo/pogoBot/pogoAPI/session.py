@@ -95,8 +95,8 @@ class PogoSession():
         d = {
             'username': data['username'],
             'level': stats['level'],
-            'xp': stats['experience'] - stats['prev_level_xp'],
-            'maxXp': stats['next_level_xp'] - stats['prev_level_xp'],
+            'xp': stats['experience'] - stats.get('prev_level_xp', 0),
+            'maxXp': stats['next_level_xp'] - stats.get('prev_level_xp', 0),
             'stardust': stardust,
             'pokecoin': pokecoin,
             'gender': 'Female' if data['avatar'].get('gender') else 'Male',
@@ -191,7 +191,7 @@ class PogoSession():
     # Might be better to break out seperately
     # Walk over to position in meters
     def walkTo(self, olatitude, olongitude, epsilon=10, delay=1):
-        step = self.config.get('walkspeed')
+        step = self.config.get_float('walkspeed')
         # Calculate distance to position
         latitude, longitude, _ = self.getter.getCoordinates()
         dist = closest = Location.getDistance(

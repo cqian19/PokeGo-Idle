@@ -6,6 +6,7 @@ from datetime import datetime
 from .inventory import Inventory, items
 from .pokedex import pokedex
 from .util import set_interval, fprint, getJSTime
+from .custom_exceptions import GeneralPogoException
 
 RPC_ID = int(random.random() * 10 ** 12)
 STOP_COOLDOWN = 305
@@ -75,9 +76,11 @@ class Getter():
         # self.threadBlock.wait()
         req.get_player()
         self.getDefaults(req)
-        res = req.call()
-        print(res)
-        res = res['responses']
+        try:
+            res = req.call()
+            res = res['responses']
+        except:
+            raise GeneralPogoException("Getting profile failed. Double check your username and password. Possible ban.")
         # Parse
         self.parseDefault(res)
         self._state.profile = res['GET_PLAYER']
@@ -263,7 +266,7 @@ class Getter():
 
     def _createThreads(self):
         print("Create thread")
-        self.getMapObjects(200)
+        self.getMapObjects()
         mapObjThread = set_interval(self.getMapObjects, 50)
         getProfThread = set_interval(self.getProfile, 3)
         self.threads.append(mapObjThread)
