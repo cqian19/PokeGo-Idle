@@ -87,14 +87,13 @@ class PogoSession():
         pokecoin = stardust = 0
         for i in data['currencies']:
             if i['name'] == 'STARDUST':
-                stardust = i['amount']
+                stardust = i.get('amount', 0)
             elif i['name'] == 'POKECOIN':
-                pokecoin = i['amount']
+                pokecoin = i.get('amount', 0)
         inventory, maxInventory = self.getter.getInventoryCapacity()
         pokemon, maxPokemon = self.getter.getPokemonCapacity()
         d = {
             'username': data['username'],
-            'team': teams[str(data['team'])],
             'level': stats['level'],
             'xp': stats['experience'] - stats['prev_level_xp'],
             'maxXp': stats['next_level_xp'] - stats['prev_level_xp'],
