@@ -10,7 +10,7 @@ DEFAULT = {
         'method': '',
         'walkspeed': 2.6,
         'searchRadius': 70,
-        'requestDelay': 0.5,
+        'requestDelay': 0.4,
         'discardCP': 200,
         'discardIV': 80
     }
@@ -51,6 +51,7 @@ class Config():
                     return int(item)
             return item
         self.logger.error("Could not get attr " + attr + " from config.")
+        raise Exception("Config could not find option " + attr)
 
     def get_float(self, attr):
         return float(self.get(attr))
