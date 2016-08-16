@@ -4,7 +4,6 @@ import logging
 import threading
 
 from flask import Flask, render_template, jsonify, request, redirect, url_for
-
 from pogoBot.bot import Bot
 from pogoBot.pogoAPI.api import PokeAuthSession
 from pogoBot.pogoAPI.custom_exceptions import GeneralPogoException
@@ -19,7 +18,7 @@ def setupLogger():
     logger.propagate = False
 
     logger = logging.getLogger(__name__)
-    logger.propagate = True
+    logger.propagate = False
     ch = logging.StreamHandler()
     formatter = logging.Formatter('Line %(lineno)d,%(filename)s - %(asctime)s - %(levelname)s - %(message)s')
     ch.setFormatter(formatter)
@@ -82,6 +81,19 @@ class MapHandler():
         self.bot.run()
         return jsonify({'status': str(status)})
 
+    def set_config(self):
+        options = request.json
+        self.logger.info(options)
+        for key in options:
+            # Verify all keys are in config
+            try:
+                self.config.get(key)
+            except Exception as e:
+                self.logger.info("Failed")
+                return jsonify({'status': '0'})
+        self.config.update_config(options)
+        return jsonify({'status': '1'})
+
     def login(self, error=None):
         if request.method == 'GET':
             if self.is_logged_in:
@@ -103,6 +115,7 @@ class MapHandler():
                 app.route('/pastInfo', methods=['GET'])(self.get_past_items)
                 app.route('/playerData', methods=['GET'])(self.get_profile)
                 app.route('/search', methods=['POST'])(self.search)
+                app.route('/config', methods=['POST'])(self.set_config)
                 return redirect(url_for('default_map'))
         if self.first_login:
             config = self.config.get_config()
@@ -128,7 +141,7 @@ class MapHandler():
         try:
             pogo_session = poko_session.authenticate(args['location'])
         except Exception as e:
-            logging.exception(e)
+            self.logger.exception(e)
             raise e
         else:
             self.config.update_config({
