@@ -30,6 +30,10 @@ html, body {
     top: 5px;
 }
 
+.sidebar td > div {
+    width: 400px;
+}
+
 .playerCard {
     box-shadow:inset 0 0 0 1px black, 0 0 3pt 2pt black;
     border-radius: 4px;
@@ -213,11 +217,14 @@ html, body {
     margin-bottom: 8px;
 }
 
+.configOpt > * {
+    height: 35px;
+}
+
 .configOpt > span {
     float: left;
     font-family: Verdana, Geneva, sans-serif;
     font-size: 13px;
-    height: 35px;
 }
 
 .configOpt > input {
@@ -229,5 +236,4 @@ html, body {
 .configOpt > button {
     position: absolute;
     right: 0;
-    height: 35px;
 }

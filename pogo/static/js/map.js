@@ -17,7 +17,7 @@ var player = {
     latLng: null,
     posChanged: false,
     thread: null,
-    updateTime: 250,
+    updateTime: 500,
     initializeMarker: function() {
         if (player.marker) { return; }
         player.marker = new SlidingMarker({
@@ -292,6 +292,7 @@ function initializeMap() {
     console.log("Done");
 }
 
+// Search bar initialize
 var searchBar = $("#search");
 var searchSub = $("#searchSubmit");
 searchSub.click(search);
@@ -325,14 +326,28 @@ function search() {
         setTimeout(function() { searchBar.prop("disabled", false); searchSub.prop("disabled", false); searchBar.val(location)}, 2000);
     })
 }
-
+// User config initialize
+$(".configOpt").find("button").click(function() {
+    var input = $(this).siblings("input");
+    var option = input.attr("name");
+    var value = input.val();
+    var d = {};
+    d[option] = value;
+    $.ajax({
+        url: 'config',
+        type: 'POST',
+        dataType: 'json',
+        contentType: 'application/json; charset=utf-8',
+        data: JSON.stringify(d)
+    })
+});
+// Start all object threads
 $(function() {
     var threads = [player, mapObjects, notifications, playerInfo];
 
     function startThreads() {
         for (i in threads) {
             obj = threads[i];
-            console.log("THREAD", obj.update, obj.updateTime);
             i.thread = setInterval(obj.update, obj.updateTime);
         }
     }
@@ -345,7 +360,6 @@ $(function() {
         }).done(function (r) {
             console.log(r);
             if (r["status"] == "1") {
-                console.log("Hello");
                 startThreads();
                 clearInterval(loginThread);
             }
