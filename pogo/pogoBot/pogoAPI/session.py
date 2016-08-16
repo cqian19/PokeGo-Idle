@@ -5,7 +5,7 @@ import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from .getter import Getter
 from .location import Location
-from .pokedex import pokedex, teams
+from .pokedex import pokedex
 from .state import State
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -191,25 +191,29 @@ class PogoSession():
     # Might be better to break out seperately
     # Walk over to position in meters
     def walkTo(self, olatitude, olongitude, epsilon=10, delay=1):
-        step = self.config.get_float('walkspeed')
-        # Calculate distance to position
+        def calculateStep():
+            divisions = closest / step
+            if (abs(divisions) < 1):
+                divisions = 1
+            dLat = (olatitude - latitude) / divisions
+            dLon = (olongitude - longitude) / divisions
+            self.logger.info("Walking %f meters. This will take %f seconds..." % (dist, delay * dist / step))
+            return dLat, dLon
+        step = self.config.get('walkspeed')
         latitude, longitude, _ = self.getter.getCoordinates()
+        # Calculate distance to position
         dist = closest = Location.getDistance(
             latitude,
             longitude,
             olatitude,
             olongitude
         )
-
-        # Run walk
-        divisions = closest / step
-        if (abs(divisions) < 1):
-            divisions = 1
-        dLat = (olatitude - latitude) / divisions
-        dLon = (olongitude - longitude) / divisions
-        self.logger.info("Walking %f meters. This will take %f seconds..." % (dist, delay * dist / step))
+        dLat, dLon = calculateStep()
         while dist > epsilon:
-            self.logger.debug("%f m -> %f m away", closest - dist, closest)
+            if round(self.config.get('walkspeed'), 3) != round(step, 3): # Config changed
+                self.logger.info("Walkspeed changed")
+                step = self.config.get('walkspeed')
+                dLat, dLon = calculateStep()
             newLat = latitude + dLat
             if dLat > 0 and newLat > olatitude:
                 latitude = olatitude
