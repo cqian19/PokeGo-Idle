@@ -213,6 +213,10 @@ class Getter():
                     'stardust': sum(award['stardust'])
                 }
             })
+            self.logger.info("Successfully caught pokemon.\n" +
+                             "Received {0} exp, {1] candy, and {2} stardust.".format(
+                                 d['award']['xp'], d['award']['candy'], d['award']['stardust']
+                             ))
         self.pastEvents.append(d)
 
     def setPastStop(self, fort, res):
@@ -235,6 +239,7 @@ class Getter():
             it[itemName] = it.get(itemName, 0) + i['item_count']
         it['xp'] = res['experience_awarded']
         d['award'] = it
+        self.logger.info("Successfully spinned stop.")
         self.pastEvents.append(d)
 
     def updateAllPokemon(self, cells):
@@ -287,8 +292,6 @@ class Getter():
 
     def _createThreads(self):
         self.radius = self.config.get("searchRadius")
-        self.logger.info(self._calculateMapObjectsTime(self.radius))
-
         self.mapObjThread = set_interval(self.getMapObjects, self._calculateMapObjectsTime(self.radius))
         self.getProfThread = set_interval(self.getProfile, 3)
         self.threads.append(self.mapObjThread)
@@ -301,7 +304,6 @@ class Getter():
         mainThread.start()
 
     def unpause(self, locChanged=False):
-        print("Unpause")
         if locChanged:
             self.locChanged = True
         self.threadBlock.set()
@@ -309,7 +311,6 @@ class Getter():
             thread.set()
 
     def pause(self):
-        print("Pausing")
         self.threadBlock.clear()
         for thread in self.threads:
             thread.clear()
