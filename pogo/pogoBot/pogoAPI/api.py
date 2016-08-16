@@ -24,6 +24,7 @@ class PokeAuthSession():
         self.provider = provider
         self.api = pgoapi.PGoApi(config)
         self.api.activate_signature(get_encryption_lib_path())
+        self.api.set_logger(logger)
         self.session = self.api.get_session()
         # User credentials
         self.username = username
