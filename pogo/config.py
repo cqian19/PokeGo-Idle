@@ -7,13 +7,17 @@ DEFAULT = {
         'username': '',
         'key': '',
         'location': '',
-        'method': ''
+        'method': '',
+        'walkspeed': 2.6,
+        'searchRadius': 70,
+        'requestDelay': 1/2
     }
 }
 
 class Config():
 
-    def __init__(self):
+    def __init__(self, logger):
+        self.logger = logger
         self.config = ConfigParser()
         self.data = DEFAULT.copy()
         try:
@@ -25,6 +29,11 @@ class Config():
                 self.init_config()
         except IOError as e:
             self.init_config()
+
+    def get(self, attr):
+        if attr in self.data['Config']:
+            return self.data['Config'][attr]
+        self.logger.error("Could not get attr " + attr + " from config.")
 
     def get_config(self):
         return dict(self.config.items())['Config']
