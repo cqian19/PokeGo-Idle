@@ -45,7 +45,7 @@ class MapHandler():
         if not self.is_logged_in:
             return redirect(url_for('login'))
         lat, lon, _ = self.session.getter.getCoordinates()
-        return render_template('game.html', lat=lat, lon=lon, geo_key=self.maps_key)
+        return render_template('game.html', lat=lat, lon=lon, geo_key=self.maps_key, config=self.config.get_user_options())
 
     def get_map_data(self):
         data = {}

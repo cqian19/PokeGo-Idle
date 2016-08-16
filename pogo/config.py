@@ -16,6 +16,14 @@ DEFAULT = {
     }
 }
 
+USER_OPT = {
+    'walkspeed': 'float',
+    'searchRadius': 'int',
+    'requestDelay': 'float',
+    'discardCP': 'int',
+    'discardIV': 'int'
+}
+
 class Config():
 
     def __init__(self, logger):
@@ -35,7 +43,13 @@ class Config():
 
     def get(self, attr):
         if attr in self.data['Config']:
-            return self.data['Config'][attr]
+            item = self.data['Config'][attr]
+            if attr in USER_OPT:
+                if USER_OPT[attr] == 'float':
+                    return float(item)
+                elif USER_OPT[attr] == 'int':
+                    return int(item)
+            return item
         self.logger.error("Could not get attr " + attr + " from config.")
 
     def get_float(self, attr):
@@ -46,6 +60,12 @@ class Config():
 
     def get_config(self):
         return dict(self.config.items())['Config']
+
+    def get_user_options(self):
+        data = {}
+        for key in USER_OPT:
+            data[key] = self.get(key)
+        return data
 
     def update_config(self, data):
         data = data.get('Config', data)

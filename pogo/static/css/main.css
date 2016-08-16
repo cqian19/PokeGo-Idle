@@ -1,9 +1,5 @@
 /* CSS used here will be applied after bootstrap.css */
-:root{
-    --main-color: rgb(95, 144, 232);
-  	--main-color-light: rgba(95, 144, 232, 0.92);
-    --border-color: rgb(108, 141, 202);
-}
+
 
 html, body {
     height: 100%;
@@ -121,7 +117,7 @@ html, body {
     box-shadow:inset 0px 0px 0px 1px black, 0 0 3pt 2pt black;
     border-image: linear-gradient(to left, #1A65DD 0%, #3585E8 100%);
     border-image-slice: 1;
-    height: 60%;
+    height: 100%;
     overflow-x: hidden;
     overflow-y: scroll;
     margin: auto;
@@ -138,7 +134,7 @@ html, body {
 
 .notification {
     display: flex;
-    width: 96%;
+    width: 98%;
     min-height: 90px;
     height:auto;
     box-shadow: 0px 0px 4px rgb(119,119,119);
@@ -199,4 +195,39 @@ html, body {
 
 .notification .reward {
     text-transform: capitalize;
+}
+
+
+.text-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.config {
+    margin-top: 10px;
+}
+
+.config >.configOpt {
+    height: 35px;
+    margin-bottom: 8px;
+}
+
+.configOpt > span {
+    float: left;
+    font-family: Verdana, Geneva, sans-serif;
+    font-size: 13px;
+    height: 35px;
+}
+
+.configOpt > input {
+    position: absolute;
+    left: 140px;
+    width: 200px;
+}
+
+.configOpt > button {
+    position: absolute;
+    right: 0;
+    height: 35px;
 }
