@@ -43,13 +43,14 @@ class Getter():
         req.download_settings(hash="4a2e9bc330dae60e7b74fc85b98868ab4700802e")
 
     def parseDefault(self, res):
-        print(res)
         try:
             self._state.eggs = res['GET_HATCHED_EGGS'] # Currently only success
             self._state.inventory = res['GET_INVENTORY']
             self.parsePlayerStats(self._state.inventory)
             self._state.badges = res['CHECK_AWARDED_BADGES'] # Currently only success
             self._state.settings = res['DOWNLOAD_SETTINGS']
+        except KeyError as e:
+            raise GeneralPogoException("Player profile is missing a field. Possible hardban.")
         except Exception as e:
             logging.exception(e)
 
@@ -120,7 +121,6 @@ class Getter():
                 timestamps = [0, ] * len(cells)
                 time.sleep(.5)
                 self.threadBlock.wait()
-                print("GMO")
                 res = self.api.get_map_objects(
                     location_override=(lat, lon, 8),
                     cell_id = cells,
@@ -215,7 +215,6 @@ class Getter():
         self.pastEvents.append(d)
 
     def updateAllPokemon(self, cells):
-        print("Updating pokemon")
         for cell in cells['map_cells']:
             for poke in cell.get('wild_pokemons', []):
                 if poke['encounter_id'] not in self.pokemon:
@@ -234,7 +233,6 @@ class Getter():
                     self.pokemon.pop(id)
 
     def updateAllForts(self, cells):
-        print("Updating forts")
         for cell in cells['map_cells']:
             for fort in cell.get('forts', []):
                 if fort['id'] not in self.forts:
@@ -265,7 +263,6 @@ class Getter():
         t.start()
 
     def _createThreads(self):
-        print("Create thread")
         self.getMapObjects()
         mapObjThread = set_interval(self.getMapObjects, 50)
         getProfThread = set_interval(self.getProfile, 3)
