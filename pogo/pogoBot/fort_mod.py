@@ -6,7 +6,6 @@ from .pogoAPI.location import Location
 
 class fortHandler(Handler):
 
-    lastStops = {}
     close = 40 # Testing within spin distance
     # Basic solution to spinning all forts.
     # Since traveling salesman problem, not
@@ -16,8 +15,6 @@ class fortHandler(Handler):
         # Sort nearest forts (pokestop)
         stops = self.session.checkUnspinnedStops()
 
-        if stops == self.lastStops: return
-        self.logger.info("Sorting Nearest Forts")
         latitude, longitude, _ = self.session.getter.getCoordinates()
         ordered_forts = []
         for fort in stops:
