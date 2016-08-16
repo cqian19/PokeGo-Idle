@@ -27,7 +27,7 @@ class PogoSession():
         self.lock = threading.Lock()
         self.location = location
         self.authTicket = None
-        self.getter = Getter(self._state, location, api, config)
+        self.getter = Getter(self._state, location, api, logger, config)
         if getter: getter.copyInto(self.getter)
         time.sleep(2)
         self.getter.run()

@@ -2,7 +2,9 @@ import logging
 import random
 import threading
 import time
+import math
 from datetime import datetime
+from . import location
 from .inventory import Inventory, items
 from .pokedex import pokedex
 from .util import set_interval, fprint, getJSTime
@@ -13,11 +15,12 @@ STOP_COOLDOWN = 305
 
 class Getter():
 
-    def __init__(self, state, location, api, config):
+    def __init__(self, state, location, api, logger, config):
         # self._state = state
         self.location = location
         self._state = state
         self.api = api
+        self.logger = logger
         self.config = config
         self.locChanged = False
         # Set up Inventory
@@ -81,7 +84,7 @@ class Getter():
             res = req.call()
             res = res['responses']
         except:
-            raise GeneralPogoException("Getting profile failed. Double check your username and password. Possible ban.")
+            raise GeneralPogoException("Getting profile failed. Double check your username and password.")
         # Parse
         self.parseDefault(res)
         self._state.profile = res['GET_PLAYER']
@@ -114,12 +117,17 @@ class Getter():
     # Hooks for those bundled in default
     def getMapObjects(self):
         with self.lock:
-            radius = self.config.get_int('searchRadius')
+            radius = self.config.get('searchRadius')
+            if not self.radius or self.radius != radius:
+                # Radius changed
+                changed = self._updateGMOTime(radius)
+                self.radius = radius
+                if changed: return
             steps = self.location.getAllSteps(radius)
             for lat, lon in steps:
                 cells = self.location.getCells(lat, lon)
                 timestamps = [0, ] * len(cells)
-                time.sleep(.5)
+                time.sleep(1)
                 self.threadBlock.wait()
                 res = self.api.get_map_objects(
                     location_override=(lat, lon, 8),
@@ -134,6 +142,21 @@ class Getter():
                 self._state.mapObjects = res['responses']['GET_MAP_OBJECTS']
                 self.updateAllForts(self._state.mapObjects)
                 self.updateAllPokemon(self._state.mapObjects)
+
+    def _calculateMapObjectsTime(self, radius):
+        return math.ceil(radius / location.DEFAULT_RADIUS) ** 2 + 3
+
+    def _updateGMOTime(self, radius=None):
+        newInterval = 0 if not radius else self._calculateMapObjectsTime(radius)
+        oldInterval = self._calculateMapObjectsTime(self.radius)
+        if not newInterval or newInterval != oldInterval:
+            interval = oldInterval if not radius else newInterval
+            self.mapObjThread.clear()
+            self.threads.remove(self.mapObjThread)
+            self.mapObjThread = set_interval(self.getMapObjects, interval)
+            self.threads.append(self.mapObjThread)
+            return True
+        return False
 
     def getPastNotifications(self):
         orig = list(reversed(self.pastEvents))
@@ -263,11 +286,13 @@ class Getter():
         t.start()
 
     def _createThreads(self):
-        self.getMapObjects()
-        mapObjThread = set_interval(self.getMapObjects, 50)
-        getProfThread = set_interval(self.getProfile, 3)
-        self.threads.append(mapObjThread)
-        self.threads.append(getProfThread)
+        self.radius = self.config.get("searchRadius")
+        self.logger.info(self._calculateMapObjectsTime(self.radius))
+
+        self.mapObjThread = set_interval(self.getMapObjects, self._calculateMapObjectsTime(self.radius))
+        self.getProfThread = set_interval(self.getProfile, 3)
+        self.threads.append(self.mapObjThread)
+        self.threads.append(self.getProfThread)
 
     def run(self):
         self.threadBlock.set()
