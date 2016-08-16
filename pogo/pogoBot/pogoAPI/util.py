@@ -16,6 +16,7 @@ def getJSTime():
     return for_js
 
 def set_interval(func, sec):
+    func() # execute once immediately
     interval = 0
     stopped = threading.Event()
     outside = threading.Event()
