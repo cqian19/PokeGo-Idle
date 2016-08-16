@@ -9,14 +9,14 @@ from . import fort_mod, inventory_mod, pokemon_mod
 
 class Bot():
 
-    def __init__(self, session, pogo_session, poko_session, logger):
+    def __init__(self, session, pogo_session, poko_session, logger, config):
         self.session = session
         self.pogo_session = pogo_session
         self.poko_session = poko_session
         self.logger = logger
-        self.fh = fort_mod.fortHandler(pogo_session, logger)
-        self.ih = inventory_mod.inventoryHandler(pogo_session, logger)
-        self.ph = pokemon_mod.pokemonHandler(pogo_session, logger)
+        self.fh = fort_mod.fortHandler(pogo_session, logger, config)
+        self.ih = inventory_mod.inventoryHandler(pogo_session, logger, config)
+        self.ph = pokemon_mod.pokemonHandler(pogo_session, logger, config)
         self.mods = [self.fh, self.ih, self.ph]
         self.started = False
         self.mainThread = None
@@ -30,7 +30,7 @@ class Bot():
         while self.started:
             time.sleep(1)
             try:
-                self.ph.cleanPokemon(thresholdCP=700)
+                self.ph.cleanPokemon()
                 self.ih.cleanInventory()
                 pokemon = self.ph.findBestPokemon()
 

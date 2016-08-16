@@ -151,8 +151,10 @@ class pokemonHandler(Handler):
         sta = poke.get('individual_stamina', 0)
         return 100 * (at + de + sta)/45
 
-    def cleanPokemon(self, thresholdCP=800, thresholdIV=90):
+    def cleanPokemon(self):
         self.logger.info("Cleaning out Pokemon...")
+        thresholdCP = self.config.get_int('discardCP')
+        thresholdIV = self.config.get_int('discardIV')
         party = self.session.checkInventory().party
         stored, maxStorage = self.session.getter.getPokemonCapacity()
         self.logger.info("Pokemon storage capacity: {0}/{1}".format(stored, maxStorage))

@@ -16,17 +16,18 @@ class PogoSession():
 
     lock = threading.Lock()
 
-    def __init__(self, session, authProvider, location, logger, api, getter=None):
+    def __init__(self, session, authProvider, location, logger, api, config, getter=None):
         self.session = session
         self.logger = logger
         self.authProvider = authProvider
         self.api = api
         self.api.set_logger(self.logger)
+        self.config = config
         self._state = State()
         self.lock = threading.Lock()
         self.location = location
         self.authTicket = None
-        self.getter = Getter(self._state, location, api)
+        self.getter = Getter(self._state, location, api, config)
         if getter: getter.copyInto(self.getter)
         time.sleep(2)
         self.getter.run()
@@ -190,7 +191,8 @@ class PogoSession():
     # These act as more logical functions.
     # Might be better to break out seperately
     # Walk over to position in meters
-    def walkTo(self, olatitude, olongitude, epsilon=10, step=35, delay=1):
+    def walkTo(self, olatitude, olongitude, epsilon=10, delay=1):
+        step = self.config.get('walkspeed')
         # Calculate distance to position
         latitude, longitude, _ = self.getter.getCoordinates()
         dist = closest = Location.getDistance(

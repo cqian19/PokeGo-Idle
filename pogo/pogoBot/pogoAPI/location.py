@@ -7,6 +7,7 @@ from s2sphere import CellId, LatLng
 from .custom_exceptions import GeneralPogoException
 from .util import is_float
 
+DEFAULT_RADIUS = 70
 # Wrapper for location
 class Location(object):
     def __init__(self, locationLookup, geo_key, api):
@@ -85,14 +86,14 @@ class Location(object):
         if not lon: lon = self.longitude
         return self.getNeighbors(lat, lon)
 
-    def getAllSteps(self, radius=150):
-        distPerStep = 150
-        radius = max(radius, distPerStep)
-        steps = math.ceil(radius/distPerStep)
+    def getAllSteps(self, radius=140):
         start = list(self.getCoordinates()[:2])
+        allSteps = [start]
+        if radius <= DEFAULT_RADIUS: return allSteps
+        distPerStep = 140
+        steps = math.ceil(radius/distPerStep)
         lat, lon = start
         origin = Point(lat, lon)
-        allSteps = [start]
         angleBetween = 60
         for s in range(1, steps + 1):
             for d in range(0, 360, int(angleBetween/min(s, 2))):

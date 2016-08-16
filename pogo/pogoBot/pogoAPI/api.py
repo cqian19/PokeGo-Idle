@@ -15,13 +15,14 @@ CLIENT_SIG = '321187995bc7cdc2b5fc91b11a96e2baa8602c62'
 
 
 class PokeAuthSession():
-    def __init__(self, username, password, provider, logger, geo_key=None):
+    def __init__(self, username, password, provider, logger, config, geo_key=None):
         if geo_key and not geo_key.startswith('AIza'):
             raise GeneralPogoException("Google Maps key is invalid. Must start with 'AIza'")
         self.geo_key = geo_key
         self.logger = logger
+        self.config = config
         self.provider = provider
-        self.api = pgoapi.PGoApi()
+        self.api = pgoapi.PGoApi(config)
         self.api.activate_signature(get_encryption_lib_path())
         self.session = self.api.get_session()
         # User credentials
@@ -51,7 +52,8 @@ class PokeAuthSession():
             location,
             self.logger,
             self.api,
-            getter
+            self.config,
+            getter=getter
         )
 
     def createGoogleSession(self, locationLookup='', pogo_session=None):

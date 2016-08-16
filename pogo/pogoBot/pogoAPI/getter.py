@@ -12,11 +12,12 @@ STOP_COOLDOWN = 305
 
 class Getter():
 
-    def __init__(self, state, location, api):
+    def __init__(self, state, location, api, config):
         # self._state = state
         self.location = location
         self._state = state
         self.api = api
+        self.config = config
         self.locChanged = False
         # Set up Inventory
         self.pokemon = {}
@@ -35,12 +36,13 @@ class Getter():
 
     @staticmethod
     def getDefaults(req):
-        req.get_hatched_eggs()
         req.get_inventory(last_timestamp_ms=0)
+        req.get_hatched_eggs()
         req.check_awarded_badges()
         req.download_settings(hash="4a2e9bc330dae60e7b74fc85b98868ab4700802e")
 
     def parseDefault(self, res):
+        print(res)
         try:
             self._state.eggs = res['GET_HATCHED_EGGS'] # Currently only success
             self._state.inventory = res['GET_INVENTORY']
@@ -73,7 +75,9 @@ class Getter():
         # self.threadBlock.wait()
         req.get_player()
         self.getDefaults(req)
-        res = req.call()['responses']
+        res = req.call()
+        print(res)
+        res = res['responses']
         # Parse
         self.parseDefault(res)
         self._state.profile = res['GET_PLAYER']
@@ -104,8 +108,9 @@ class Getter():
         return self._state.fortDetails
 
     # Hooks for those bundled in default
-    def getMapObjects(self, radius=600):
+    def getMapObjects(self):
         with self.lock:
+            radius = self.config.get_int('searchRadius')
             steps = self.location.getAllSteps(radius)
             for lat, lon in steps:
                 cells = self.location.getCells(lat, lon)

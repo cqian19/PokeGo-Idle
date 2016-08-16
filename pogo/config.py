@@ -10,7 +10,9 @@ DEFAULT = {
         'method': '',
         'walkspeed': 2.6,
         'searchRadius': 70,
-        'requestDelay': 1/2
+        'requestDelay': 0.5,
+        'discardCP': 200,
+        'discardIV': 80
     }
 }
 
@@ -19,6 +21,7 @@ class Config():
     def __init__(self, logger):
         self.logger = logger
         self.config = ConfigParser()
+        self.config.optionxform=str
         self.data = DEFAULT.copy()
         try:
             with open(CONFIG_PATH) as file:
@@ -34,6 +37,12 @@ class Config():
         if attr in self.data['Config']:
             return self.data['Config'][attr]
         self.logger.error("Could not get attr " + attr + " from config.")
+
+    def get_float(self, attr):
+        return float(self.get(attr))
+
+    def get_int(self, attr):
+        return int(self.get(attr))
 
     def get_config(self):
         return dict(self.config.items())['Config']

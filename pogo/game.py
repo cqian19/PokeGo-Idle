@@ -36,7 +36,7 @@ class MapHandler():
         self.is_logged_in = False
         self.first_login = True
         self.logger = logger
-        self.config = Config()
+        self.config = Config(logger)
         app.route('/', methods = ['GET', 'POST'])(self.login)
         app.route('/game', methods=['GET'])(self.default_map)
         app.run(debug=False, port=5000)
@@ -119,6 +119,7 @@ class MapHandler():
             args['password'],
             args['method'],
             logger,
+            self.config,
             geo_key=args['api_key'],
         )
         # Authenticate with a given location
@@ -127,7 +128,7 @@ class MapHandler():
         try:
             pogo_session = poko_session.authenticate(args['location'])
         except Exception as e:
-            logging.error('Could not log in. Double check your login credentials. The servers may also be down.')
+            logging.exception(e)
             raise GeneralPogoException('Could not log in. Double check your login credentials. The servers may also be down.')
         else:
             self.config.update_config({
@@ -138,7 +139,7 @@ class MapHandler():
             })
             self.maps_key = args['api_key']
             self.session = pogo_session
-            self.bot = Bot(poko_session.session, pogo_session, poko_session, logger)
+            self.bot = Bot(poko_session.session, pogo_session, poko_session, logger, self.config)
             self.bot.run()
 
 if __name__ == "__main__":
