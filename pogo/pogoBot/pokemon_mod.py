@@ -153,8 +153,8 @@ class pokemonHandler(Handler):
 
     def cleanPokemon(self):
         self.logger.info("Cleaning out Pokemon...")
-        thresholdCP = self.config.get_int('discardCP')
-        thresholdIV = self.config.get_int('discardIV')
+        thresholdCP = self.config.get('discardCP')
+        thresholdIV = self.config.get('discardIV')
         party = self.session.checkInventory().party
         stored, maxStorage = self.session.getter.getPokemonCapacity()
         self.logger.info("Pokemon storage capacity: {0}/{1}".format(stored, maxStorage))

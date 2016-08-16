@@ -53,12 +53,6 @@ class Config():
         self.logger.error("Could not get attr " + attr + " from config.")
         raise Exception("Config could not find option " + attr)
 
-    def get_float(self, attr):
-        return float(self.get(attr))
-
-    def get_int(self, attr):
-        return int(self.get(attr))
-
     def get_config(self):
         return dict(self.config.items())['Config']
 
