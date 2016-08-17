@@ -72,13 +72,12 @@ class PogoSession():
         stops = list(self.checkAllStops())
         plat, plon, alt = self.getter.getCoordinates()
         for stop in stops:
-            if self.location.getDistance(plat, plon, stop['latitude'], stop['longitude']) < 300:
-                r.append({
-                    'id': stop['id'],
-                    'latitude': stop['latitude'],
-                    'longitude': stop['longitude'],
-                    'lure': bool(stop.get('active_fort_modifier'))
-                })
+            r.append({
+                'id': stop['id'],
+                'latitude': stop['latitude'],
+                'longitude': stop['longitude'],
+                'lure': bool(stop.get('active_fort_modifier'))
+            })
         return r
 
     def cleanPlayerInfo(self):
