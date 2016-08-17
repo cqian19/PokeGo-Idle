@@ -2,7 +2,7 @@
 
 # PokeGo Adventures Pokemon Go Bot
 A free Pokemon Go bot with local website, live map, and notifications. See your player move around in real time and catch pokemon!  
-Status: **FIXED and Running!**
+Status: **Running as of 8/16. New version with user config is out!**  
 [Latest Release Download](https://github.com/cqian19/Pokemon-Go-Adventures-Bot/releases/latest)
 <p align="center"><img src="pogo/static/images/game.png"></p>
 ## Features
