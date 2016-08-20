@@ -2,7 +2,7 @@
 
 # PokeGo Adventures Pokemon Go Bot
 A free Pokemon Go bot with local website, live map, and notifications. See your player move around in real time and catch pokemon!  
-Status: **Running as of 8/16. New version with user config is out!**  
+Status: **Running as of 8/16. New version with user config is out! This bot will no longer receive updates. Feel free to take it up on your own.**  
 [Latest Release Download](https://github.com/cqian19/Pokemon-Go-Adventures-Bot/releases/latest)
 <p align="center"><img src="pogo/static/images/game.png"></p>
 ## Features
@@ -18,6 +18,7 @@ Status: **Running as of 8/16. New version with user config is out!**
 * Discards unnecessary items when bag is near full
 * Picks best pokeball to use
 * Search bar feature for changing locations
+* Configure walkspeed, search radius, and more!
 * Free to use!
 
 ## Getting Started
@@ -35,7 +36,7 @@ https://developers.google.com/maps/documentation/javascript/get-api-key
 10. Click "Login" and you're set! Logging in may take up to a minute or more depending on how great Niantic's servers are going.
 
 ## Contributing
-I'm just a student and the only one working on this project, so I can only do so much. All contributions, from issue reporting to feature development, are welcome! :smile: Stealing this project without giving credit though is not welcome.
+All contributions, from issue reporting to feature development, are welcome!
 
 ## Disclaimer
 Just a heads up: This bot will drop items and release low CP/IV pokemon if your inventory or pokemon storage is almost full. The bot prioritizes dropping potions and revives. The bot currently tries to discard lower than rare pokemon with CP < 700 and IV < 80%. Configs will be added in a later update. With how fast you're going to level with this bot, it won't matter much, but the bot won't function well with a full inventory/pokemon storage.
