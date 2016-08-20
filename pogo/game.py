@@ -36,16 +36,40 @@ class MapHandler():
         self.first_login = True
         self.logger = logger
         self.config = Config(logger)
-        app.route('/', methods = ['GET', 'POST'])(self.login)
-        app.route('/game', methods=['GET'])(self.default_map)
         app.run(debug=False, port=5000)
 
+    @app.route('/')
+    def login(self, error=None):
+        if request.method == 'GET':
+            if self.is_logged_in:
+                return redirect(url_for('default_map'))
+        if request.method == 'POST':
+            print(request.form)
+            try:
+                self._do_login(request.form)
+            except GeneralPogoException as e:
+                error = e.__str__()
+            except Exception as e:
+                self.logger.exception(e)
+                error = "Internal server error: " + e.__str__()
+            else:
+                self.is_logged_in = True
+                return redirect(url_for('default_map'))
+        if self.first_login:
+            config = self.config.get_config()
+            self.first_login = False
+        else:
+            config = {}
+        return render_template('login.html', error=error, config=config)
+
+    @app.route('/game', methods=['GET'])
     def default_map(self):
         if not self.is_logged_in:
             return redirect(url_for('login'))
         lat, lon, _ = self.session.getter.getCoordinates()
         return render_template('game.html', lat=lat, lon=lon, geo_key=self.maps_key, config=self.config.get_user_options())
 
+    @app.route('/data', methods=['GET'])
     def get_map_data(self):
         data = {}
         data['pokemon'] = self.session.cleanPokemon()
@@ -53,22 +77,27 @@ class MapHandler():
         data['caughtPokemon'] = self.session.cleanPokemon(self.session.getter.getCaughtPokemon())
         return jsonify(data)
 
+    @app.route('/location', methods=['GET'])
     def get_location(self):
         data = {
             'location': self.session.getter.getCoordinates()
         }
         return jsonify(data)
 
+    @app.route('/pastInfo', methods=['GET'])
     def get_past_items(self):
         return jsonify(self.session.getter.getPastNotifications())
 
+    @app.route('/playerData', methods=['GET'])
     def get_profile(self):
         return jsonify(self.session.cleanPlayerInfo())
 
+    @app.route('/loggedIn', methods=['GET'])
     def logged_in(self):
         d = {'status': '1' if self.is_logged_in else '0'}
         return jsonify(d)
 
+    @app.route('/search', methods=['POST'])
     def search(self):
         loc = request.json['location']
         print(loc)
@@ -81,6 +110,7 @@ class MapHandler():
         self.bot.run()
         return jsonify({'status': str(status)})
 
+    @app.route('/config', methods=['POST'])
     def set_config(self):
         options = request.json
         self.logger.info(options)
@@ -94,37 +124,7 @@ class MapHandler():
         self.config.update_config(options)
         return jsonify({'status': '1'})
 
-    def login(self, error=None):
-        if request.method == 'GET':
-            if self.is_logged_in:
-                return redirect(url_for('default_map'))
-        if request.method == 'POST':
-            print(request.form)
-            try:
-                self.do_login(request.form)
-            except GeneralPogoException as e:
-                error = e.__str__()
-            except Exception as e:
-                self.logger.exception(e)
-                error = "Internal server error: " + e.__str__()
-            else:
-                self.is_logged_in = True
-                app.route('/data', methods=['GET'])(self.get_map_data)
-                app.route('/loggedIn', methods=['GET'])(self.logged_in)
-                app.route('/location', methods=['GET'])(self.get_location)
-                app.route('/pastInfo', methods=['GET'])(self.get_past_items)
-                app.route('/playerData', methods=['GET'])(self.get_profile)
-                app.route('/search', methods=['POST'])(self.search)
-                app.route('/config', methods=['POST'])(self.set_config)
-                return redirect(url_for('default_map'))
-        if self.first_login:
-            config = self.config.get_config()
-            self.first_login = False
-        else:
-            config = {}
-        return render_template('login.html', error=error, config=config)
-
-    def do_login(self, args):
+    def _do_login(self, args):
         # Currently has username, password, method, api_key, location
         # Create PokoAuthObject
         poko_session = PokeAuthSession(
