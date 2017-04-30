@@ -2,7 +2,7 @@
 
 # PokeGo Adventures Pokemon Go Bot
 A free Pokemon Go bot with local website, live map, and notifications. See your player move around in real time and catch pokemon!  
-Status: **Running as of 8/16. New version with user config is out! This bot will no longer receive updates. Feel free to take it up on your own.**  
+Status: **Defunct**  
 [Latest Release Download](https://github.com/cqian19/Pokemon-Go-Adventures-Bot/releases/latest)
 <p align="center"><img src="pogo/static/images/game.png"></p>
 ## Features
@@ -40,14 +40,6 @@ All contributions, from issue reporting to feature development, are welcome!
 
 ## Disclaimer
 Just a heads up: This bot will drop items and release low CP/IV pokemon if your inventory or pokemon storage is almost full. The bot prioritizes dropping potions and revives. The bot currently tries to discard lower than rare pokemon with CP < 700 and IV < 80%. Configs will be added in a later update. With how fast you're going to level with this bot, it won't matter much, but the bot won't function well with a full inventory/pokemon storage.
-
-## Upcoming features
-
-- [ ] Sniping rare pokemon around the world and softban bypass  
-- [ ] User option configurations  
-- [ ] Setting and hatching eggs (Will require movespeed reduction)  
-- [ ] Allowing the user to use lucky eggs and incense  
-- [ ] Packaging into exe (not working currently thanks to pycryptodomex shenanigans)  
 
 ## Credits
 [keyphact and other's updated api](https://github.com/keyphact/pgoapi)
