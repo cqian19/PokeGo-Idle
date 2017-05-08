@@ -4,7 +4,8 @@
 A free Pokemon Go bot with local website, live map, and notifications. See your player move around in real time and catch pokemon!  
 Status: **Defunct**  
 [Latest Release Download](https://github.com/cqian19/Pokemon-Go-Adventures-Bot/releases/latest)
-<p align="center"><img src="pogo/static/images/game.png"></p>
+<p align="center"><img src="pogo/static/images/game.png"></p>  
+
 ## Features
 * Easy to use web interface
 * Live map that shows your trainer moving around and pokemon being caught in real time!
